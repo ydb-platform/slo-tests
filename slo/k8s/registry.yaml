@@ -16,11 +16,26 @@ spec:
         app: slo-registry
     spec:
       containers:
-        - name: slo-registry
-          image: registry:2.7.1
-          ports:
-            - name: slo-registry
-              containerPort: 5000
+      - name: slo-registry
+        image: registry:2.7.1
+        ports:
+          - name: slo-registry
+            containerPort: 5000
+        env:
+        - name: REGISTRY_AUTH
+          value: "htpasswd"
+        - name: REGISTRY_AUTH_HTPASSWD_REALM
+          value: "Registry Realm"
+        - name: REGISTRY_AUTH_HTPASSWD_PATH
+          value: "/auth/htpasswd"
+        volumeMounts:
+        - name: auth-vol
+          mountPath: "/auth"
+          readOnly: true
+      volumes:
+      - name: auth-vol
+        secret:
+          secretName: registry-htpasswd1
 
 ---
 apiVersion: v1
