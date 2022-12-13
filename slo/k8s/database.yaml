@@ -3,6 +3,18 @@ kind: Database
 metadata:
   name: database-sample
 spec:
+  additionalLabels:
+    ydb-cluster: slo-storage
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: ydb-cluster
+                operator: In
+                values:
+                  - slo-storage
+          topologyKey: "kubernetes.io/hostname"
   image:
     name: cr.yandex/crptqonuodf51kdj7a7d/ydb:22.2.22
   nodes: 6

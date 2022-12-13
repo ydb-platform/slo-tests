@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nodejs-test
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      name: nodejs-test
+    spec:
+      containers:
+      - name: nodejs-test
+        image: cr.yandex/crpho4srfnemeb9mi57a/nodejs:latest
+        args:
+          - "grpc://database-sample-grpc:2135"
+          - "/root/database-sample"
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: innerregistry

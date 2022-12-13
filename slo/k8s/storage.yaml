@@ -3,6 +3,18 @@ kind: Storage
 metadata:
   name: storage-sample
 spec:
+  additionalLabels:
+    ydb-cluster: slo-storage
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: ydb-cluster
+                operator: In
+                values:
+                  - slo-storage
+          topologyKey: "kubernetes.io/hostname"
   dataStore:
     - volumeMode: Block
       accessModes:
