@@ -13,7 +13,7 @@ on:
         required: true
 
 jobs:
-  build-test-image:
+  build-workload-image:
     runs-on: ubuntu-latest
     steps:
       - name: Create ${{ inputs.language }} image build yaml
@@ -65,58 +65,17 @@ jobs:
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
-          args: wait --for=condition=complete job/${{ inputs.language }}-build
-            
-  run-workload:
-    name: "Run workload :rocket:"
-    concurrency:
-      group: ${{ github.ref }}-${{ inputs.language }}-test
+          args: wait --for=condition=complete --timeout 5m job/${{ inputs.language }}-build
+
+  build-errors-sheduler-image:
     runs-on: ubuntu-latest
     steps:
-      - name: Create ${{ inputs.language }} test run yaml
-        # TODO: Here later will be kind: deployment instead of kind: job
-        run: |
-          cat > ${{ inputs.language }}-workload.yaml <<EOF
-          apiVersion: batch/v1
-          kind: Job
-          metadata:
-            name: ${{ inputs.language }}-test
-          spec:
-            backoffLimit: 0
-            template:
-              metadata:
-                name: ${{ inputs.language }}-test
-              spec:
-                containers:
-                - name: ${{ inputs.language }}-test
-                  image: cr.yandex/crpho4srfnemeb9mi57a/${{ inputs.language }}:latest
-                  args:
-                    - "grpc://database-sample-grpc:2135"
-                    - "/root/database-sample"
-                restartPolicy: Never
-                imagePullSecrets:
-                  - name: innerregistry
-          EOF
+      - name: build-stub
+        run: sleep 10;
 
-      - name: Check builded yaml
-        run: cat ${{ inputs.language }}-workload.yaml
-
-      - name: Run workload
-        uses: actions-hub/kubectl@master
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        with:
-          args: apply -f ${{ inputs.language }}-workload.yaml
-
-  run-errors-sheduler:
-    name: "Run errors sheduler **(TODO)** :coffin:"
-    concurrency:
-      group: ${{ github.ref }}-${{ inputs.language }}-test
-    runs-on: ubuntu-latest
-    steps:
-    - name: Run errors sheduler
-      uses: actions-hub/kubectl@master
-      env:
-        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      with:
-        args: apply -f ${{ inputs.language }}-workload.yaml
+  run-test:
+    needs: [build-workload-image, build-errors-sheduler-image]
+    uses: ./.github/workflows/workload-and-errors-sheduler.yml
+    secrets: inherit
+    with:
+      language: nodejs

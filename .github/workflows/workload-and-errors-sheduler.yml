@@ -1,0 +1,69 @@
+name: Workload and errors sheduler concurrent workflow
+
+on:
+  workflow_call:
+    inputs:
+      language:
+        description: 'SDK language or language+variant'
+        default: 'nodejs'
+        required: true
+        type: string
+    secrets:
+      KUBE_CONFIG:
+        required: true
+
+jobs:
+  run-workload:
+    concurrency:
+      group: ${{ github.ref }}-${{ inputs.language }}-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create ${{ inputs.language }} test run yaml
+        # TODO: Here later will be kind: deployment instead of kind: job
+        run: |
+          cat > ${{ inputs.language }}-workload.yaml <<EOF
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: ${{ inputs.language }}-workload
+          spec:
+            backoffLimit: 0
+            template:
+              metadata:
+                name: ${{ inputs.language }}-workload
+              spec:
+                containers:
+                - name: ${{ inputs.language }}-workload
+                  image: cr.yandex/crpho4srfnemeb9mi57a/${{ inputs.language }}:latest
+                  args:
+                    - "grpc://database-sample-grpc:2135"
+                    - "/root/database-sample"
+                restartPolicy: Never
+                imagePullSecrets:
+                  - name: innerregistry
+          EOF
+
+      - name: Check builded yaml
+        run: cat ${{ inputs.language }}-workload.yaml
+
+      - name: Run workload
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: apply -f ${{ inputs.language }}-workload.yaml
+
+      - name: Wait for workload to end
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: wait --for=condition=complete --timeout 5m job/${{ inputs.language }}-workload
+
+  run-errors-sheduler:
+    concurrency:
+      group: ${{ github.ref }}-${{ inputs.language }}-test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run errors sheduler
+      run: sleep 100;
