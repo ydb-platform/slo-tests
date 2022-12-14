@@ -8,25 +8,11 @@ jobs:
   create-cluster:
     runs-on: ubuntu-latest
     steps:
-      - name: Create a local k3d cluster
-        uses: inercia/cluster-providers@main
-        # changing the provider to something different would keep things the same
-        with:
-            provider: k3d
-            command: create
-        # we can pass some advanced, provider-specific configuration in env variables
-        # env:
-        #     K3D_EXTRA_ARGS: --server-arg '--no-deploy=traefik'
+      - uses: actions/checkout@v1
+      - uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
-      - name: Test the cluster we created
-        # KUBECONFIG has been set by the previous step: kubectl should work fine
-        run: |
-          kubectl cluster-info
-
-      - name: Delete the k3d cluster
-        uses: inercia/cluster-providers@main
-        # not really important to destroy a local cluster, but we should always
-        # remember to do it in cloud providers like GKE or Azure.
+      - uses: actions-hub/kubectl@master
         with:
-            provider: k3d
-            command: delete
+          args: get pods
