@@ -5,18 +5,21 @@ on:
     branches: [ 'slo' ]
 
 jobs:
+
   create-cluster:
     uses: ./.github/workflows/create-cluster.yml
     secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+
   test-flow:
     needs: [create-cluster]
     uses: ./.github/workflows/test-flow.yml
     secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-  # [for each sdk] start workload |and concurrently| start test flow
-  delete-cluster:
-    needs: [test-flow]
-    uses: ./.github/workflows/delete-cluster.yml
-    secrets:
-      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+
+  # TODO: Uncommenct when will be debugged enough
+  # delete-cluster:
+  #   needs: [test-flow]
+  #   uses: ./.github/workflows/delete-cluster.yml
+  #   secrets:
+  #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
