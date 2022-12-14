@@ -31,9 +31,9 @@ jobs:
       - name: Create database nodes
         uses: actions-hub/kubectl@master
         with:
-          args: apply -f slo/k8s/storage.yaml
+          args: apply -f slo/k8s/database.yaml
       
       - name: Wait until database nodes become ready
         uses: actions-hub/kubectl@master
         with:
-          args: wait --for=jsonpath='{.status.state}'="Ready" database.ydb.tech storage-sample
+          args: wait --for=jsonpath='{.status.state}'="Ready" database.ydb.tech database-sample
