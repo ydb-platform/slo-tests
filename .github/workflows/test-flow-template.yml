@@ -21,34 +21,34 @@ jobs:
         run: |
           cat > ${{ inputs.language }}-build.yaml <<EOF
           apiVersion: batch/v1
-            kind: Job
-            metadata:
-              name: ${{ inputs.language }}-build
-            spec:
-              ttlSecondsAfterFinished: 120
-              backoffLimit: 0
-              template:
-                spec:
-                  restartPolicy: Never
-                  containers:
-                  - name: ${{ inputs.language }}-build
-                    image: gcr.io/kaniko-project/executor:latest
-                    args:
-                      - "--context=git://github.com/zeruk/test-slo-nodejs.git#refs/heads/main"
-                      - "--context-sub-path=/${{ inputs.language }}"
-                      - "--dockerfile=Dockerfile"
-                      - "--destination=cr.yandex/crpho4srfnemeb9mi57a/${{ inputs.language }}:latest"
-                      - "--insecure"
-                    volumeMounts:
-                      - name: kaniko-docker-vol
-                        mountPath: /kaniko/.docker
-                  volumes:
+          kind: Job
+          metadata:
+            name: ${{ inputs.language }}-build
+          spec:
+            ttlSecondsAfterFinished: 120
+            backoffLimit: 0
+            template:
+              spec:
+                restartPolicy: Never
+                containers:
+                - name: ${{ inputs.language }}-build
+                  image: gcr.io/kaniko-project/executor:latest
+                  args:
+                    - "--context=git://github.com/zeruk/test-slo-nodejs.git#refs/heads/main"
+                    - "--context-sub-path=/${{ inputs.language }}"
+                    - "--dockerfile=Dockerfile"
+                    - "--destination=cr.yandex/crpho4srfnemeb9mi57a/${{ inputs.language }}:latest"
+                    - "--insecure"
+                  volumeMounts:
                     - name: kaniko-docker-vol
-                      secret:
-                        secretName: kaniko-docker
-                        items:
-                        - key: kanikoSecret.json
-                          path: config.json
+                      mountPath: /kaniko/.docker
+                volumes:
+                  - name: kaniko-docker-vol
+                    secret:
+                      secretName: kaniko-docker
+                      items:
+                      - key: kanikoSecret.json
+                        path: config.json
           EOF
 
       - name: Check builded yaml
