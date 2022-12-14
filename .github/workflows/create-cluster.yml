@@ -26,7 +26,7 @@ jobs:
       - name: Wait until storage nodes become ready
         uses: actions-hub/kubectl@master
         with:
-          args: wait --for=jsonpath='{.status.state}'="Ready" storages.ydb.tech storage-sample
+          args: 'wait --for=jsonpath="{.status.state}"="Ready" storages.ydb.tech storage-sample'
 
       - name: Create database nodes
         uses: actions-hub/kubectl@master
@@ -36,4 +36,4 @@ jobs:
       - name: Wait until database nodes become ready
         uses: actions-hub/kubectl@master
         with:
-          args: wait --for=jsonpath='{.status.state}'="Ready" database.ydb.tech database-sample
+          args: 'wait --for=jsonpath="{.status.state}"="Ready" database.ydb.tech database-sample'
