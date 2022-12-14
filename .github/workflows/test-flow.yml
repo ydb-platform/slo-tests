@@ -1,5 +1,12 @@
 name: All SDKs test flow
 
+
+on:
+  workflow_call:
+    secrets:
+      KUBE_CONFIG:
+        required: true
+
 jobs:
   nodejs:
     uses: ./.github/workflows/test-flow-template.yml
