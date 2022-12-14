@@ -68,7 +68,7 @@ jobs:
           args: wait --for=condition=complete job/${{ inputs.language }}-build
             
   run-workload:
-    run-name: "Run workload :rocket:"
+    name: "Run workload :rocket:"
     concurrency:
       group: ${{ github.ref }}-${{ inputs.language }}-test
     runs-on: ubuntu-latest
@@ -109,7 +109,7 @@ jobs:
           args: apply -f ${{ inputs.language }}-workload.yaml
 
   run-errors-sheduler:
-    run-name: "Run errors sheduler **(TODO)** :coffin:"
+    name: "Run errors sheduler **(TODO)** :coffin:"
     concurrency:
       group: ${{ github.ref }}-${{ inputs.language }}-test
     runs-on: ubuntu-latest
