@@ -51,6 +51,9 @@ jobs:
                           path: config.json
           EOF
 
+      - name: Check builded yaml
+        run: cat ${{ inputs.language }}-build.yaml
+
       - name: Run ${{ inputs.language }} SDK test image build
         uses: actions-hub/kubectl@master
         env:
