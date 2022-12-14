@@ -1,0 +1,61 @@
+name: SDK test flow
+
+on:
+  workflow_call:
+    inputs:
+      language:
+        description: 'SDK language or language+variant'
+        default: 'nodejs'
+        required: true
+        type: string
+    secrets:
+      KUBE_CONFIG:
+        required: true
+
+jobs:
+  build-test-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Create ${{ inputs.language }} image build yaml
+        run: |
+          cat > ${{ inputs.language }}-build.yaml <<EOF
+          apiVersion: batch/v1
+            kind: Job
+            metadata:
+              name: ${{ inputs.language }}-build
+            spec:
+              ttlSecondsAfterFinished: 120
+              backoffLimit: 0
+              template:
+                spec:
+                  restartPolicy: Never
+                  containers:
+                  - name: ${{ inputs.language }}-build
+                    image: gcr.io/kaniko-project/executor:latest
+                    args:
+                      - "--context=git://github.com/zeruk/test-slo-nodejs.git#refs/heads/main"
+                      - "--context-sub-path=/${{ inputs.language }}"
+                      - "--dockerfile=Dockerfile"
+                      - "--destination=cr.yandex/crpho4srfnemeb9mi57a/${{ inputs.language }}:latest"
+                      - "--insecure"
+                    volumeMounts:
+                      - name: kaniko-docker-vol
+                        mountPath: /kaniko/.docker
+                  volumes:
+                    - name: kaniko-docker-vol
+                      secret:
+                        secretName: kaniko-docker
+                        items:
+                        - key: kanikoSecret.json
+                          path: config.json
+          EOF
+
+      - name: Run ${{ inputs.language }} SDK test image build
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: apply -f ${{ inputs.language }}-build.yaml
+            
+            

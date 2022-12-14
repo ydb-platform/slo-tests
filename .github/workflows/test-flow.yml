@@ -1,0 +1,8 @@
+name: All SDKs test flow
+
+jobs:
+  nodejs:
+    uses: ./.github/workflows/test-flow-template.yml
+    secrets: inherit
+    with:
+      language: nodejs

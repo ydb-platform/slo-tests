@@ -9,7 +9,14 @@ jobs:
     uses: ./.github/workflows/create-cluster.yml
     secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  test-flow:
+    needs: [create-cluster]
+    uses: ./.github/workflows/test-flow.yml
+    secrets:
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  # [for each sdk] start workload |and concurrently| start test flow
   delete-cluster:
-    uses: ./.github/workflows/create-cluster.yml
+    needs: [test-flow]
+    uses: ./.github/workflows/delete-cluster.yml
     secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
