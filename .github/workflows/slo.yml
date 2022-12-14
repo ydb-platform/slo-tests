@@ -1,4 +1,4 @@
-name: SLO test
+name: Full SLO test workflow
 
 on:
   pull_request:
@@ -6,6 +6,10 @@ on:
 
 jobs:
   create-cluster:
+    uses: ./.github/workflows/create-cluster.yml
+    secrets:
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  delete-cluster:
     uses: ./.github/workflows/create-cluster.yml
     secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
