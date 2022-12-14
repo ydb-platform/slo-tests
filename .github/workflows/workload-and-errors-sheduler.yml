@@ -12,10 +12,11 @@ on:
       KUBE_CONFIG:
         required: true
 
+concurrency:
+  group: ${{ github.ref }}-${{ inputs.language }}-test
+  
 jobs:
   run-workload:
-    concurrency:
-      group: ${{ github.ref }}-${{ inputs.language }}-test
     runs-on: ubuntu-latest
     steps:
       - name: Create ${{ inputs.language }} test run yaml
@@ -61,8 +62,6 @@ jobs:
           args: wait --for=condition=complete --timeout 5m job/${{ inputs.language }}-workload
 
   run-errors-sheduler:
-    concurrency:
-      group: ${{ github.ref }}-${{ inputs.language }}-test
     runs-on: ubuntu-latest
     steps:
     - name: Run errors sheduler
