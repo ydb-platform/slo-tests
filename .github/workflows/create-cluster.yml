@@ -24,17 +24,9 @@ jobs:
           args: apply -f slo/k8s/storage.yaml
       
       - name: Wait until storage nodes become ready
-        run: |
-          while true; do
-          sleep 10;
-          CURRENT_AWAIT_STATE=`kubectl get storages.ydb.tech -o=jsonpath="{.items[0].status.state}"`
-          if [[ $CURRENT_AWAIT_STATE == *"Ready"* ]]; then
-              echo "$CURRENT_AWAIT_STATE, moving on"
-              break;
-          else
-              echo "Current state is $CURRENT_AWAIT_STATE"
-          fi
-          done
+        uses: actions-hub/kubectl@master
+        with:
+          args: wait --for=jsonpath='{.status.state}'="Ready" storages.ydb.tech storage-sample
 
       - name: Create database nodes
         uses: actions-hub/kubectl@master
@@ -42,14 +34,6 @@ jobs:
           args: apply -f slo/k8s/storage.yaml
       
       - name: Wait until database nodes become ready
-        run: |
-          while true; do
-          sleep 10;
-          CURRENT_AWAIT_STATE=`kubectl get database.ydb.tech -o=jsonpath="{.items[0].status.state}"`
-          if [[ $CURRENT_AWAIT_STATE == *"Ready"* ]]; then
-              echo "$CURRENT_AWAIT_STATE, moving on"
-              break;
-          else
-              echo "Current state is $CURRENT_AWAIT_STATE"
-          fi
-          done
+        uses: actions-hub/kubectl@master
+        with:
+          args: wait --for=jsonpath='{.status.state}'="Ready" database.ydb.tech storage-sample
