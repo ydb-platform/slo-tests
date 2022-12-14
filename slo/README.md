@@ -49,4 +49,38 @@ Run base64 through config to get secret string (`pbcopy` is OSX util)
 cat ci-config.kubeconfig | base64 | pbcopy
 ```
 
+## Whole process of cluster startup
 
+```
+# install ydb-operator
+helm install ydb-operator ydb/operator
+
+# check if ydb-operator is up
+kubectl get pods -l 'app.kubernetes.io/instance=ydb-operator' -o=jsonpath="{.items[0].status.phase}"
+
+# create storage
+kubectl apply -f k8s/storage.yaml
+
+# check if storage created
+kubectl get storages.ydb.tech -o=jsonpath="{.items[0].status.state}"
+
+# create DBs
+kubectl apply -f k8s/database.yaml
+
+# check if database created
+kubectl get database.ydb.tech -o=jsonpath="{.items[0].status.state}"
+```
+
+## Whole process of cluster shutdown
+```
+# delete DBs
+kubectl delete -f k8s/database.yaml
+
+# delete storage
+kubectl delete -f k8s/storage.yaml
+
+# remove PVCs
+kubectl delete pvc `kubectl get pvc -o=jsonpath="{.items[*].metadata.name}"`
+
+helm uninstall ydb-operator
+```

@@ -1,0 +1,55 @@
+name: Create YDB cluster in k8s workflow
+
+on:
+  workflow_call:
+    secrets:
+      KUBE_CONFIG:
+        required: true
+
+jobs:
+  create-cluster:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Get existing pods
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: get pods
+
+      - name: Create storage nodes
+        uses: actions-hub/kubectl@master
+        with:
+          args: apply -f slo/k8s/storage.yaml
+      
+      - name: Wait until storage nodes become ready
+        run: |
+          while true; do
+          sleep 10;
+          CURRENT_AWAIT_STATE=`kubectl get storages.ydb.tech -o=jsonpath="{.items[0].status.state}"`
+          if [[ $CURRENT_AWAIT_STATE == *"Ready"* ]]; then
+              echo "$CURRENT_AWAIT_STATE, moving on"
+              break;
+          else
+              echo "Current state is $CURRENT_AWAIT_STATE"
+          fi
+          done
+
+      - name: Create database nodes
+        uses: actions-hub/kubectl@master
+        with:
+          args: apply -f slo/k8s/storage.yaml
+      
+      - name: Wait until database nodes become ready
+        run: |
+          while true; do
+          sleep 10;
+          CURRENT_AWAIT_STATE=`kubectl get database.ydb.tech -o=jsonpath="{.items[0].status.state}"`
+          if [[ $CURRENT_AWAIT_STATE == *"Ready"* ]]; then
+              echo "$CURRENT_AWAIT_STATE, moving on"
+              break;
+          else
+              echo "Current state is $CURRENT_AWAIT_STATE"
+          fi
+          done
