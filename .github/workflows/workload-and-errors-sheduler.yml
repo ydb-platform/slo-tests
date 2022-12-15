@@ -67,7 +67,6 @@ jobs:
     - uses: actions/checkout@v2
     - name: Wait for workload to end
       uses: ./.github/actions/errors-sheduler
-      env:
-        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
       with:
         time_between_phases: 3m
+        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}

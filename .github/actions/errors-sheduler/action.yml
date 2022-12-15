@@ -5,7 +5,6 @@ inputs:
     description: 'Time to wait between phases (sleep command)'
     default: '1m'
     type: string
-secrets:
   KUBE_CONFIG:
     required: true
 
@@ -21,7 +20,7 @@ runs:
       id: db_ip_getter
       uses: actions-hub/kubectl@master
       env:
-        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        KUBE_CONFIG: ${{ inputs.KUBE_CONFIG }}
       with:
         args: get pods database-sample-0 -o=jsonpath='martyr_ip={.status.podIP}' >> $GITHUB_OUTPUT
 
