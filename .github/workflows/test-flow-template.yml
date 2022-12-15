@@ -69,15 +69,11 @@ jobs:
 
       # - name: Wait for the test image to build
       #   uses: actions-hub/kubectl@master
-      #   env:
-      #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
       #   with:
       #     args: wait --for=condition=complete --timeout ${{ inputs.build_timeout }} job/${{ inputs.language }}-build
 
       # - name: Get build logs
       #   uses: actions-hub/kubectl@master
-      #   env:
-      #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
       #   with:
       #     args: logs job/${{ inputs.language }}-build
 
