@@ -5,7 +5,6 @@ on:
     inputs:
       language:
         description: 'SDK language or language+variant'
-        default: 'nodejs'
         required: true
         type: string
       time_between_phases:
@@ -23,6 +22,8 @@ jobs:
   run-workload:
     runs-on: ubuntu-latest
     steps:
+      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+
       - name: Create ${{ inputs.language }} test run yaml
         # TODO: Here later will be kind: deployment instead of kind: job
         run: |
@@ -51,70 +52,55 @@ jobs:
       - name: Check builded yaml
         run: cat ${{ inputs.language }}-workload.yaml
 
-      - name: Run workload
-        uses: actions-hub/kubectl@master
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        with:
-          args: apply -f ${{ inputs.language }}-workload.yaml
+      - name: Run ${{ inputs.language }} workload
+        run: kubectl apply -f ${{ inputs.language }}-workload.yaml
 
       - name: Wait for workload to end
-        uses: actions-hub/kubectl@master
-        with:
-          args: wait --for=condition=complete --timeout 5m job/${{ inputs.language }}-workload
+        run: kubectl wait --for=condition=complete --timeout 5m job/${{ inputs.language }}-workload
 
   run-errors-sheduler:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - run: sleep ${{ inputs.time_between_phases }}
-    
-    - name: Get DB host's internal IP
-      uses: actions-hub/kubectl@master
-      env:
-        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      with:
-        args: get pods database-sample-0 -o=jsonpath='{.status.podIP}'
-        redirect-to: $MARTYR_IP
+      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
-    - name: Show DB host's internal IP
-      run: echo ${MARTYR_IP}
+      - name: Get existing pods
+        run: kubectl get pods
 
-    - name: Freeze tablet
-      uses: actions-hub/kubectl@master
-      with:
-        args: >
-          run -it --image=busybox --rm tablet-freezer --restart=Never -- sh -c "wget -q -O-
+      - run: sleep ${{ inputs.time_between_phases }}
+      
+      - name: Get DB host's internal IP
+        run: |
+          export MARTYR_IP=`kubectl get pods database-sample-0 -o=jsonpath='martyr_ip={.status.podIP}'`
+          echo "::set-env name=MARTYR_IP::$MARTYR_IP"
+      
+      - name: Show DB host's internal IP
+        run: echo ${MARTYR_IP}
+
+      - name: Freeze tablet
+        run: >
+          kubectl run -it --image=busybox --rm tablet-freezer --restart=Never -- sh -c "wget -q -O-
           '${MARTYR_IP}:8765/tablets/app?TabletID=72057594037968897&node=1&page=SetFreeze&freeze=1'"
-    
-    - run: sleep ${{ inputs.time_between_phases }}
+      
+      - run: sleep ${{ inputs.time_between_phases }}
 
-    - name: Unfreeze tablet
-      uses: actions-hub/kubectl@master
-      with:
-        args: >
-          run -it --image=busybox --rm tablet-freezer --restart=Never -- sh -c "wget -q -O-
+      - name: Unfreeze tablet
+        run: >
+          kubectl run -it --image=busybox --rm tablet-freezer --restart=Never -- sh -c "wget -q -O-
           '${MARTYR_IP}:8765/tablets/app?TabletID=72057594037968897&node=1&page=SetFreeze&freeze=0'"
-    
-    - run: sleep ${{ inputs.time_between_phases }}
+      
+      - run: sleep ${{ inputs.time_between_phases }}
 
-    - name: Delete database pod (it will automatically restart)
-      uses: actions-hub/kubectl@master
-      with:
-        args: delete pod database-sample-1
-    
-    - run: sleep ${{ inputs.time_between_phases }}
+      - name: Delete database pod (it will automatically restart)
+        run: kubectl delete pod database-sample-1
+      
+      - run: sleep ${{ inputs.time_between_phases }}
 
-    - name: Hard shutdown database pod (it will automatically restart)
-      uses: actions-hub/kubectl@master
-      with:
-        args: delete pod database-sample-1 --force=true --now=true
-    
-    - run: sleep ${{ inputs.time_between_phases }}
+      - name: Hard shutdown database pod (it will automatically restart)
+        run: kubectl delete pod database-sample-1 --force=true --now=true
+      
+      - run: sleep ${{ inputs.time_between_phases }}
 
-    - name: Kill pod from inside
-      uses: actions-hub/kubectl@master
-      with:
-        args: exec -it database-sample-0 -- /bin/bash -c "kill -2 1 && echo 'process killed'";
-    
-    - run: sleep ${{ inputs.time_between_phases }}
+      - name: Kill pod from inside
+        run: kubectl exec -it database-sample-0 -- /bin/bash -c "kill -2 1 && echo 'process killed'";
+      
+      - run: sleep ${{ inputs.time_between_phases }}

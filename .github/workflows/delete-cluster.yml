@@ -11,24 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+
+      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+
       - name: Get existing pods
-        uses: actions-hub/kubectl@master
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        with:
-          args: get pods
+        run: kubectl get pods
 
       - name: Delete storage nodes
-        uses: actions-hub/kubectl@master
-        with:
-          args: delete -f slo/k8s/storage.yaml
+        run: kubectl delete -f slo/k8s/storage.yaml
 
       - name: Delete database nodes
-        uses: actions-hub/kubectl@master
-        with:
-          args: delete -f slo/k8s/database.yaml
+        run: kubectl delete -f slo/k8s/database.yaml
       
       - name: Delete persistent volume claims
-        uses: actions-hub/kubectl@master
-        with:
-          args: delete pvc `kubectl get pvc -o=jsonpath="{.items[*].metadata.name}"`
+        run: kubectl delete pvc `kubectl get pvc -o=jsonpath="{.items[*].metadata.name}"`
