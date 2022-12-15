@@ -14,7 +14,7 @@ on:
 
 concurrency:
   group: ${{ github.ref }}-${{ inputs.language }}-test
-  
+
 jobs:
   run-workload:
     runs-on: ubuntu-latest
@@ -62,7 +62,7 @@ jobs:
           args: wait --for=condition=complete --timeout 5m job/${{ inputs.language }}-workload
 
   run-errors-sheduler:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Run errors sheduler
-      run: sleep 100;
+    uses: ./.github/workflows/errors-sheduler.yml
+    secrets: inherit
+    with:
+      time_between_phases: 3m
