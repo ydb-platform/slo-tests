@@ -25,6 +25,36 @@ jobs:
     with:
       language: nodejs
 
+  build-nodejs-v1:
+    needs: [run-nodejs]
+    uses: ./.github/workflows/build-workload.yml
+    secrets: 
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+    with:
+      language: nodejs
+
+  run-nodejs-v1:
+    needs: [build-nodejs-v1]
+    uses: ./.github/workflows/run-slo.yml
+    secrets: inherit
+    with:
+      language: nodejs
+
+  build-nodejs-v2:
+    needs: [run-nodejs-v1]
+    uses: ./.github/workflows/build-workload.yml
+    secrets: 
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+    with:
+      language: nodejs
+
+  run-nodejs-v2:
+    needs: [build-nodejs-v2]
+    uses: ./.github/workflows/run-slo.yml
+    secrets: inherit
+    with:
+      language: nodejs
+
   # TODO: Uncomment when will be debugged enough
   # delete-cluster:
   #   needs: [test-flow]
