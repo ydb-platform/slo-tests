@@ -62,7 +62,11 @@ jobs:
           args: wait --for=condition=complete --timeout 5m job/${{ inputs.language }}-workload
 
   run-errors-sheduler:
-    uses: ./.github/workflows/errors-sheduler.yml
-    secrets: inherit
-    with:
-      time_between_phases: 3m
+    runs-on: ubuntu-latest
+    steps:
+    - name: Wait for workload to end
+      uses: ./.github/actions/errors-sheduler
+      env:
+        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      with:
+        time_between_phases: 3m
