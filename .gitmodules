@@ -1,0 +1,3 @@
+[submodule "nodejs"]
+	path = nodejs
+	url = git@github.com:ydb-platform/slo-nodejs.git
