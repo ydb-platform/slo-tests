@@ -39,7 +39,7 @@ jobs:
                 - name: ${{ inputs.language }}-build
                   image: gcr.io/kaniko-project/executor:latest
                   args:
-                    - "--context=git@github.com:ydb-platform/slo-tests.git#refs/heads/main"
+                    - "--context=git@github.com:ydb-platform/slo-tests.git#refs/pull/${{ github.event.pull_request.number }}/head:slo"
                     - "--context-sub-path=/${{ inputs.language }}"
                     - "--dockerfile=Dockerfile"
                     - "--destination=cr.yandex/crpho4srfnemeb9mi57a/${{ inputs.language }}:latest"
