@@ -10,7 +10,7 @@ on:
         type: string
       build_timeout:
         description: 'Timeout to build image'
-        default: '5m'
+        default: '3m'
         required: false
         type: string
     secrets:
@@ -65,7 +65,12 @@ jobs:
         run: kubectl apply -f ${{ inputs.language }}-build.yaml
 
       - name: Wait for the test image to build
+        id: build-wait
         run: kubectl wait --for=condition=complete --timeout ${{ inputs.build_timeout }} job/${{ inputs.language }}-build
 
       - name: Get build logs
+        run: kubectl logs job/${{ inputs.language }}-build
+
+      - name: Get build logs on failure
+        if: failure() && steps.build-wait.outcome == 'failure'
         run: kubectl logs job/${{ inputs.language }}-build
