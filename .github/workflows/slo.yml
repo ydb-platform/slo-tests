@@ -12,7 +12,6 @@ jobs:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
   test-flow:
-    needs: [create-cluster]
     uses: ./.github/workflows/test-flow.yml
     secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}

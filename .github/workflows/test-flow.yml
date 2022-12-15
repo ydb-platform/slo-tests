@@ -13,3 +13,8 @@ jobs:
     secrets: inherit
     with:
       language: nodejs
+  nodejs-v2:
+    uses: ./.github/workflows/test-flow-template.yml
+    secrets: inherit
+    with:
+      language: nodejs-v2

@@ -70,7 +70,7 @@ jobs:
       #   run: kubectl logs job/${{ inputs.language }}-build
 
   run-test:
-    needs: [build-workload-image]
+    needs: [create-cluster, build-workload-image]
     uses: ./.github/workflows/workload-and-errors-sheduler.yml
     secrets: inherit
     with:
