@@ -64,6 +64,7 @@ jobs:
   run-errors-sheduler:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: Wait for workload to end
       uses: ./.github/actions/errors-sheduler
       env:
