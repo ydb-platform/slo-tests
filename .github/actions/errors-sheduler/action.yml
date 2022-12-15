@@ -16,23 +16,23 @@ runs:
       run: sleep ${{ inputs.time_between_phases }}
     
     - name: Get DB host's internal IP
-      id: db_ip_getter
       uses: actions-hub/kubectl@master
       env:
         KUBE_CONFIG: ${{ inputs.KUBE_CONFIG }}
       with:
-        args: get pods database-sample-0 -o=jsonpath='martyr_ip={.status.podIP}' >> $GITHUB_OUTPUT
+        args: get pods database-sample-0 -o=jsonpath='{.status.podIP}'
+        redirect-to: MARTYR_IP
 
     - name: Show DB host's internal IP
       shell: bash
-      run: echo ${{ steps.db_ip_getter.outputs.martyr_ip }}
+      run: echo ${MARTYR_IP}
 
     - name: Freeze tablet
       uses: actions-hub/kubectl@master
       with:
         args: >
           run -it --image=busybox --rm tablet-freezer --restart=Never -- sh -c "wget -q -O-
-          '${{ steps.db_ip_getter.outputs.martyr_ip }}:8765/tablets/app?TabletID=72057594037968897&node=1&page=SetFreeze&freeze=1'"
+          '${MARTYR_IP}:8765/tablets/app?TabletID=72057594037968897&node=1&page=SetFreeze&freeze=1'"
     
     - name: Wait ${{ inputs.time_between_phases }}
       shell: bash
@@ -43,7 +43,7 @@ runs:
       with:
         args: >
           run -it --image=busybox --rm tablet-freezer --restart=Never -- sh -c "wget -q -O-
-          '${{ steps.db_ip_getter.outputs.martyr_ip }}:8765/tablets/app?TabletID=72057594037968897&node=1&page=SetFreeze&freeze=0'"
+          '${MARTYR_IP}:8765/tablets/app?TabletID=72057594037968897&node=1&page=SetFreeze&freeze=0'"
     
     - name: Wait ${{ inputs.time_between_phases }}
       shell: bash
