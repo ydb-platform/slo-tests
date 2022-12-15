@@ -70,8 +70,8 @@ jobs:
       
       - name: Get DB host's internal IP
         run: |
-          export MARTYR_IP=`kubectl get pods database-sample-0 -o=jsonpath='martyr_ip={.status.podIP}'`
-          echo "::set-env name=MARTYR_IP::$MARTYR_IP"
+          export MARTYR_IP=`kubectl get pods database-sample-0 -o=jsonpath='{.status.podIP}'`
+          echo "MARTYR_IP=$MARTYR_IP" >> $GITHUB_ENV
       
       - name: Show DB host's internal IP
         run: echo ${MARTYR_IP}
@@ -96,7 +96,7 @@ jobs:
       - run: sleep ${{ inputs.time_between_phases }}
 
       - name: Hard shutdown database pod (it will automatically restart)
-        run: kubectl delete pod database-sample-1 --force=true --now=true
+        run: kubectl delete pod database-sample-1 --force=true --grace-period=0
       
       - run: sleep ${{ inputs.time_between_phases }}
 
