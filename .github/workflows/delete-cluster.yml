@@ -18,10 +18,10 @@ jobs:
         run: kubectl get pods
 
       - name: Delete storage nodes
-        run: kubectl delete -f slo/k8s/storage.yaml
+        run: kubectl delete -f k8s/storage.yaml
 
       - name: Delete database nodes
-        run: kubectl delete -f slo/k8s/database.yaml
+        run: kubectl delete -f k8s/database.yaml
       
       - name: Delete persistent volume claims
         run: kubectl delete pvc `kubectl get pvc -o=jsonpath="{.items[*].metadata.name}"`
