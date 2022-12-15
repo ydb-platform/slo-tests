@@ -21,7 +21,7 @@ runs:
         KUBE_CONFIG: ${{ inputs.KUBE_CONFIG }}
       with:
         args: get pods database-sample-0 -o=jsonpath='{.status.podIP}'
-        redirect-to: MARTYR_IP
+        redirect-to: $MARTYR_IP
 
     - name: Show DB host's internal IP
       shell: bash
