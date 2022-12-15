@@ -10,7 +10,7 @@ on:
         type: string
       time_between_phases:
         description: 'Time to wait between phases (sleep command)'
-        default: '1m'
+        default: '10s'
         type: string
     secrets:
       KUBE_CONFIG:
@@ -72,7 +72,7 @@ jobs:
     - name: Get DB host's internal IP
       uses: actions-hub/kubectl@master
       env:
-        KUBE_CONFIG: ${{ inputs.KUBE_CONFIG }}
+        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
       with:
         args: get pods database-sample-0 -o=jsonpath='{.status.podIP}'
         redirect-to: $MARTYR_IP
