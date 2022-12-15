@@ -10,8 +10,9 @@ inputs:
 
 runs:
   using: "composite"
-  outputs:
-    martyr_ip: ${{ steps.db_ip_getter.outputs.martyr_ip }}
+  defaults:
+      run:
+        shell: bash
   steps:
     - name: Wait ${{ inputs.time_between_phases }}
       run: sleep ${{ inputs.time_between_phases }}
