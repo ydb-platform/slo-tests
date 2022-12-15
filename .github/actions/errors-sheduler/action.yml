@@ -22,7 +22,8 @@ runs:
       uses: actions-hub/kubectl@master
       env:
         KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      run: get pods database-sample-0 -o=jsonpath='martyr_ip={.status.podIP}' >> $GITHUB_OUTPUT
+      with:
+        args: get pods database-sample-0 -o=jsonpath='martyr_ip={.status.podIP}' >> $GITHUB_OUTPUT
 
     - name: Show DB host's internal IP
       run: echo ${{ steps.db_ip_getter.outputs.martyr_ip }}
