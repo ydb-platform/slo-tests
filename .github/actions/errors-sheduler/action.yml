@@ -10,11 +10,9 @@ inputs:
 
 runs:
   using: "composite"
-  defaults:
-      run:
-        shell: bash
   steps:
     - name: Wait ${{ inputs.time_between_phases }}
+      shell: bash
       run: sleep ${{ inputs.time_between_phases }}
     
     - name: Get DB host's internal IP
@@ -26,6 +24,7 @@ runs:
         args: get pods database-sample-0 -o=jsonpath='martyr_ip={.status.podIP}' >> $GITHUB_OUTPUT
 
     - name: Show DB host's internal IP
+      shell: bash
       run: echo ${{ steps.db_ip_getter.outputs.martyr_ip }}
 
     - name: Freeze tablet
@@ -36,6 +35,7 @@ runs:
           '${{ steps.db_ip_getter.outputs.martyr_ip }}:8765/tablets/app?TabletID=72057594037968897&node=1&page=SetFreeze&freeze=1'"
     
     - name: Wait ${{ inputs.time_between_phases }}
+      shell: bash
       run: sleep ${{ inputs.time_between_phases }}
 
     - name: Unfreeze tablet
@@ -46,6 +46,7 @@ runs:
           '${{ steps.db_ip_getter.outputs.martyr_ip }}:8765/tablets/app?TabletID=72057594037968897&node=1&page=SetFreeze&freeze=0'"
     
     - name: Wait ${{ inputs.time_between_phases }}
+      shell: bash
       run: sleep ${{ inputs.time_between_phases }}
 
     - name: Delete database pod (it will automatically restart)
@@ -54,6 +55,7 @@ runs:
         args: delete pod database-sample-1
     
     - name: Wait ${{ inputs.time_between_phases }}
+      shell: bash
       run: sleep ${{ inputs.time_between_phases }}
 
     - name: Hard shutdown database pod (it will automatically restart)
@@ -62,6 +64,7 @@ runs:
         args: delete pod database-sample-1 --force=true --now=true
     
     - name: Wait ${{ inputs.time_between_phases }}
+      shell: bash
       run: sleep ${{ inputs.time_between_phases }}
 
     - name: Kill pod from inside
@@ -70,4 +73,5 @@ runs:
         args: exec -it database-sample-0 -- /bin/bash -c "kill -2 1 && echo 'process killed'";
     
     - name: Wait ${{ inputs.time_between_phases }}
+      shell: bash
       run: sleep ${{ inputs.time_between_phases }}
