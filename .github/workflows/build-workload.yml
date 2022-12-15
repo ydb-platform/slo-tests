@@ -58,6 +58,8 @@ jobs:
 
       - name: Check builded yaml
         run: cat ${{ inputs.language }}-build.yaml
+        
+      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Run ${{ inputs.language }} SDK test image build
         run: kubectl apply -f ${{ inputs.language }}-build.yaml
