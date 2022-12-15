@@ -59,13 +59,11 @@ jobs:
       - name: Check builded yaml
         run: cat ${{ inputs.language }}-build.yaml
 
-      # TODO: Uncommenct when will be debugged enough
+      - name: Run ${{ inputs.language }} SDK test image build
+        run: kubectl apply -f ${{ inputs.language }}-build.yaml
 
-      # - name: Run ${{ inputs.language }} SDK test image build
-      #   run: kubectl apply -f ${{ inputs.language }}-build.yaml
+      - name: Wait for the test image to build
+        run: kubectl wait --for=condition=complete --timeout ${{ inputs.build_timeout }} job/${{ inputs.language }}-build
 
-      # - name: Wait for the test image to build
-      #   run: kubectl wait --for=condition=complete --timeout ${{ inputs.build_timeout }} job/${{ inputs.language }}-build
-
-      # - name: Get build logs
-      #   run: kubectl logs job/${{ inputs.language }}-build
+      - name: Get build logs
+        run: kubectl logs job/${{ inputs.language }}-build
