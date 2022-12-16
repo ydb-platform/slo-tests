@@ -52,4 +52,4 @@ jobs:
       - name: Push image with all tags
         run: >
           docker push -a
-          {{ secrets.DOCKER_REPO }}/{{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}
+          ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}
