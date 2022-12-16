@@ -47,7 +47,7 @@ jobs:
         run: >
           docker build 
           -t ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:latest
-          -t ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:${{ github.head_ref }}.${{ github.sha }}
+          -t ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:gh-${{ github.sha }}
           .
 
       - name: Push image with all tags
