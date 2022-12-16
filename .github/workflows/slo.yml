@@ -15,6 +15,10 @@ jobs:
     uses: ./.github/workflows/build-workload.yml
     secrets: 
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+      DOCKER_FOLDER: ${{ secrets.DOCKER_FOLDER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     with:
       language: nodejs
 

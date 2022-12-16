@@ -5,7 +5,6 @@ on:
     inputs:
       language:
         description: 'SDK language or language+variant'
-        default: 'nodejs'
         required: true
         type: string
       build_timeout:
@@ -16,61 +15,41 @@ on:
     secrets:
       KUBE_CONFIG:
         required: true
+      DOCKER_REPO:
+        required: true
+      DOCKER_FOLDER:
+        required: true
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
 
 jobs:
   build-workload-image:
     name: build-${{ inputs.language }}
     runs-on: ubuntu-latest
     steps:
-      - name: Create ${{ inputs.language }} image build yaml
-        run: |
-          cat > ${{ inputs.language }}-build.yaml <<EOF
-          apiVersion: batch/v1
-          kind: Job
-          metadata:
-            name: ${{ inputs.language }}-build
-          spec:
-            ttlSecondsAfterFinished: 120
-            backoffLimit: 0
-            template:
-              spec:
-                restartPolicy: Never
-                containers:
-                - name: ${{ inputs.language }}-build
-                  image: gcr.io/kaniko-project/executor:latest
-                  args:
-                    - "--context=git@github.com:ydb-platform/slo-tests.git#refs/pull/${{ github.event.pull_request.number }}/head:slo"
-                    - "--context-sub-path=/${{ inputs.language }}"
-                    - "--dockerfile=Dockerfile"
-                    - "--destination=cr.yandex/crpho4srfnemeb9mi57a/${{ inputs.language }}:latest"
-                    - "--insecure"
-                  volumeMounts:
-                    - name: kaniko-docker-vol
-                      mountPath: /kaniko/.docker
-                volumes:
-                  - name: kaniko-docker-vol
-                    secret:
-                      secretName: kaniko-docker
-                      items:
-                      - key: kanikoSecret.json
-                        path: config.json
-          EOF
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      
+      - run: cd ${{ inputs.language }}
 
-      - name: Check builded yaml
-        run: cat ${{ inputs.language }}-build.yaml
-        
-      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+      - name: Login into docker
+        run: >
+          docker login ${{ secrets.DOCKER_REPO }}
+          -u ${{ secrets.DOCKER_USERNAME }}
+          -p ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Run ${{ inputs.language }} SDK test image build
-        run: kubectl apply -f ${{ inputs.language }}-build.yaml
+      - name: Build ${{ inputs.language }} image
+        run: >
+          docker build 
+          -t ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:latest
+          -t ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:${{ github.head_ref }}.${{ github.sha }}
+          .
 
-      - name: Wait for the test image to build
-        id: build-wait
-        run: kubectl wait --for=condition=complete --timeout ${{ inputs.build_timeout }} job/${{ inputs.language }}-build
-
-      - name: Get build logs
-        run: kubectl logs job/${{ inputs.language }}-build
-
-      - name: Get build logs on failure
-        if: failure() && steps.build-wait.outcome == 'failure'
-        run: kubectl logs job/${{ inputs.language }}-build
+      - name: Push image with all tags
+        run: >
+          docker push -a
+          {{ secrets.DOCKER_REPO }}/{{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}
