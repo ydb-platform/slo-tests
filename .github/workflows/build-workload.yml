@@ -38,9 +38,10 @@ jobs:
 
       - name: Login into docker
         run: >
+          echo "${{ secrets.DOCKER_PASSWORD }}" | base64 -d |
           docker login ${{ secrets.DOCKER_REPO }}
           -u ${{ secrets.DOCKER_USERNAME }}
-          -p ${{ secrets.DOCKER_PASSWORD }}
+          --password-stdin
 
       - name: Build ${{ inputs.language }} image
         run: >
