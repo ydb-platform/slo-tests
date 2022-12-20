@@ -46,10 +46,12 @@ function main() {
       }
     )
 
-  defaultArgs(program.command('cleanup')).action(async (endpoint, db) => {
-    console.log('Run cleanup over', endpoint, db)
-    cleanup(await createDriver(endpoint, db))
-  })
+  defaultArgs(program.command('cleanup'))
+    .option('-t --table-name <tableName>', 'table name to create')
+    .action(async (endpoint, db, { tableName }) => {
+      console.log('Run cleanup over', endpoint, db, tableName)
+      cleanup(await createDriver(endpoint, db), tableName)
+    })
 
   program.parse()
 }
