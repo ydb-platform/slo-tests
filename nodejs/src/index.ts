@@ -2,6 +2,7 @@ import { program } from 'commander'
 import { Driver, getCredentialsFromEnv } from 'ydb-sdk'
 import { cleanup } from './cleanup'
 import { create } from './create'
+import { readJob } from './readJob'
 
 const defaultArgs = (p: typeof program) => {
   return p
@@ -51,6 +52,16 @@ function main() {
     .action(async (endpoint, db, { tableName }) => {
       console.log('Run cleanup over', endpoint, db, tableName)
       cleanup(await createDriver(endpoint, db), tableName)
+    })
+
+  defaultArgs(program.command('run'))
+    .option('-t --table-name <tableName>', 'table name to read from')
+    .option('-t --read-rps <readRPS>', 'read RPS')
+    .option('-t --read-timeout <readTimeout>', 'read timeout')
+    .option('-t --time <time>', 'read time')
+    .action(async (endpoint, db, { tableName, readRPS, readTimeout, time }) => {
+      console.log('Run workload over', endpoint, db, tableName)
+      readJob(await createDriver(endpoint, db), tableName, readRPS, readTimeout, time)
     })
 
   program.parse()

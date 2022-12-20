@@ -2,7 +2,7 @@ import { declareType, snakeToCamelCaseConversion, TypedData, Types, withTypeOpti
 
 export interface IStructValue {
   objectIdKey: number
-  object_id: number
+  objectId: number
   timestamp: number
   payload: string
 }
@@ -13,7 +13,7 @@ export class StructValue extends TypedData {
   public objectIdKey: number
 
   @declareType(Types.UINT32)
-  public object_id: number
+  public objectId: number
 
   @declareType(Types.UINT64)
   public timestamp: number
@@ -21,15 +21,15 @@ export class StructValue extends TypedData {
   @declareType(Types.UTF8)
   public payload: string
 
-  static create(objectIdKey: number, object_id: number, timestamp: number, payload: string) {
-    return new this({ objectIdKey, timestamp, object_id, payload })
+  static create(objectIdKey: number, objectId: number, timestamp: number, payload: string) {
+    return new this({ objectIdKey, timestamp, objectId, payload })
   }
 
   constructor(data: IStructValue) {
     super(data)
     this.objectIdKey = data.objectIdKey
     this.timestamp = data.timestamp
-    this.object_id = data.object_id
+    this.objectId = data.objectId
     this.payload = data.payload
   }
 }

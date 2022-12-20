@@ -3,6 +3,8 @@ import crypto from 'crypto'
 
 const intHash = (int: number) => int
 
+export const randomId = (maxId: number): number => Math.round(Math.random() * maxId)
+
 export class DataGenerator {
   private currentObjectId: number = 0
 

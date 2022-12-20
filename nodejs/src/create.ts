@@ -1,6 +1,7 @@
 import {
   Column,
   Driver,
+  ExecuteQuerySettings,
   PartitioningPolicy,
   TableDescription,
   TableProfile,
@@ -86,9 +87,12 @@ async function generateInitialContent(driver: Driver, tableName: string, count: 
   while ((batch = generator.get()).length > 0) {
     // TODO: add executor
     await driver.tableClient.withSession(async (session) => {
-      await session.executeQuery(query, {
-        $items: TypedData.asTypedCollection(batch),
-      })
+      await session.executeQuery(
+        query,
+        { $items: TypedData.asTypedCollection(batch) },
+        { commitTx: true, beginTx: { serializableReadWrite: {} } },
+        new ExecuteQuerySettings().withKeepInCache(true)
+      )
       console.log('Successfully inserted')
     })
   }
