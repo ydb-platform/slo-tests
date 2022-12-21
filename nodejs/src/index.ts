@@ -3,6 +3,7 @@ import { Driver, getCredentialsFromEnv } from 'ydb-sdk'
 import { cleanup } from './cleanup'
 import { create } from './create'
 import { readJob } from './readJob'
+import { writeJob } from './writeJob'
 
 const defaultArgs = (p: typeof program) => {
   return p
@@ -14,7 +15,8 @@ async function createDriver(endpoint: string, database: string): Promise<Driver>
   const authService = getCredentialsFromEnv()
   console.log('Driver initializing...')
   const logFunction = (lvl: string, suppress: boolean = false) => {
-    return (msg: string, ...args: any[]) => !suppress && console.log(`[${new Date().toISOString()}] ${lvl} ${msg}`, args)
+    return (msg: string, ...args: any[]) =>
+      !suppress && console.log(`[${new Date().toISOString()}] ${lvl} ${msg}`, args)
   }
   const logger = {
     trace: logFunction('trace', true),
@@ -24,7 +26,13 @@ async function createDriver(endpoint: string, database: string): Promise<Driver>
     warn: logFunction('warn'),
     info: logFunction('info'),
   }
-  const driver = new Driver({ endpoint, database, authService, poolSettings: { minLimit: 10 }, logger })
+  const driver = new Driver({
+    endpoint,
+    database,
+    authService,
+    poolSettings: { minLimit: 10 },
+    // logger,
+  })
 
   const timeout = 30000
   if (!(await driver.ready(timeout))) {
@@ -74,7 +82,11 @@ function main() {
     .action(async (endpoint, db, { tableName, readRPS, readTimeout, time }) => {
       console.log('Run workload over', endpoint, db, tableName)
       const driver = await createDriver(endpoint, db)
-      readJob(driver, tableName, readRPS, readTimeout, time)
+      await Promise.all([
+        readJob(driver, tableName, readRPS, readTimeout, time),
+        writeJob(driver, tableName, readRPS, readTimeout, time),
+      ])
+      process.exit(0)
     })
 
   program.parse()

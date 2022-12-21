@@ -1,26 +1,26 @@
 import { Driver, ExecuteQuerySettings, OperationParams, TypedData, TypedValues } from 'ydb-sdk'
 
-import { TABLE_NAME, READ_RPS, READ_TIMEOUT, READ_TIME } from './utils/defaults'
+import { TABLE_NAME, WRITE_RPS, WRITE_TIMEOUT, WRITE_TIME } from './utils/defaults'
 import RateLimiter from './utils/RateLimiter'
-import { randomId } from './utils/DataGenerator'
+import { DataGenerator, randomId } from './utils/DataGenerator'
 
-export async function readJob(
+export async function writeJob(
   driver: Driver,
   tableName?: string,
-  readRPS?: number,
-  readTimeout?: number,
+  rps?: number,
+  timeout?: number,
   time?: number
 ) {
   if (!tableName) tableName = TABLE_NAME
-  if (!readRPS) readRPS = READ_RPS
-  if (!readTimeout) readTimeout = READ_TIMEOUT
-  if (!time) time = READ_TIME
+  if (!rps) rps = WRITE_RPS
+  if (!timeout) timeout = WRITE_TIMEOUT
+  if (!time) time = WRITE_TIME
 
-  const rateLimiter = new RateLimiter(readRPS)
+  const rateLimiter = new RateLimiter(rps)
   let maxId = await getMaxId(driver, tableName)
   console.log('Max id', { maxId })
   // maxId = Math.round(maxId * 1.25)
-  await read(driver, rateLimiter, maxId, tableName, new Date().valueOf() + time * 1000, readTimeout)
+  await write(driver, rateLimiter, maxId, tableName, new Date().valueOf() + time * 1000, timeout)
 }
 
 async function getMaxId(driver: Driver, tableName: string): Promise<number> {
@@ -35,7 +35,7 @@ async function getMaxId(driver: Driver, tableName: string): Promise<number> {
   })
 }
 
-async function read(
+async function write(
   driver: Driver,
   rl: RateLimiter,
   maxId: number,
@@ -43,35 +43,38 @@ async function read(
   stopTime: number,
   timeout: number
 ) {
-  console.log('Read with params', { maxId, tableName, stopTime })
-  // PRAGMA TablePathPrefix(" + dbName + ");
+  console.log('Write with params', { maxId, tableName, stopTime })
+
   const query = `--!syntax_v1
-    DECLARE $object_id_key AS Uint32;
-    DECLARE $object_id AS Uint32;
-    SELECT * FROM \`${tableName}\`
-    WHERE object_id_key = $object_id_key AND object_id = $object_id;`
+    DECLARE $items AS
+    List<Struct<
+    object_id_key: Uint32,
+    object_id: Uint32,
+    timestamp: Uint64,
+    payload: Utf8>>;
+    UPSERT INTO \`${tableName}\`
+    SELECT * FROM AS_TABLE($items);`
+
+  const valueGenerator = new DataGenerator(maxId)
 
   const settings = new ExecuteQuerySettings().withKeepInCache(true).withOperationParams(
     new OperationParams().withOperationTimeout({
       nanos: timeout * 1000 * 1000,
     })
   )
+
   const startTime = new Date()
   let counter = 0
   while (new Date().valueOf() < stopTime) {
     // TODO: add executor
-    const id = randomId(maxId)
     counter++
     await rl.nextTick()
 
     driver.tableClient.withSession(async (session) => {
       await session.executeQuery(
         query,
-        {
-          $object_id_key: TypedValues.uint32(id),
-          $object_id: TypedValues.uint32(id),
-        },
-        { commitTx: true, beginTx: { onlineReadOnly: {} } },
+        { $items: TypedData.asTypedCollection([valueGenerator.get()]) },
+        { commitTx: true, beginTx: { serializableReadWrite: {} } },
         settings
       )
     })
@@ -79,5 +82,5 @@ async function read(
   const endTime = new Date()
   const diffTime = (endTime.valueOf() - startTime.valueOf()) / 1000
   console.log({ counter, diffTime, rps: counter / diffTime })
-  console.log('Read job done')
+  console.log('Write job done')
 }
