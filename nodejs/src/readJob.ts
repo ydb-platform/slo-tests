@@ -1,5 +1,3 @@
-import { Worker } from 'node:worker_threads'
-
 import { Driver, ExecuteQuerySettings, OperationParams, TypedData, TypedValues } from 'ydb-sdk'
 
 import { TABLE_NAME, READ_RPS, READ_TIMEOUT, READ_TIME } from './utils/defaults'
@@ -74,8 +72,8 @@ async function read(
     counter++
     await rl.nextTick()
 
-    await driver.tableClient.withSession(async (session) => {
-      await session.executeQuery(query, queryParams, txControl, settings)
+    driver.tableClient.withSession(async (session) => {
+      console.log(JSON.stringify((await session.executeQuery(query, queryParams, txControl, settings)).resultSets[0].rows))
     })
   }
   const endTime = new Date()

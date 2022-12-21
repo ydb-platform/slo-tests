@@ -13,7 +13,19 @@ const defaultArgs = (p: typeof program) => {
 async function createDriver(endpoint: string, database: string): Promise<Driver> {
   const authService = getCredentialsFromEnv()
   console.log('Driver initializing...')
-  const driver = new Driver({ endpoint, database, authService })
+  const logFunction = (lvl: string, suppress: boolean = false) => {
+    return (msg: string, ...args: any[]) => !suppress && console.log(`[${new Date().toISOString()}] ${lvl} ${msg}`, args)
+  }
+  const logger = {
+    trace: logFunction('trace', true),
+    debug: logFunction('debug'),
+    fatal: logFunction('fatal'),
+    error: logFunction('error'),
+    warn: logFunction('warn'),
+    info: logFunction('info'),
+  }
+  const driver = new Driver({ endpoint, database, authService, poolSettings: { minLimit: 10 }, logger })
+
   const timeout = 30000
   if (!(await driver.ready(timeout))) {
     console.log(`Driver has not become ready in ${timeout}ms!`)
@@ -56,12 +68,13 @@ function main() {
 
   defaultArgs(program.command('run'))
     .option('-t --table-name <tableName>', 'table name to read from')
-    .option('-t --read-rps <readRPS>', 'read RPS')
-    .option('-t --read-timeout <readTimeout>', 'read timeout')
-    .option('-t --time <time>', 'read time')
+    .option('--read-rps <readRPS>', 'read RPS')
+    .option('--read-timeout <readTimeout>', 'read timeout milliseconds')
+    .option('--time <time>', 'read time in seconds')
     .action(async (endpoint, db, { tableName, readRPS, readTimeout, time }) => {
       console.log('Run workload over', endpoint, db, tableName)
-      readJob(await createDriver(endpoint, db), tableName, readRPS, readTimeout, time)
+      const driver = await createDriver(endpoint, db)
+      readJob(driver, tableName, readRPS, readTimeout, time)
     })
 
   program.parse()
