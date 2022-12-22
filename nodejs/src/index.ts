@@ -3,6 +3,8 @@ import { Driver, getCredentialsFromEnv } from 'ydb-sdk'
 import { cleanup } from './cleanup'
 import { create } from './create'
 import { readJob } from './readJob'
+import { TABLE_NAME } from './utils/defaults'
+import { getMaxId } from './utils/getMaxId'
 import { writeJob } from './writeJob'
 
 const defaultArgs = (p: typeof program) => {
@@ -78,16 +80,25 @@ function main() {
     .option('-t --table-name <tableName>', 'table name to read from')
     .option('--read-rps <readRPS>', 'read RPS')
     .option('--read-timeout <readTimeout>', 'read timeout milliseconds')
+    .option('--write-rps <writeRPS>', 'write RPS')
+    .option('--write-timeout <writeTimeout>', 'write timeout milliseconds')
     .option('--time <time>', 'read time in seconds')
-    .action(async (endpoint, db, { tableName, readRPS, readTimeout, time }) => {
-      console.log('Run workload over', endpoint, db, tableName)
-      const driver = await createDriver(endpoint, db)
-      await Promise.all([
-        readJob(driver, tableName, readRPS, readTimeout, time),
-        writeJob(driver, tableName, readRPS, readTimeout, time),
-      ])
-      process.exit(0)
-    })
+    .action(
+      async (endpoint, db, { tableName, readRPS, readTimeout, writeRPS, writeTimeout, time }) => {
+        if (!tableName) tableName = TABLE_NAME
+        console.log('Run workload over', endpoint, db, tableName)
+
+        const driver = await createDriver(endpoint, db)
+        const maxId = await getMaxId(driver, tableName)
+        console.log('Max id', { maxId })
+
+        await Promise.all([
+          readJob(driver, tableName, maxId, readRPS, readTimeout, time),
+          writeJob(driver, tableName, maxId, writeRPS, writeTimeout, time),
+        ])
+        process.exit(0)
+      }
+    )
 
   program.parse()
 }

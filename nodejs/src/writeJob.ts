@@ -1,38 +1,23 @@
 import { Driver, ExecuteQuerySettings, OperationParams, TypedData, TypedValues } from 'ydb-sdk'
 
-import { TABLE_NAME, WRITE_RPS, WRITE_TIMEOUT, WRITE_TIME } from './utils/defaults'
+import { WRITE_RPS, WRITE_TIMEOUT, WRITE_TIME } from './utils/defaults'
 import RateLimiter from './utils/RateLimiter'
 import { DataGenerator, randomId } from './utils/DataGenerator'
 
 export async function writeJob(
   driver: Driver,
-  tableName?: string,
+  tableName: string,
+  maxId: number,
   rps?: number,
   timeout?: number,
   time?: number
 ) {
-  if (!tableName) tableName = TABLE_NAME
   if (!rps) rps = WRITE_RPS
   if (!timeout) timeout = WRITE_TIMEOUT
   if (!time) time = WRITE_TIME
 
   const rateLimiter = new RateLimiter(rps)
-  let maxId = await getMaxId(driver, tableName)
-  console.log('Max id', { maxId })
-  // maxId = Math.round(maxId * 1.25)
   await write(driver, rateLimiter, maxId, tableName, new Date().valueOf() + time * 1000, timeout)
-}
-
-async function getMaxId(driver: Driver, tableName: string): Promise<number> {
-  return new Promise((resolve) => {
-    driver.tableClient.withSession(async (session) => {
-      const res = await session.executeQuery(
-        `SELECT MAX(object_id) as max_id FROM \`${tableName}\``
-      )
-      const result = TypedData.createNativeObjects(res.resultSets[0])
-      resolve(result[0].maxId)
-    })
-  })
 }
 
 async function write(

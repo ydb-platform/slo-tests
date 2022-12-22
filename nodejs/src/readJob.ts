@@ -1,38 +1,23 @@
 import { Driver, ExecuteQuerySettings, OperationParams, TypedData, TypedValues } from 'ydb-sdk'
 
-import { TABLE_NAME, READ_RPS, READ_TIMEOUT, READ_TIME } from './utils/defaults'
+import { READ_RPS, READ_TIMEOUT, READ_TIME } from './utils/defaults'
 import RateLimiter from './utils/RateLimiter'
 import { randomId } from './utils/DataGenerator'
 
 export async function readJob(
   driver: Driver,
-  tableName?: string,
+  tableName: string,
+  maxId: number,
   readRPS?: number,
   readTimeout?: number,
   time?: number
 ) {
-  if (!tableName) tableName = TABLE_NAME
   if (!readRPS) readRPS = READ_RPS
   if (!readTimeout) readTimeout = READ_TIMEOUT
   if (!time) time = READ_TIME
 
   const rateLimiter = new RateLimiter(readRPS)
-  let maxId = await getMaxId(driver, tableName)
-  console.log('Max id', { maxId })
-  // maxId = Math.round(maxId * 1.25)
   await read(driver, rateLimiter, maxId, tableName, new Date().valueOf() + time * 1000, readTimeout)
-}
-
-async function getMaxId(driver: Driver, tableName: string): Promise<number> {
-  return new Promise((resolve) => {
-    driver.tableClient.withSession(async (session) => {
-      const res = await session.executeQuery(
-        `SELECT MAX(object_id) as max_id FROM \`${tableName}\``
-      )
-      const result = TypedData.createNativeObjects(res.resultSets[0])
-      resolve(result[0].maxId)
-    })
-  })
 }
 
 async function read(
