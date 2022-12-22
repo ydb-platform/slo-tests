@@ -2,8 +2,9 @@ import { program } from 'commander'
 import { Driver, getCredentialsFromEnv } from 'ydb-sdk'
 import { cleanup } from './cleanup'
 import { create } from './create'
+import { MetricsJob } from './metricsJob'
 import { readJob } from './readJob'
-import { TABLE_NAME } from './utils/defaults'
+import { TABLE_NAME, SHUTDOWN_TIME, PROMETHEUS_PUSH_GATEWAY } from './utils/defaults'
 import Executor from './utils/Executor'
 import { getMaxId } from './utils/getMaxId'
 import { writeJob } from './writeJob'
@@ -79,24 +80,34 @@ function main() {
 
   defaultArgs(program.command('run'))
     .option('-t --table-name <tableName>', 'table name to read from')
+    .option('--prom-pgw <pushGateway>', 'prometheus push gateway')
     .option('--read-rps <readRPS>', 'read RPS')
     .option('--read-timeout <readTimeout>', 'read timeout milliseconds')
     .option('--write-rps <writeRPS>', 'write RPS')
     .option('--write-timeout <writeTimeout>', 'write timeout milliseconds')
-    .option('--time <time>', 'read time in seconds')
+    .option('--time <time>', 'run time in seconds')
+    .option('--shutdown-time <shutdownTime>', 'graceful shutdown time in seconds')
     .action(
-      async (endpoint, db, { tableName, readRPS, readTimeout, writeRPS, writeTimeout, time }) => {
+      async (
+        endpoint,
+        db,
+        { tableName, readRPS, readTimeout, writeRPS, writeTimeout, time, shutdownTime, pushGateway }
+      ) => {
         if (!tableName) tableName = TABLE_NAME
+        if (!shutdownTime) shutdownTime = SHUTDOWN_TIME
+        if (!pushGateway) pushGateway = PROMETHEUS_PUSH_GATEWAY
         console.log('Run workload over', endpoint, db, tableName)
 
         const driver = await createDriver(endpoint, db)
         const maxId = await getMaxId(driver, tableName)
         console.log('Max id', { maxId })
-        const executor = new Executor(driver)
+        const executor = new Executor(driver, pushGateway)
+        const metricsJob = new MetricsJob(executor, 1000, time + shutdownTime)
 
         await Promise.all([
-          readJob(executor, tableName, maxId, readRPS, readTimeout, time),
-          writeJob(executor, tableName, maxId, writeRPS, writeTimeout, time),
+          readJob(executor, tableName, maxId, shutdownTime, readRPS, readTimeout, time),
+          writeJob(executor, tableName, maxId, shutdownTime, writeRPS, writeTimeout, time),
+          metricsJob,
         ])
         await executor.printStats('runStats.json')
         process.exit(0)

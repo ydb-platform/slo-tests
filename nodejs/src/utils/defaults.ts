@@ -11,3 +11,6 @@ export const READ_TIME = 360 // seconds
 export const WRITE_RPS = 1000
 export const WRITE_TIMEOUT = 20000 // milliseconds
 export const WRITE_TIME = 360 // seconds
+
+export const SHUTDOWN_TIME = 30
+export const PROMETHEUS_PUSH_GATEWAY = 'http://127.0.0.1:9091'

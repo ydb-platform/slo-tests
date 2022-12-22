@@ -1,5 +1,6 @@
 import { writeFile } from 'fs/promises'
-import { Counter, Gauge, Summary, Registry } from 'prom-client'
+import http from 'http'
+import { Counter, Gauge, Summary, Registry, Pushgateway } from 'prom-client'
 import { Driver, Session } from 'ydb-sdk'
 import { dependencies } from '../../package.json'
 
@@ -14,9 +15,19 @@ export default class Executor {
   private readonly notOks: Counter
   private readonly inflight: Gauge
   private readonly latencies: Summary
+  private readonly gateway: Pushgateway
 
-  constructor(driver: Driver) {
+  constructor(driver: Driver, pushGateway: string) {
     this.driver = driver
+    this.gateway = new Pushgateway(pushGateway, {
+      timeout: 10000,
+      agent: new http.Agent({
+        keepAlive: true,
+        keepAliveMsecs: 20000,
+        maxSockets: 5,
+      }),
+    })
+
     this.registry.setDefaultLabels({ sdk: 'nodejs', sdkVersion })
     const registers = [this.registry]
 
@@ -61,5 +72,9 @@ export default class Executor {
       await writeFile(file, JSON.stringify(json))
     }
     console.log('========== Stats: ========== \n\n', json, '========== Stats end ==========')
+  }
+
+  async pushStats() {
+    this.gateway.pushAdd({ jobName: 'metrics' })
   }
 }

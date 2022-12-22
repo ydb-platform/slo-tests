@@ -9,6 +9,7 @@ export async function writeJob(
   executor: Executor,
   tableName: string,
   maxId: number,
+  shutdownTime: number,
   rps?: number,
   timeout?: number,
   time?: number
@@ -18,7 +19,15 @@ export async function writeJob(
   if (!time) time = WRITE_TIME
 
   const rateLimiter = new RateLimiter(rps)
-  await write(executor, rateLimiter, maxId, tableName, new Date().valueOf() + time * 1000, timeout)
+  await write(
+    executor,
+    rateLimiter,
+    maxId,
+    tableName,
+    new Date().valueOf() + time * 1000,
+    timeout,
+    shutdownTime
+  )
 }
 
 async function write(
@@ -27,7 +36,8 @@ async function write(
   maxId: number,
   tableName: string,
   stopTime: number,
-  timeout: number
+  timeout: number,
+  shutdownTime: number
 ) {
   console.log('Write with params', { maxId, tableName, stopTime })
 
@@ -68,5 +78,6 @@ async function write(
   const endTime = new Date()
   const diffTime = (endTime.valueOf() - startTime.valueOf()) / 1000
   console.log({ counter, diffTime, rps: counter / diffTime })
-  console.log('Write job done')
+  console.log('Write job done, graceful shutdown')
+  await new Promise((resolve) => setTimeout(resolve, shutdownTime * 1000))
 }
