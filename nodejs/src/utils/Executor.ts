@@ -13,8 +13,7 @@ export default class Executor {
   private readonly oks: Counter
   private readonly notOks: Counter
   private readonly inflight: Gauge
-  private readonly okLatencies: Summary
-  private readonly notOkLatencies: Summary
+  private readonly latencies: Summary
 
   constructor(driver: Driver) {
     this.driver = driver
@@ -24,18 +23,12 @@ export default class Executor {
     this.oks = new Counter({ name: 'oks', help: 'amount of OK requests', registers })
     this.notOks = new Counter({ name: 'not_oks', help: 'amount of not OK requests', registers })
     this.inflight = new Gauge({ name: 'inflight', help: 'amount of requests in flight', registers })
-    this.okLatencies = new Summary({
+    this.latencies = new Summary({
       name: 'ok_latency',
-      help: 'histogram of ok latencies in ms',
+      help: 'histogram of latencies in ms',
       percentiles,
       registers,
-      // add more options?
-    })
-    this.notOkLatencies = new Summary({
-      name: 'not_ok_latency',
-      help: 'histogram of not ok latencies in ms',
-      percentiles,
-      registers,
+      labelNames: ['status', 'jobName'],
       // add more options?
     })
   }
@@ -49,12 +42,12 @@ export default class Executor {
       try {
         result = await this.driver.tableClient.withSession(callback, timeout)
         endSession = new Date().valueOf()
-        this.okLatencies.observe({ status: 'ok', jobName }, endSession - startSession)
+        this.latencies.observe({ status: 'ok', jobName }, endSession - startSession)
         this.oks.inc()
       } catch (error) {
         endSession = new Date().valueOf()
         console.log(error)
-        this.notOkLatencies.observe({ status: 'err', jobName }, endSession - startSession)
+        this.latencies.observe({ status: 'err', jobName }, endSession - startSession)
         this.notOks.inc()
       }
       this.inflight.dec()
