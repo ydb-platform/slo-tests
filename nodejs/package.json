@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "commander": "^9.4.1",
+    "prom-client": "^14.1.0",
     "ydb-sdk": "^3.7.0"
   }
 }

@@ -1,11 +1,12 @@
-import { Driver, ExecuteQuerySettings, OperationParams, TypedData, TypedValues } from 'ydb-sdk'
+import { ExecuteQuerySettings, OperationParams, TypedValues } from 'ydb-sdk'
 
 import { READ_RPS, READ_TIMEOUT, READ_TIME } from './utils/defaults'
 import RateLimiter from './utils/RateLimiter'
 import { randomId } from './utils/DataGenerator'
+import Executor from './utils/Executor'
 
 export async function readJob(
-  driver: Driver,
+  executor: Executor,
   tableName: string,
   maxId: number,
   readRPS?: number,
@@ -17,11 +18,18 @@ export async function readJob(
   if (!time) time = READ_TIME
 
   const rateLimiter = new RateLimiter(readRPS)
-  await read(driver, rateLimiter, maxId, tableName, new Date().valueOf() + time * 1000, readTimeout)
+  await read(
+    executor,
+    rateLimiter,
+    maxId,
+    tableName,
+    new Date().valueOf() + time * 1000,
+    readTimeout
+  )
 }
 
 async function read(
-  driver: Driver,
+  executor: Executor,
   rl: RateLimiter,
   maxId: number,
   tableName: string,
@@ -44,12 +52,11 @@ async function read(
   const startTime = new Date()
   let counter = 0
   while (new Date().valueOf() < stopTime) {
-    // TODO: add executor
     const id = randomId(maxId)
     counter++
     await rl.nextTick()
 
-    driver.tableClient.withSession(async (session) => {
+    executor.withSession('read')(async (session) => {
       await session.executeQuery(
         query,
         {

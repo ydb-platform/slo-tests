@@ -1,11 +1,12 @@
-import { Driver, ExecuteQuerySettings, OperationParams, TypedData, TypedValues } from 'ydb-sdk'
+import { ExecuteQuerySettings, OperationParams, TypedData, TypedValues } from 'ydb-sdk'
 
 import { WRITE_RPS, WRITE_TIMEOUT, WRITE_TIME } from './utils/defaults'
 import RateLimiter from './utils/RateLimiter'
 import { DataGenerator, randomId } from './utils/DataGenerator'
+import Executor from './utils/Executor'
 
 export async function writeJob(
-  driver: Driver,
+  executor: Executor,
   tableName: string,
   maxId: number,
   rps?: number,
@@ -17,11 +18,11 @@ export async function writeJob(
   if (!time) time = WRITE_TIME
 
   const rateLimiter = new RateLimiter(rps)
-  await write(driver, rateLimiter, maxId, tableName, new Date().valueOf() + time * 1000, timeout)
+  await write(executor, rateLimiter, maxId, tableName, new Date().valueOf() + time * 1000, timeout)
 }
 
 async function write(
-  driver: Driver,
+  executor: Executor,
   rl: RateLimiter,
   maxId: number,
   tableName: string,
@@ -55,7 +56,7 @@ async function write(
     counter++
     await rl.nextTick()
 
-    driver.tableClient.withSession(async (session) => {
+    executor.withSession('write')(async (session) => {
       await session.executeQuery(
         query,
         { $items: TypedData.asTypedCollection([valueGenerator.get()]) },

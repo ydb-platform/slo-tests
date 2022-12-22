@@ -4,6 +4,7 @@ import { cleanup } from './cleanup'
 import { create } from './create'
 import { readJob } from './readJob'
 import { TABLE_NAME } from './utils/defaults'
+import Executor from './utils/Executor'
 import { getMaxId } from './utils/getMaxId'
 import { writeJob } from './writeJob'
 
@@ -91,11 +92,13 @@ function main() {
         const driver = await createDriver(endpoint, db)
         const maxId = await getMaxId(driver, tableName)
         console.log('Max id', { maxId })
+        const executor = new Executor(driver)
 
         await Promise.all([
-          readJob(driver, tableName, maxId, readRPS, readTimeout, time),
-          writeJob(driver, tableName, maxId, writeRPS, writeTimeout, time),
+          readJob(executor, tableName, maxId, readRPS, readTimeout, time),
+          writeJob(executor, tableName, maxId, writeRPS, writeTimeout, time),
         ])
+        await executor.printStats('runStats.json')
         process.exit(0)
       }
     )
