@@ -1,0 +1,18 @@
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-server
+        access: proxy
+        isDefault: true
+        uid: prometheus
+        jsonData:
+          timeInterval: 5s
+
+adminUser: admin
+adminPassword: passw0rD
+
+# Use an existing secret for the admin user.
+admin: {}
