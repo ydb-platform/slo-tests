@@ -104,11 +104,17 @@ function main() {
         const executor = new Executor(driver, pushGateway)
         const metricsJob = new MetricsJob(executor, 1000, time + shutdownTime)
 
+        await executor.printStats()
+        await executor.pushStats()
         await Promise.all([
-          readJob(executor, tableName, maxId, shutdownTime, readRPS, readTimeout, time),
-          writeJob(executor, tableName, maxId, shutdownTime, writeRPS, writeTimeout, time),
+          readJob(executor, tableName, maxId, readRPS, readTimeout, time),
+          writeJob(executor, tableName, maxId, writeRPS, writeTimeout, time),
           metricsJob,
         ])
+        await new Promise((resolve) => setTimeout(resolve, shutdownTime * 1000))
+        await executor.pushStats()
+        await executor.resetStats()
+        await executor.pushStats()
         await executor.printStats('runStats.json')
         process.exit(0)
       }

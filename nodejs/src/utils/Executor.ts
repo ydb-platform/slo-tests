@@ -19,14 +19,18 @@ export default class Executor {
 
   constructor(driver: Driver, pushGateway: string) {
     this.driver = driver
-    this.gateway = new Pushgateway(pushGateway, {
-      timeout: 10000,
-      agent: new http.Agent({
-        keepAlive: true,
-        keepAliveMsecs: 20000,
-        maxSockets: 5,
-      }),
-    })
+    this.gateway = new Pushgateway(
+      pushGateway,
+      {
+        timeout: 10000,
+        agent: new http.Agent({
+          keepAlive: true,
+          keepAliveMsecs: 20000,
+          maxSockets: 5,
+        }),
+      },
+      this.registry
+    )
 
     this.registry.setDefaultLabels({ sdk: 'nodejs', sdkVersion })
     const registers = [this.registry]
@@ -75,6 +79,9 @@ export default class Executor {
   }
 
   async pushStats() {
-    this.gateway.pushAdd({ jobName: 'metrics' })
+    await this.gateway.pushAdd({ jobName: 'metrics' })
+  }
+  resetStats() {
+    this.registry.resetMetrics()
   }
 }

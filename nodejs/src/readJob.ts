@@ -9,7 +9,6 @@ export async function readJob(
   executor: Executor,
   tableName: string,
   maxId: number,
-  shutdownTime: number,
   readRPS?: number,
   readTimeout?: number,
   time?: number
@@ -25,8 +24,7 @@ export async function readJob(
     maxId,
     tableName,
     new Date().valueOf() + time * 1000,
-    readTimeout,
-    shutdownTime
+    readTimeout
   )
 }
 
@@ -36,8 +34,7 @@ async function read(
   maxId: number,
   tableName: string,
   stopTime: number,
-  timeout: number,
-  shutdownTime: number
+  timeout: number
 ) {
   console.log('Read with params', { maxId, tableName, stopTime })
   // PRAGMA TablePathPrefix(" + dbName + ");
@@ -74,6 +71,4 @@ async function read(
   const endTime = new Date()
   const diffTime = (endTime.valueOf() - startTime.valueOf()) / 1000
   console.log({ counter, diffTime, rps: counter / diffTime })
-  console.log('Read job done, graceful shutdown')
-  await new Promise((resolve) => setTimeout(resolve, shutdownTime * 1000))
 }
