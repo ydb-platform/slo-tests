@@ -39,7 +39,7 @@ export default class Executor {
     this.notOks = new Counter({ name: 'not_oks', help: 'amount of not OK requests', registers })
     this.inflight = new Gauge({ name: 'inflight', help: 'amount of requests in flight', registers })
     this.latencies = new Summary({
-      name: 'ok_latency',
+      name: 'latency',
       help: 'histogram of latencies in ms',
       percentiles,
       registers,
@@ -75,7 +75,11 @@ export default class Executor {
     if (file) {
       await writeFile(file, JSON.stringify(json))
     }
-    console.log('========== Stats: ========== \n\n', json, '========== Stats end ==========')
+    console.log(
+      '========== Stats: ========== \n\n',
+      JSON.stringify(json),
+      '========== Stats end =========='
+    )
   }
 
   async pushStats() {
