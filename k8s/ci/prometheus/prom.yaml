@@ -52,3 +52,7 @@ prometheus-pushgateway:
   # Optional service annotations
   serviceAnnotations:
     prometheus.io/probe: pushgateway
+
+server:
+  extraFlags:
+    - web.enable-admin-api
