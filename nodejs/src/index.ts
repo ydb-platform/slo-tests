@@ -81,9 +81,9 @@ function main() {
   defaultArgs(program.command('run'))
     .option('-t --table-name <tableName>', 'table name to read from')
     .option('--prom-pgw <pushGateway>', 'prometheus push gateway')
-    .option('--read-rps <readRPS>', 'read RPS')
+    .option('--read-rps <readRps>', 'read RPS')
     .option('--read-timeout <readTimeout>', 'read timeout milliseconds')
-    .option('--write-rps <writeRPS>', 'write RPS')
+    .option('--write-rps <writeRps>', 'write RPS')
     .option('--write-timeout <writeTimeout>', 'write timeout milliseconds')
     .option('--time <time>', 'run time in seconds')
     .option('--shutdown-time <shutdownTime>', 'graceful shutdown time in seconds')
@@ -91,12 +91,21 @@ function main() {
       async (
         endpoint,
         db,
-        { tableName, readRPS, readTimeout, writeRPS, writeTimeout, time, shutdownTime, pushGateway }
+        { tableName, readRps, readTimeout, writeRps, writeTimeout, time, shutdownTime, pushGateway }
       ) => {
         if (!tableName) tableName = TABLE_NAME
         if (!shutdownTime) shutdownTime = SHUTDOWN_TIME
         if (!pushGateway) pushGateway = PROMETHEUS_PUSH_GATEWAY
-        console.log('Run workload over', endpoint, db, tableName)
+        console.log('Run workload over', {
+          tableName,
+          readRps,
+          readTimeout,
+          writeRps,
+          writeTimeout,
+          time,
+          shutdownTime,
+          pushGateway,
+        })
 
         const driver = await createDriver(endpoint, db)
         const maxId = await getMaxId(driver, tableName)
@@ -107,15 +116,16 @@ function main() {
         await executor.printStats()
         await executor.pushStats()
         await Promise.all([
-          readJob(executor, tableName, maxId, readRPS, readTimeout, time),
-          writeJob(executor, tableName, maxId, writeRPS, writeTimeout, time),
+          readJob(executor, tableName, maxId, readRps, readTimeout, time),
+          writeJob(executor, tableName, maxId, writeRps, writeTimeout, time),
           metricsJob,
         ])
         await new Promise((resolve) => setTimeout(resolve, shutdownTime * 1000))
         await executor.pushStats()
+        await executor.printStats('runStats.json')
+        console.log('Reset metrics')
         await executor.resetStats()
         await executor.pushStats()
-        await executor.printStats('runStats.json')
         process.exit(0)
       }
     )

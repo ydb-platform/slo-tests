@@ -17,7 +17,7 @@ export async function readJob(
   if (!readTimeout) readTimeout = READ_TIMEOUT
   if (!time) time = READ_TIME
 
-  const rateLimiter = new RateLimiter(readRPS)
+  const rateLimiter = new RateLimiter('read', readRPS)
   await read(
     executor,
     rateLimiter,
@@ -51,12 +51,13 @@ async function read(
   )
   const startTime = new Date()
   let counter = 0
+  const withSession = executor.withSession('read')
   while (new Date().valueOf() < stopTime) {
     const id = randomId(maxId)
     counter++
     await rl.nextTick()
 
-    executor.withSession('read')(async (session) => {
+    withSession(async (session) => {
       await session.executeQuery(
         query,
         {
@@ -67,6 +68,10 @@ async function read(
         settings
       )
     })
+    // add to metrics real rps each 100s call
+    if (counter % 100 === 0) {
+      executor.realRPS.set({ jobName: 'read' }, rl.getRealRPS('read'))
+    }
   }
   const endTime = new Date()
   const diffTime = (endTime.valueOf() - startTime.valueOf()) / 1000

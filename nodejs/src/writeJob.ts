@@ -17,7 +17,7 @@ export async function writeJob(
   if (!timeout) timeout = WRITE_TIMEOUT
   if (!time) time = WRITE_TIME
 
-  const rateLimiter = new RateLimiter(rps)
+  const rateLimiter = new RateLimiter('write', rps)
   await write(executor, rateLimiter, maxId, tableName, new Date().valueOf() + time * 1000, timeout)
 }
 
@@ -51,12 +51,13 @@ async function write(
 
   const startTime = new Date()
   let counter = 0
+  const withSession = executor.withSession('write')
   while (new Date().valueOf() < stopTime) {
     // TODO: add executor
     counter++
     await rl.nextTick()
 
-    executor.withSession('write')(async (session) => {
+    withSession(async (session) => {
       await session.executeQuery(
         query,
         { $items: TypedData.asTypedCollection([valueGenerator.get()]) },
@@ -64,6 +65,11 @@ async function write(
         settings
       )
     })
+
+    // add to metrics real rps each 100s call
+    if (counter % 100 === 0) {
+      executor.realRPS.set({ jobName: 'write' }, rl.getRealRPS('write'))
+    }
   }
   const endTime = new Date()
   const diffTime = (endTime.valueOf() - startTime.valueOf()) / 1000

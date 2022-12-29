@@ -1,6 +1,6 @@
 import { writeFile } from 'fs/promises'
 import http from 'http'
-import { Counter, Gauge, Summary, Registry, Pushgateway } from 'prom-client'
+import { Gauge, Summary, Registry, Pushgateway } from 'prom-client'
 import { Driver, Session } from 'ydb-sdk'
 import { dependencies } from '../../package.json'
 
@@ -11,11 +11,12 @@ const percentiles = [0.5, 0.9, 0.95, 0.99, 0.999]
 export default class Executor {
   private readonly driver: Driver
   private readonly registry = new Registry()
-  private readonly oks: Counter
-  private readonly notOks: Counter
+  private readonly oks: Gauge
+  private readonly notOks: Gauge
   private readonly inflight: Gauge
   private readonly latencies: Summary
   private readonly gateway: Pushgateway
+  public readonly realRPS: Gauge
 
   constructor(driver: Driver, pushGateway: string) {
     this.driver = driver
@@ -35,9 +36,24 @@ export default class Executor {
     this.registry.setDefaultLabels({ sdk: 'nodejs', sdkVersion })
     const registers = [this.registry]
 
-    this.oks = new Counter({ name: 'oks', help: 'amount of OK requests', registers })
-    this.notOks = new Counter({ name: 'not_oks', help: 'amount of not OK requests', registers })
-    this.inflight = new Gauge({ name: 'inflight', help: 'amount of requests in flight', registers })
+    this.oks = new Gauge({
+      name: 'oks',
+      help: 'amount of OK requests',
+      registers,
+      labelNames: ['jobName'],
+    })
+    this.notOks = new Gauge({
+      name: 'not_oks',
+      help: 'amount of not OK requests',
+      registers,
+      labelNames: ['jobName'],
+    })
+    this.inflight = new Gauge({
+      name: 'inflight',
+      help: 'amount of requests in flight',
+      registers,
+      labelNames: ['jobName'],
+    })
     this.latencies = new Summary({
       name: 'latency',
       help: 'histogram of latencies in ms',
@@ -46,11 +62,17 @@ export default class Executor {
       labelNames: ['status', 'jobName'],
       // add more options?
     })
+    this.realRPS = new Gauge({
+      name: 'realRPS',
+      help: 'Real sended requests per seconds',
+      registers,
+      labelNames: ['jobName'],
+    })
   }
 
   withSession(jobName: string) {
     return async <T>(callback: (session: Session) => Promise<T>, timeout?: number): Promise<T> => {
-      this.inflight.inc()
+      this.inflight.inc({ jobName }, 1)
       let result: any
       const startSession = new Date().valueOf()
       let endSession: number
@@ -58,14 +80,14 @@ export default class Executor {
         result = await this.driver.tableClient.withSession(callback, timeout)
         endSession = new Date().valueOf()
         this.latencies.observe({ status: 'ok', jobName }, endSession - startSession)
-        this.oks.inc()
+        this.oks.inc({ jobName })
       } catch (error) {
         endSession = new Date().valueOf()
         console.log(error)
         this.latencies.observe({ status: 'err', jobName }, endSession - startSession)
-        this.notOks.inc()
+        this.notOks.inc({ jobName })
       }
-      this.inflight.dec()
+      this.inflight.dec({ jobName }, 1)
       return result
     }
   }
@@ -83,9 +105,19 @@ export default class Executor {
   }
 
   async pushStats() {
-    await this.gateway.pushAdd({ jobName: 'metrics' })
+    await this.gateway.pushAdd({ jobName: 'workload-nodejs' })
   }
   resetStats() {
+    // workaround due to not working resetting metrics via registry.resetMetrics()
+    this.realRPS.set({ jobName: 'write' }, 0)
+    this.realRPS.set({ jobName: 'read' }, 0)
+    this.inflight.set({ jobName: 'write' }, 0)
+    this.inflight.set({ jobName: 'read' }, 0)
+    this.oks.set({ jobName: 'write' }, 0)
+    this.oks.set({ jobName: 'read' }, 0)
+    this.notOks.set({ jobName: 'write' }, 0)
+    this.notOks.set({ jobName: 'read' }, 0)
     this.registry.resetMetrics()
+    this.pushStats()
   }
 }
