@@ -22,10 +22,13 @@ jobs:
   run-workload:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        # need this owing to local action usage
+
       - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Create ${{ inputs.language }} test run yaml
-        # TODO: Here later will be kind: deployment instead of kind: job
         run: |
           cat > ${{ inputs.language }}-workload.yaml <<EOF
           apiVersion: batch/v1
