@@ -1,0 +1,31 @@
+name: "Github Action for annotating in grafana"
+author: "Ilya Shevchenko <id.shev@yandex.ru>"
+branding:
+  icon: "edit-3"
+  color: "blue"
+inputs:
+  dashboard:
+    description: "Dashboard UID"
+    required: false
+    default: "7CzMl5t4k"
+  pod:
+    description: "Pod name"
+    required: true
+  text:
+    description: "Text to set"
+    required: true
+  tags:
+    description: "Tags to set to annotation"
+    default: "[]"
+    required: false
+  time:
+    description: "UTC time of annotation"
+    required: false
+    default: -1
+  annotations-url:
+    description: "Grafana annotation URL"
+    required: false
+    default: -1
+runs:
+  using: "node16"
+  main: "index.js"
