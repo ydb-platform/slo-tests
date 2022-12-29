@@ -145,7 +145,7 @@ dashboards:
               },
               "gridPos": {
                 "h": 9,
-                "w": 9,
+                "w": 12,
                 "x": 0,
                 "y": 1
               },
@@ -171,7 +171,7 @@ dashboards:
                   "editorMode": "builder",
                   "expr": "inflight",
                   "format": "time_series",
-                  "legendFormat": "({{sdk}}-{{sdkVersion}})-{{jobName}} In flight",
+                  "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} In flight",
                   "range": true,
                   "refId": "A"
                 },
@@ -181,9 +181,9 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "oks{sdk=\"nodejs\"}",
+                  "expr": "oks",
                   "hide": false,
-                  "legendFormat": "({{sdk}}-{{sdkVersion}})-{{jobName}} OK",
+                  "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} OK",
                   "range": true,
                   "refId": "B"
                 },
@@ -193,9 +193,9 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "not_oks{sdk=\"nodejs\"}",
+                  "expr": "not_oks",
                   "hide": false,
-                  "legendFormat": "({{sdk}}-{{sdkVersion}})-{{jobName}} not OK",
+                  "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} not OK",
                   "range": true,
                   "refId": "C"
                 }
@@ -263,8 +263,8 @@ dashboards:
               },
               "gridPos": {
                 "h": 9,
-                "w": 9,
-                "x": 9,
+                "w": 12,
+                "x": 12,
                 "y": 1
               },
               "id": 12,
@@ -287,9 +287,9 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "delta(inflight[2s]) / 2 >= -1000",
+                  "expr": "delta(inflight[2s]) / 2",
                   "format": "time_series",
-                  "legendFormat": "({{sdk}}-{{sdkVersion}})-{{jobName}} In flight",
+                  "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} In flight",
                   "range": true,
                   "refId": "A"
                 },
@@ -299,9 +299,9 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "delta(oks[2s]) / 2 >= -1000",
+                  "expr": "delta(oks[2s]) / 2",
                   "hide": false,
-                  "legendFormat": "({{sdk}}-{{sdkVersion}})-{{jobName}} OK",
+                  "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} OK",
                   "range": true,
                   "refId": "B"
                 },
@@ -313,106 +313,13 @@ dashboards:
                   "editorMode": "builder",
                   "expr": "changes(not_oks[2s])",
                   "hide": false,
-                  "legendFormat": "({{sdk}}-{{sdkVersion}})-{{jobName}} not OK",
+                  "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} not OK",
                   "range": true,
                   "refId": "C"
                 }
               ],
               "title": "SLO Requests RPS",
               "transformations": [],
-              "type": "timeseries"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "palette-classic"
-                  },
-                  "custom": {
-                    "axisCenteredZero": false,
-                    "axisColorMode": "text",
-                    "axisLabel": "",
-                    "axisPlacement": "auto",
-                    "barAlignment": 0,
-                    "drawStyle": "line",
-                    "fillOpacity": 0,
-                    "gradientMode": "none",
-                    "hideFrom": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": false
-                    },
-                    "lineInterpolation": "linear",
-                    "lineWidth": 1,
-                    "pointSize": 5,
-                    "scaleDistribution": {
-                      "type": "linear"
-                    },
-                    "showPoints": "auto",
-                    "spanNulls": false,
-                    "stacking": {
-                      "group": "A",
-                      "mode": "none"
-                    },
-                    "thresholdsStyle": {
-                      "mode": "off"
-                    }
-                  },
-                  "mappings": [],
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": null
-                      },
-                      {
-                        "color": "red",
-                        "value": 80
-                      }
-                    ]
-                  }
-                },
-                "overrides": []
-              },
-              "gridPos": {
-                "h": 9,
-                "w": 6,
-                "x": 18,
-                "y": 1
-              },
-              "id": 14,
-              "options": {
-                "legend": {
-                  "calcs": [],
-                  "displayMode": "list",
-                  "placement": "bottom",
-                  "showLegend": true
-                },
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "none"
-                }
-              },
-              "targets": [
-                {
-                  "datasource": {
-                    "type": "prometheus",
-                    "uid": "prometheus"
-                  },
-                  "editorMode": "builder",
-                  "expr": "realRPS",
-                  "hide": false,
-                  "legendFormat": "{{sdk}} {{sdkVersion}} {{jobName}}",
-                  "range": true,
-                  "refId": "B"
-                }
-              ],
-              "title": "Real RPS",
               "type": "timeseries"
             },
             {
@@ -513,7 +420,7 @@ dashboards:
                   },
                   "editorMode": "builder",
                   "expr": "latency{jobName=\"read\", status=\"ok\"}",
-                  "legendFormat": "{{sdk}}-p{{quantile}}",
+                  "legendFormat": "{{sdk}}-{{sdkVersion}}-p{{quantile}}",
                   "range": true,
                   "refId": "A"
                 }
@@ -605,7 +512,7 @@ dashboards:
                   },
                   "editorMode": "builder",
                   "expr": "latency{jobName=\"write\", status=\"ok\"}",
-                  "legendFormat": "{{sdk}}-p{{quantile}}",
+                  "legendFormat": "{{sdk}}-{{sdkVersion}}-p{{quantile}}",
                   "range": true,
                   "refId": "A"
                 }
@@ -697,7 +604,7 @@ dashboards:
                   },
                   "editorMode": "builder",
                   "expr": "latency{jobName=\"read\", status=\"err\"}",
-                  "legendFormat": "{{sdk}}-p{{quantile}}",
+                  "legendFormat": "{{sdk}}-{{sdkVersion}}-p{{quantile}}",
                   "range": true,
                   "refId": "A"
                 }
@@ -789,7 +696,7 @@ dashboards:
                   },
                   "editorMode": "builder",
                   "expr": "latency{jobName=\"write\", status=\"err\"}",
-                  "legendFormat": "{{sdk}}-p{{quantile}}",
+                  "legendFormat": "{{sdk}}-{{sdkVersion}}-p{{quantile}}",
                   "range": true,
                   "refId": "A"
                 }
@@ -806,8 +713,8 @@ dashboards:
             "list": []
           },
           "time": {
-            "from": "2022-12-28T14:52:58.724Z",
-            "to": "2022-12-28T14:53:49.593Z"
+            "from": "2022-12-29T12:14:20.000Z",
+            "to": "2022-12-29T12:15:30.000Z"
           },
           "timepicker": {},
           "timezone": "",
