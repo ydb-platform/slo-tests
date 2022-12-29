@@ -59,9 +59,8 @@ jobs:
         id: workload-wait
         run: kubectl wait --for=condition=complete --timeout 5m job/${{ inputs.language }}-workload
 
-      - name: Get build logs on failure
-        if: failure() && steps.workload-wait.outcome == 'failure'
-        run: kubectl logs job/${{ inputs.language }}-build
+      - name: Get logs on failure
+        run: kubectl logs job/${{ inputs.language }}-workload
 
   run-errors-sheduler:
     runs-on: ubuntu-latest
