@@ -143,7 +143,7 @@ jobs:
         with:
           pod: ${GRAFANA_POD}
           text: "Kill pod from inside"
-          tags: '["kube", "pod", "kubectl-delete-force"]'
+          tags: '["kube", "pod", "kubectl-kill"]'
 
       - name: Kill pod from inside
         run: kubectl exec -it database-sample-0 -- /bin/bash -c "kill -2 1 && echo 'process killed'";

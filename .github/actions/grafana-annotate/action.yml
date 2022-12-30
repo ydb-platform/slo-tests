@@ -18,14 +18,29 @@ inputs:
     description: "Tags to set to annotation"
     default: "[]"
     required: false
-  time:
-    description: "UTC time of annotation"
-    required: false
-    default: -1
   annotations-url:
     description: "Grafana annotation URL"
     required: false
-    default: -1
+    default: http://localhost:3000/api/annotations
 runs:
-  using: "node16"
-  main: "index.js"
+  using: "composite"
+  steps:
+    - name: Sanitize tags
+      shell: bash
+      run: echo TAGS=$TAGS | sed -e 's/"/\\"/g' >> $GITHUB_ENV
+
+    - name: Echo command
+      shell: bash
+      run: >
+        echo kubectl exec -it ${{ inputs.pod }} --container grafana -- /bin/bash -c "
+        wget -qS -O- --header 'Accept: application/json' --header 'Content-Type: application/json' 
+        --post-data '{\"dashboardUID\":\"${{ inputs.dashboard }}\", \"text\":\"${{ inputs.text }}\", \"tags\":${TAGS}}'
+        '${{ inputs.annotations-url }}' "
+
+    - name: Push annotation
+      shell: bash
+      run: >
+        kubectl exec -it ${{ inputs.pod }} --container grafana -- /bin/bash -c "
+        wget -qS -O- --header 'Accept: application/json' --header 'Content-Type: application/json' 
+        --post-data '{\"dashboardUID\":\"${{ inputs.dashboard }}\", \"text\":\"${{ inputs.text }}\", \"tags\":${TAGS}}'
+        '${{ inputs.annotations-url }}' "

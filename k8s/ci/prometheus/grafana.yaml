@@ -18,6 +18,13 @@ adminPassword: passw0rD
 # Use an existing secret for the admin user.
 admin: {}
 
+grafana.ini:
+  auth.anonymous:
+    enabled: true
+    org_name: Main Org.
+    # Can't set custom org name due to grafana default config
+    org_role: Admin
+
 ## Configure grafana dashboard providers
 ## ref: http://docs.grafana.org/administration/provisioning/#dashboards
 ##
