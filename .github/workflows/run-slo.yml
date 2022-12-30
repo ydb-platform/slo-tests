@@ -34,7 +34,12 @@ jobs:
           language: "nodejs"
           command: "run"
           timeout: "5m"
-          additionalArgs: "--time 200 --shutdown-time 60 --read-rps 1000 --write-rps 100"
+          additionalArgs: >
+            --time 200
+            --shutdown-time 60
+            --read-rps 1000
+            --write-rps 100
+            --prom-pgw prometheus-prometheus-pushgateway:9091
 
   run-errors-sheduler:
     runs-on: ubuntu-latest

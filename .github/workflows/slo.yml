@@ -24,7 +24,7 @@ jobs:
         with:
           language: "nodejs"
           command: "create"
-          timeout: "2m"
+          timeout: "3m"
 
   build-nodejs:
     uses: ./.github/workflows/build-workload.yml
@@ -46,6 +46,7 @@ jobs:
 
   cleanup-tables:
     needs: [run-nodejs]
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

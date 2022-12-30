@@ -33,7 +33,7 @@ runs:
         metadata:
           name: ${{ inputs.language }}-workload
         spec:
-          ttlSecondsAfterFinished: 120
+          ttlSecondsAfterFinished: 20
           backoffLimit: 0
           template:
             metadata:
@@ -67,5 +67,6 @@ runs:
         --timeout ${{ inputs.timeout }} job/${{ inputs.language }}-workload
 
     - name: Get logs
+      if: success() || failure()
       shell: bash
       run: kubectl logs job/${{ inputs.language }}-workload
