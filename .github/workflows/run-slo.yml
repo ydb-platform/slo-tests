@@ -9,7 +9,7 @@ on:
         type: string
       time_between_phases:
         description: "Time to wait between phases (sleep command)"
-        default: "10s"
+        default: "20s"
         type: string
     secrets:
       KUBE_CONFIG:
@@ -22,47 +22,19 @@ jobs:
   run-workload:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        # need this owing to local action usage
+
       - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
-      - name: Create ${{ inputs.language }} test run yaml
-        run: |
-          cat > ${{ inputs.language }}-workload.yaml <<EOF
-          apiVersion: batch/v1
-          kind: Job
-          metadata:
-            name: ${{ inputs.language }}-workload
-          spec:
-            ttlSecondsAfterFinished: 120
-            backoffLimit: 0
-            template:
-              metadata:
-                name: ${{ inputs.language }}-workload
-              spec:
-                containers:
-                - name: ${{ inputs.language }}-workload
-                  image: cr.yandex/crpho4srfnemeb9mi57a/${{ inputs.language }}:latest
-                  args:
-                    - "grpc://database-sample-grpc:2135"
-                    - "/root/database-sample"
-                restartPolicy: Never
-                imagePullSecrets:
-                  - name: innerregistry
-          EOF
-
-      - name: Check builded yaml
-        run: cat ${{ inputs.language }}-workload.yaml
-
-      - name: Run ${{ inputs.language }} workload
-        run: kubectl apply -f ${{ inputs.language }}-workload.yaml
-
-      - name: Wait for workload to end
-        id: workload-wait
-        run: >
-          kubectl wait --for=jsonpath="{.status['failed','complete']}"=1
-          --timeout 5m job/${{ inputs.language }}-workload
-
-      - name: Get logs on failure
-        run: kubectl logs job/${{ inputs.language }}-workload
+      - name: Run workload
+        uses: ./.github/actions/workload
+        with:
+          language: "nodejs"
+          command: "run"
+          timeout: "5m"
+          additionalArgs: "--time 200 --shutdown-time 60 --read-rps 1000 --write-rps 100"
 
   run-errors-sheduler:
     runs-on: ubuntu-latest

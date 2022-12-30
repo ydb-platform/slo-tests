@@ -4,12 +4,12 @@ on:
   workflow_call:
     inputs:
       language:
-        description: 'SDK language or language+variant'
+        description: "SDK language or language+variant"
         required: true
         type: string
       build_timeout:
-        description: 'Timeout to build image'
-        default: '3m'
+        description: "Timeout to build image"
+        default: "3m"
         required: false
         type: string
     secrets:
@@ -31,8 +31,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          submodules: true
 
       - name: Login into docker
         run: >
