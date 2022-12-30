@@ -8,9 +8,6 @@ inputs:
     description: "Dashboard UID"
     required: false
     default: "7CzMl5t4k"
-  pod:
-    description: "Pod name"
-    required: true
   text:
     description: "Text to set"
     required: true
@@ -27,20 +24,26 @@ runs:
   steps:
     - name: Sanitize tags
       shell: bash
-      run: echo TAGS=$TAGS | sed -e 's/"/\\"/g' >> $GITHUB_ENV
+      run: echo TAGS='${{ inputs.tags }}' >> $GITHUB_ENV
 
     - name: Echo command
       shell: bash
       run: >
-        echo kubectl exec -it ${{ inputs.pod }} --container grafana -- /bin/bash -c "
-        wget -qS -O- --header 'Accept: application/json' --header 'Content-Type: application/json' 
+        echo kubectl exec -it 
+        `kubectl get pods -l "app.kubernetes.io/name=grafana" -o jsonpath="{.items[0].metadata.name}"`
+        --container grafana -- /bin/bash -c "
+        echo '{\"dashboardUID\":\"${{ inputs.dashboard }}\", \"text\":\"${{ inputs.text }}\", \"tags\":${TAGS}}';
+        wget -qS -O- --header 'Accept: application/json' --header 'Content-Type: application/json'
         --post-data '{\"dashboardUID\":\"${{ inputs.dashboard }}\", \"text\":\"${{ inputs.text }}\", \"tags\":${TAGS}}'
         '${{ inputs.annotations-url }}' "
 
     - name: Push annotation
       shell: bash
       run: >
-        kubectl exec -it ${{ inputs.pod }} --container grafana -- /bin/bash -c "
-        wget -qS -O- --header 'Accept: application/json' --header 'Content-Type: application/json' 
+        kubectl exec -it 
+        `kubectl get pods -l "app.kubernetes.io/name=grafana" -o jsonpath="{.items[0].metadata.name}"`
+        --container grafana -- /bin/bash -c "
+        echo '{\"dashboardUID\":\"${{ inputs.dashboard }}\", \"text\":\"${{ inputs.text }}\", \"tags\":${TAGS}}';
+        wget -qS -O- --header 'Accept: application/json' --header 'Content-Type: application/json'
         --post-data '{\"dashboardUID\":\"${{ inputs.dashboard }}\", \"text\":\"${{ inputs.text }}\", \"tags\":${TAGS}}'
         '${{ inputs.annotations-url }}' "
