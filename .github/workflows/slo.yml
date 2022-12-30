@@ -2,18 +2,33 @@ name: Full SLO test workflow
 
 on:
   pull_request:
-    branches: [ 'slo' ]
+    branches: ["slo"]
 
 jobs:
-
   create-cluster:
     uses: ./.github/workflows/create-cluster.yml
     secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
+  create-tables:
+    needs: [create-cluster]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+
+      - name: Run workload
+        uses: ./.github/actions/workload
+        with:
+          language: "nodejs"
+          command: "create"
+          timeout: "2m"
+
   build-nodejs:
     uses: ./.github/workflows/build-workload.yml
-    secrets: 
+    secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
       DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
       DOCKER_FOLDER: ${{ secrets.DOCKER_FOLDER }}
@@ -23,11 +38,27 @@ jobs:
       language: nodejs
 
   run-nodejs:
-    needs: [create-cluster, build-nodejs]
+    needs: [create-cluster, create-tables, build-nodejs]
     uses: ./.github/workflows/run-slo.yml
     secrets: inherit
     with:
       language: nodejs
+
+  cleanup-tables:
+    needs: [run-nodejs]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+
+      - name: Run workload
+        uses: ./.github/actions/workload
+        with:
+          language: "nodejs"
+          command: "cleanup"
+          timeout: "2m"
 
   # TODO: Uncomment when will be debugged enough
   # delete-cluster:
