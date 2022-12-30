@@ -7,7 +7,7 @@
     "build": "tsc",
     "testConnection": "build && node dist/src/testConnection.js",
     "test": "jest --config jest.config.js --detectOpenHandles",
-    "start": "node dist/index.js"
+    "start": "node dist/src/index.js"
   },
   "author": "Ilya Shevchenko",
   "license": "ISC",
