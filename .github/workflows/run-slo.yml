@@ -57,7 +57,9 @@ jobs:
 
       - name: Wait for workload to end
         id: workload-wait
-        run: kubectl wait --for=condition=complete --timeout 5m job/${{ inputs.language }}-workload
+        run: >
+          kubectl wait --for=jsonpath="{.status['failed','complete']}"=1
+          --timeout 5m job/${{ inputs.language }}-workload
 
       - name: Get logs on failure
         run: kubectl logs job/${{ inputs.language }}-workload
