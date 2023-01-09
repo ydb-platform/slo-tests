@@ -10,8 +10,19 @@ jobs:
     secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
+  build-nodejs:
+    uses: ./.github/workflows/build-workload.yml
+    secrets:
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+      DOCKER_FOLDER: ${{ secrets.DOCKER_FOLDER }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    with:
+      language: nodejs
+
   create-tables:
-    needs: [create-cluster]
+    needs: [create-cluster, build-nodejs]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,17 +36,6 @@ jobs:
           language: "nodejs"
           command: "create"
           timeout: "3m"
-
-  build-nodejs:
-    uses: ./.github/workflows/build-workload.yml
-    secrets:
-      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
-      DOCKER_FOLDER: ${{ secrets.DOCKER_FOLDER }}
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-    with:
-      language: nodejs
 
   run-nodejs:
     needs: [create-cluster, create-tables, build-nodejs]
@@ -60,6 +60,8 @@ jobs:
           language: "nodejs"
           command: "cleanup"
           timeout: "2m"
+
+  # TODO: image creation and upload
 
   # TODO: Uncomment when will be debugged enough
   # delete-cluster:
