@@ -65,17 +65,26 @@ function main() {
     .option('-c --initial-data-count <initialDataCount>', 'amount of initially created rows')
     .action(
       async (endpoint, db, { tableName, partitionCount, initialDataCount }: ICreateOptions) => {
-        console.log('Run create over', endpoint, db, tableName, partitionCount, initialDataCount)
-
-        create(await createDriver(endpoint, db), tableName, partitionCount, initialDataCount)
+        console.log('Run create over', endpoint, db, {
+          tableName,
+          partitionCount,
+          initialDataCount,
+        })
+        await create(
+          await createDriver(endpoint, db),
+          db,
+          tableName,
+          partitionCount,
+          initialDataCount
+        )
       }
     )
 
   defaultArgs(program.command('cleanup'))
     .option('-t --table-name <tableName>', 'table name to create')
     .action(async (endpoint, db, { tableName }) => {
-      console.log('Run cleanup over', endpoint, db, tableName)
-      cleanup(await createDriver(endpoint, db), tableName)
+      console.log('Run cleanup over', endpoint, db, { tableName })
+      await cleanup(await createDriver(endpoint, db), db, tableName)
     })
 
   defaultArgs(program.command('run'))

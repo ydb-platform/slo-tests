@@ -17,14 +17,17 @@ import {
   GENERATOR_DATA_COUNT,
   GENERATOR_PACK_SIZE,
 } from './utils/defaults'
+import { join } from 'path'
 
 export async function create(
   driver: Driver,
+  db: string,
   tableName?: string,
   _partitionsCount?: string,
   _dataCount?: string
 ) {
   if (!tableName) tableName = TABLE_NAME
+  tableName = join(db, tableName)
 
   let partitionsCount: number = TABLE_PARTITION_COUNT
   if (_partitionsCount) {
@@ -93,8 +96,8 @@ async function generateInitialContent(driver: Driver, tableName: string, count: 
         { commitTx: true, beginTx: { serializableReadWrite: {} } },
         new ExecuteQuerySettings().withKeepInCache(true)
       )
-      console.log('Successfully inserted')
-    })
+    }, 10000)
+    console.log(`Successfully inserted ${batch} rows`)
   }
   console.log('Initial content generated')
 }
