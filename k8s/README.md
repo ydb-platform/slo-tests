@@ -1,6 +1,21 @@
 # How to setup cluster:
 
-Create Service Account
+1. [Setup k8s cluster to use in actions](#setup-k8s)
+   1. [Create Service Account](#create-sa)
+   2. [Create kube config](#create-k8s-conf)
+   3. [(Optionally) Test if k8s config is working](#test-k8s-conf)
+2. [Setup prometheus and grafana](#prom-grafana)
+3. [Additional commands in case of manual work](#manual)
+   1. [YDB cluster startup](#manual-startup)
+   2. [YDB cluster shutdown](#manual-shutdown)
+
+<a name="setup-k8s"></a>
+
+## Setup k8s cluster to use in actions
+
+<a name="create-sa"></a>
+
+### Create Service Account
 
 `kubectl create -f k8s/ci/create-sa.yaml`
 
@@ -14,11 +29,14 @@ SA_TOKEN=$(kubectl -n kube-system get secret $(kubectl -n kube-system get secret
   base64 --d)
 ```
 
+<a name="create-k8s-conf"></a>
+
+### Create kube config
+
 Get ca.pem from your cluster (depends on your setup) and save it to `ca.pem`
 
 Get master **external** endpoint of your cluster and save it to `$MASTER_ENDPOINT`
 
-Create kube config
 ```
 kubectl config set-cluster ci-cluster-config \
   --certificate-authority=ca.pem \
@@ -39,17 +57,43 @@ kubectl config use-context default \
   --kubeconfig=ci-config.kubeconfig
 ```
 
-(Optionally) Test k8s config is working (this command must show your cluster's namespaces)
+<a name="test-k8s-conf"></a>
+
+### (Optionally) Test if k8s config is working
+
+**this command must show your cluster's namespaces**
+
 ```
 kubectl get namespace --kubeconfig=ci-config.kubeconfig
 ```
 
 Run base64 through config to get secret string (`pbcopy` is OSX util)
+
 ```
 cat ci-config.kubeconfig | base64 | pbcopy
 ```
 
-## Whole process of cluster startup
+<a name="prom-grafana"></a>
+
+## Setup prometheus and grafana
+
+```
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+helm install prometheus prometheus-community/prometheus --values k8s/ci/prometheus/prom.yaml
+helm install grafana grafana/grafana --values k8s/ci/prometheus/grafana.yaml
+```
+
+<hr>
+
+<a name="manual"></a>
+
+## Additional commands in case of manual work
+
+<a name="manual-startup"></a>
+
+### Whole process of cluster startup - it is automated
 
 ```
 # install ydb-operator
@@ -71,7 +115,10 @@ kubectl apply -f k8s/database.yaml
 kubectl get database.ydb.tech -o=jsonpath="{.items[0].status.state}"
 ```
 
-## Whole process of cluster shutdown
+<a name="manual-shutdown"></a>
+
+### Whole process of cluster shutdown - it is automated (but not turned on)
+
 ```
 # delete DBs
 kubectl delete -f k8s/database.yaml
