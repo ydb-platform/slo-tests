@@ -19,12 +19,12 @@ jobs:
 
       - name: Create storage nodes
         run: kubectl apply -f k8s/storage.yaml
-      
+
       - name: Wait until storage nodes become ready
-        run: kubectl wait --for=jsonpath="{.status.state}"="Ready" storages.ydb.tech storage-sample
+        run: kubectl wait --timeout 5m --for=jsonpath="{.status.state}"="Ready" storages.ydb.tech storage-sample
 
       - name: Create database nodes
         run: kubectl apply -f k8s/database.yaml
-      
+
       - name: Wait until database nodes become ready
-        run: kubectl wait --for=jsonpath="{.status.state}"="Ready" database.ydb.tech database-sample
+        run: kubectl wait --timeout 5m --for=jsonpath="{.status.state}"="Ready" database.ydb.tech database-sample
