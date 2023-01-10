@@ -119,7 +119,7 @@ function main() {
         const driver = await createDriver(endpoint, db)
         const maxId = await getMaxId(driver, tableName)
         console.log('Max id', { maxId })
-        const executor = new Executor(driver, pushGateway)
+        const executor = new Executor(driver, promPgw)
         const metricsJob = new MetricsJob(executor, 1000, time + shutdownTime)
 
         await executor.printStats()
