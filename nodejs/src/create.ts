@@ -17,7 +17,6 @@ import {
   GENERATOR_DATA_COUNT,
   GENERATOR_PACK_SIZE,
 } from './utils/defaults'
-import { join } from 'path'
 
 export async function create(
   driver: Driver,
@@ -27,7 +26,6 @@ export async function create(
   _dataCount?: string
 ) {
   if (!tableName) tableName = TABLE_NAME
-  tableName = join(db, tableName)
 
   let partitionsCount: number = TABLE_PARTITION_COUNT
   if (_partitionsCount) {

@@ -89,7 +89,7 @@ function main() {
 
   defaultArgs(program.command('run'))
     .option('-t --table-name <tableName>', 'table name to read from')
-    .option('--prom-pgw <pushGateway>', 'prometheus push gateway')
+    .option('--prom-pgw <promPgw>', 'prometheus push gateway')
     .option('--read-rps <readRps>', 'read RPS')
     .option('--read-timeout <readTimeout>', 'read timeout milliseconds')
     .option('--write-rps <writeRps>', 'write RPS')
@@ -100,11 +100,11 @@ function main() {
       async (
         endpoint,
         db,
-        { tableName, readRps, readTimeout, writeRps, writeTimeout, time, shutdownTime, pushGateway }
+        { tableName, readRps, readTimeout, writeRps, writeTimeout, time, shutdownTime, promPgw }
       ) => {
         if (!tableName) tableName = TABLE_NAME
         if (!shutdownTime) shutdownTime = SHUTDOWN_TIME
-        if (!pushGateway) pushGateway = PROMETHEUS_PUSH_GATEWAY
+        if (!promPgw) promPgw = PROMETHEUS_PUSH_GATEWAY
         console.log('Run workload over', {
           tableName,
           readRps,
@@ -113,7 +113,7 @@ function main() {
           writeTimeout,
           time,
           shutdownTime,
-          pushGateway,
+          promPgw,
         })
 
         const driver = await createDriver(endpoint, db)
