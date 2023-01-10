@@ -17,11 +17,12 @@ spec:
           topologyKey: "kubernetes.io/hostname"
   dataStore:
     - volumeMode: Block
+      storageClassName: yc-network-ssd-nonreplicated
       accessModes:
         - ReadWriteOnce
       resources:
         requests:
-          storage: 80Gi
+          storage: 93Gi
   image:
     name: cr.yandex/crptqonuodf51kdj7a7d/ydb:22.2.22
   nodes: 9
