@@ -63,7 +63,7 @@ runs:
     - name: Wait for workload to end
       shell: bash
       run: >
-        kubectl wait --for=jsonpath="{.status['failed','complete']}"=1
+        kubectl wait --for=jsonpath="{.status['failed','complete', 'succeeded']}"=1
         --timeout ${{ inputs.timeout }} job/${{ inputs.language }}-wl-${{ inputs.command }}
 
     - name: Get logs
