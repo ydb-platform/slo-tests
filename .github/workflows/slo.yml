@@ -35,7 +35,7 @@ jobs:
         with:
           language: "nodejs"
           command: "create"
-          timeout: "3m"
+          timeout: "20s"
 
   run-nodejs:
     needs: [create-cluster, create-tables, build-nodejs]
@@ -59,7 +59,7 @@ jobs:
         with:
           language: "nodejs"
           command: "cleanup"
-          timeout: "2m"
+          timeout: "20s"
 
   # TODO: image creation and upload
 
