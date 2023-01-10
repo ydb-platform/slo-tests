@@ -97,7 +97,7 @@ async function generateInitialContent(driver: Driver, tableName: string, count: 
         new ExecuteQuerySettings().withKeepInCache(true)
       )
     }, 10000)
-    console.log(`Successfully inserted ${batch} rows`)
+    console.log(`Successfully inserted ${batch.length} rows`)
   }
   console.log('Initial content generated')
 }
