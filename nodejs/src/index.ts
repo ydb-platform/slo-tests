@@ -49,7 +49,7 @@ async function createDriver(endpoint: string, database: string): Promise<Driver>
 
 interface ICreateOptions {
   tableName?: string
-  partitionCount?: string
+  partitionsCount?: string
   initialDataCount?: string
 }
 
@@ -61,20 +61,20 @@ function main() {
   // create
   defaultArgs(program.command('create'))
     .option('-t --table-name <tableName>', 'table name to create')
-    .option('-p --partitions-count <partitionCount>', 'amount of partitions in table creation')
+    .option('-p --partitions-count <partitionsCount>', 'amount of partitions in table creation')
     .option('-c --initial-data-count <initialDataCount>', 'amount of initially created rows')
     .action(
-      async (endpoint, db, { tableName, partitionCount, initialDataCount }: ICreateOptions) => {
+      async (endpoint, db, { tableName, partitionsCount, initialDataCount }: ICreateOptions) => {
         console.log('Run create over', endpoint, db, {
           tableName,
-          partitionCount,
+          partitionsCount,
           initialDataCount,
         })
         await create(
           await createDriver(endpoint, db),
           db,
           tableName,
-          partitionCount,
+          partitionsCount,
           initialDataCount
         )
       }
