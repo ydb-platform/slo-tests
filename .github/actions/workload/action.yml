@@ -63,8 +63,9 @@ runs:
     - name: Wait for workload to end
       shell: bash
       run: >
-        kubectl wait --for=jsonpath="{.status['failed','complete', 'succeeded']}"=1
-        --timeout ${{ inputs.timeout }} job/${{ inputs.language }}-wl-${{ inputs.command }}
+        kubectl wait --for=jsonpath="{.status['failed','complete','succeeded']}"=1
+        --timeout ${{ inputs.timeout }} job/${{ inputs.language }}-wl-${{ inputs.command }};
+        test -z $(kubectl get job/${{ inputs.language }}-wl-${{ inputs.command }} -o=jsonpath="{.status.failed}") || exit 1
 
     - name: Get logs
       if: success() || failure()
