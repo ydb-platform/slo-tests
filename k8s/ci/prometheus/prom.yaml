@@ -56,3 +56,5 @@ prometheus-pushgateway:
 server:
   extraFlags:
     - web.enable-admin-api
+  persistentVolume:
+    storageClass: yc-network-hdd

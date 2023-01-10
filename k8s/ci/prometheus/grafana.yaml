@@ -720,8 +720,8 @@ dashboards:
             "list": []
           },
           "time": {
-            "from": "2022-12-29T12:14:20.000Z",
-            "to": "2022-12-29T12:15:30.000Z"
+            "from": "now-5m",
+            "to": "now"
           },
           "timepicker": {},
           "timezone": "",
