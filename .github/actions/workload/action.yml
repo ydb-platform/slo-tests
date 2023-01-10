@@ -1,0 +1,72 @@
+name: "Github Action for workload actions"
+author: "Ilya Shevchenko <id.shev@yandex.ru>"
+
+inputs:
+  language:
+    description: "SDK language or language+variant"
+    required: true
+    type: string
+  command:
+    description: "Workload command"
+    required: true
+    type: string
+  additionalArgs:
+    description: "Workload additional args"
+    default: ""
+    required: false
+    type: string
+  timeout:
+    description: "Timeout to wait until job will be done"
+    default: "5m"
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create ${{ inputs.language }} test run yaml
+      shell: bash
+      run: |
+        cat > ${{ inputs.language }}-wl-${{ inputs.command }}.yaml <<EOF
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: ${{ inputs.language }}-wl-${{ inputs.command }}
+        spec:
+          ttlSecondsAfterFinished: 120
+          backoffLimit: 0
+          template:
+            metadata:
+              name: ${{ inputs.language }}-wl-${{ inputs.command }}
+            spec:
+              containers:
+              - name: ${{ inputs.language }}-wl-${{ inputs.command }}
+                image: cr.yandex/crpho4srfnemeb9mi57a/${{ inputs.language }}:latest
+                args:
+                  - "${{ inputs.command }}"
+                  - "grpc://database-sample-grpc:2135"
+                  - "/root/database-sample"
+                  - "${{ inputs.additionalArgs }}"
+              restartPolicy: Never
+              imagePullSecrets:
+                - name: innerregistry
+        EOF
+
+    - name: Check builded yaml
+      shell: bash
+      run: cat ${{ inputs.language }}-wl-${{ inputs.command }}.yaml
+
+    - name: Run ${{ inputs.language }} workload
+      shell: bash
+      run: kubectl apply -f ${{ inputs.language }}-wl-${{ inputs.command }}.yaml
+
+    - name: Wait for workload to end
+      shell: bash
+      run: >
+        kubectl wait --for=jsonpath="{.status['failed','complete', 'succeeded']}"=1
+        --timeout ${{ inputs.timeout }} job/${{ inputs.language }}-wl-${{ inputs.command }}
+
+    - name: Get logs
+      if: success() || failure()
+      shell: bash
+      run: kubectl logs job/${{ inputs.language }}-wl-${{ inputs.command }}
