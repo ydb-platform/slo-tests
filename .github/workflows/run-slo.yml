@@ -39,7 +39,7 @@ jobs:
             --shutdown-time 60
             --read-rps 1000
             --write-rps 100
-            --prom-pgw prometheus-prometheus-pushgateway:9091
+            --prom-pgw http://prometheus-prometheus-pushgateway:9091
 
   run-errors-sheduler:
     runs-on: ubuntu-latest
