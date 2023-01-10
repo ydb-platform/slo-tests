@@ -27,20 +27,20 @@ runs:
     - name: Create ${{ inputs.language }} test run yaml
       shell: bash
       run: |
-        cat > ${{ inputs.language }}-workload.yaml <<EOF
+        cat > ${{ inputs.language }}-wl-${{ inputs.command }}.yaml <<EOF
         apiVersion: batch/v1
         kind: Job
         metadata:
-          name: ${{ inputs.language }}-workload
+          name: ${{ inputs.language }}-wl-${{ inputs.command }}
         spec:
-          ttlSecondsAfterFinished: 20
+          ttlSecondsAfterFinished: 120
           backoffLimit: 0
           template:
             metadata:
-              name: ${{ inputs.language }}-workload
+              name: ${{ inputs.language }}-wl-${{ inputs.command }}
             spec:
               containers:
-              - name: ${{ inputs.language }}-workload
+              - name: ${{ inputs.language }}-wl-${{ inputs.command }}
                 image: cr.yandex/crpho4srfnemeb9mi57a/${{ inputs.language }}:latest
                 args:
                   - "${{ inputs.command }}"
@@ -54,19 +54,19 @@ runs:
 
     - name: Check builded yaml
       shell: bash
-      run: cat ${{ inputs.language }}-workload.yaml
+      run: cat ${{ inputs.language }}-wl-${{ inputs.command }}.yaml
 
     - name: Run ${{ inputs.language }} workload
       shell: bash
-      run: kubectl apply -f ${{ inputs.language }}-workload.yaml
+      run: kubectl apply -f ${{ inputs.language }}-wl-${{ inputs.command }}.yaml
 
     - name: Wait for workload to end
       shell: bash
       run: >
         kubectl wait --for=jsonpath="{.status['failed','complete']}"=1
-        --timeout ${{ inputs.timeout }} job/${{ inputs.language }}-workload
+        --timeout ${{ inputs.timeout }} job/${{ inputs.language }}-wl-${{ inputs.command }}
 
     - name: Get logs
       if: success() || failure()
       shell: bash
-      run: kubectl logs job/${{ inputs.language }}-workload
+      run: kubectl logs job/${{ inputs.language }}-wl-${{ inputs.command }}
