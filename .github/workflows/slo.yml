@@ -92,7 +92,8 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            Hello world ! :wave:
+            Here are results of SLO test :volcano: :
+            ![SLO-nodejs](${{ steps.screenshot.outputs.picture-url}})
 
       # - name: Add comment to PR
 
