@@ -29,9 +29,10 @@ runs:
       id: args-string
       run: |
         ARGS=$(cat << EOF
-        `echo ${{ inputs.additionalArgs }} | sed "s/ /\"\\n          - \"/g"`
+        `echo "${{ inputs.additionalArgs }}" | sed "s/ /\"\\n          - \"/g"`
         EOF
         )
+        echo "ARGS=${ARGS}"
         echo "args<<EOF" >> $GITHUB_OUTPUT
         echo "$ARGS" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
@@ -59,7 +60,7 @@ runs:
                   - "${{ inputs.command }}"
                   - "grpc://database-sample-grpc:2135"
                   - "/root/database-sample"
-                  - "${{ steps.args-string.args }}"
+                  - "${{ steps.args-string.outputs.args }}"
               restartPolicy: Never
               imagePullSecrets:
                 - name: innerregistry
