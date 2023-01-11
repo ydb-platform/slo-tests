@@ -61,6 +61,35 @@ jobs:
           command: "cleanup"
           timeout: "20s"
 
+  grafana-screenshot:
+    # needs: [run-nodejs]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+
+      - name: Create screenshot
+        uses: ./.github/actions/grafana-screenshot
+        id: screenshot
+        with:
+          time: "5m"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          s3-endpoint: ${{ secrets.S3_ENDPOINT }}
+          s3-bucket: ${{ secrets.S3_BUCKET }}
+          image-folder: "ydb-slo-results/"
+          image-prefix: "nodejs"
+
+      - name: Log image URL
+        run: echo "${{ steps.screenshot.outputs.picture-url}}"
+
+      # - name: Add comment to PR
+
   # TODO: image creation and upload
 
   # TODO: Uncomment when will be debugged enough
