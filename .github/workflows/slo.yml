@@ -88,6 +88,12 @@ jobs:
       - name: Log image URL
         run: echo "${{ steps.screenshot.outputs.picture-url}}"
 
+      - name: Add comment to PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Hello world ! :wave:
+
       # - name: Add comment to PR
 
   # TODO: image creation and upload
