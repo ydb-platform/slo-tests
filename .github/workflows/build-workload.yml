@@ -34,6 +34,7 @@ jobs:
 
       - name: Login into docker
         run: >
+          docker --version;
           echo "${{ secrets.DOCKER_PASSWORD }}" | base64 -d |
           docker login ${{ secrets.DOCKER_REPO }}
           -u ${{ secrets.DOCKER_USERNAME }}
@@ -49,5 +50,5 @@ jobs:
 
       - name: Push image with all tags
         run: >
-          docker push -a
-          ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}
+          docker image push ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:latest;
+          docker image push ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:gh-${{ github.sha }}

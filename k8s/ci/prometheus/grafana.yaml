@@ -18,6 +18,20 @@ adminPassword: passw0rD
 # Use an existing secret for the admin user.
 admin: {}
 
+# need this to take screenshots
+env:
+  GF_RENDERING_SERVER_URL: http://grafana-renderer/render
+  GF_RENDERING_CALLBACK_URL: http://grafana:80/
+  GF_LOG_FILTERS: rendering:debug
+
+# need to downgrade to take screenshots of dashboard, not only of panel
+# image:
+#   tag: 7.5.15
+
+persistence:
+  enabled: true
+  storageClassName: yc-network-hdd
+
 grafana.ini:
   auth.anonymous:
     enabled: true
