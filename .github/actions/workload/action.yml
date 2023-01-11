@@ -24,6 +24,18 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Create args string
+      shell: bash
+      id: args-string
+      run: |
+        ARGS=$(cat << EOF
+        `echo ${{ inputs.additionalArgs }} | sed "s/ /\"\\n          - \"/g"`
+        EOF
+        )
+        echo "args<<EOF" >> $GITHUB_OUTPUT
+        echo "$ARGS" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
     - name: Create ${{ inputs.language }} test run yaml
       shell: bash
       run: |
@@ -43,10 +55,11 @@ runs:
               - name: ${{ inputs.language }}-wl-${{ inputs.command }}
                 image: cr.yandex/crpho4srfnemeb9mi57a/${{ inputs.language }}:latest
                 args:
+                  - "--"
                   - "${{ inputs.command }}"
                   - "grpc://database-sample-grpc:2135"
                   - "/root/database-sample"
-                  - "${{ inputs.additionalArgs }}"
+                  - "${{ steps.args-string.args }}"
               restartPolicy: Never
               imagePullSecrets:
                 - name: innerregistry
