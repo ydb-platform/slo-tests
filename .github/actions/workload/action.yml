@@ -80,6 +80,13 @@ runs:
         kubectl wait --for=jsonpath="{.status['failed','complete','succeeded']}"=1
         --timeout ${{ inputs.timeout }} job/${{ inputs.language }}-wl-${{ inputs.command }};
 
+    - name: Check status of workload
+      shell: bash
+      run: >
+        test -n "`kubectl get job/${{ inputs.language }}-wl-${{ inputs.command }} -o=jsonpath={.status.failed}`"
+        && (echo 'Failed'; exit 2)
+        || echo 'Not failed'
+
     - name: Get logs
       if: success() || failure()
       shell: bash
