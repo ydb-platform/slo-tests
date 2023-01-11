@@ -48,6 +48,6 @@ runs:
       id: upload
       shell: bash
       run: |
-        export PICTURE_NAME=${{ inputs.image-prefix }}-`date -I seconds`.png;
+        export PICTURE_NAME=${{ inputs.image-prefix }}-`date -Iseconds`.png;
         aws s3 --endpoint-url=${{ inputs.s3-endpoint }} cp ./pic.png "s3://${{ inputs.image-folder }}${PICTURE_NAME}";
         echo "url=${inputs.s3-endpoint}/${inputs.image-folder}${PICTURE_NAME}" >> $GITHUB_OUTPUT
