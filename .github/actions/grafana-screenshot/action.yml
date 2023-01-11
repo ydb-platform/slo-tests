@@ -49,10 +49,6 @@ runs:
         wget -q -O- '${{ inputs.grafana-host }}/render/d/${{ inputs.dashboard }}/slo?orgId=1&from=now-${{ inputs.time }}&to=now&width=${{ inputs.width }}&height=${{ inputs.height }}&tz=Europe%2FIstanbul&kiosk=tv' 
         | base64" > pic.b64;
 
-    - name: Log base64 picture
-      shell: bash
-      run: cat pic.b64;
-
     - name: Create picture from base64
       shell: bash
       run: cat pic.b64 | base64 --decode > pic.png
