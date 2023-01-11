@@ -62,7 +62,7 @@ jobs:
           timeout: "20s"
 
   grafana-screenshot:
-    # needs: [run-nodejs]
+    needs: [run-nodejs]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -94,10 +94,6 @@ jobs:
           message: |
             Here are results of SLO test :volcano: :
             ![SLO-nodejs](${{ steps.screenshot.outputs.picture-url}})
-
-      # - name: Add comment to PR
-
-  # TODO: image creation and upload
 
   # TODO: Uncomment when will be debugged enough
   # delete-cluster:
