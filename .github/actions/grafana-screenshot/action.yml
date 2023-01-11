@@ -1,0 +1,62 @@
+name: "Take screenshot in grafana"
+author: "Ilya Shevchenko <id.shev@yandex.ru>"
+inputs:
+  dashboard:
+    description: "Dashboard UID"
+    default: "7CzMl5t4k"
+  width:
+    default: 1500
+  height:
+    default: 1100
+  time:
+    description: "How much time from now to be captured"
+    default: "5m"
+  grafana-host:
+    description: "Grafana host"
+    default: "http://grafana"
+  AWS_CREDENTIALS:
+    required: true
+  AWS_CONFIG:
+    required: true
+  s3-endpoint:
+    required: true
+  s3-bucket:
+    required: true
+  image-folder:
+    default: "ydb-slo-results/"
+  image-prefix:
+    required: true
+
+outputs:
+  picture-url:
+    description: "Uploaded picture url"
+    value: ${{ steps.upload.outputs.url }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS Credentials
+      shell: bash
+      run: |
+        mkdir $HOME/.aws
+        echo "${{ inputs.AWS_CREDENTIALS }}" | base64 -d > $HOME/.aws/credentials
+        echo "${{ inputs.AWS_CONFIG }}" | base64 -d > $HOME/.aws/config
+
+    - name: Get dashboard picture from grafana
+      shell: bash
+      run: >
+        kubectl run -q -i --image=busybox --rm grafana-screenshoter --restart=Never -- sh -c "
+        wget -q -O- '${{ inputs.grafana-host }}/render/d/${{ inputs.dashboard }}/slo?orgId=1&from=now-${{ inputs.time }}&to=now&width=${{ inputs.width }}&height=${{ inputs.height }}&tz=Europe%2FIstanbul&kiosk=tv' 
+        | base64" > pic.b64;
+
+    - name: Create picture from base64
+      shell: bash
+      run: cat pic.b64 | base64 --decode > pic.png
+
+    - name: Upload image to the bucket
+      id: upload
+      shell: bash
+      run: |
+        export PICTURE_NAME=${{ inputs.image-prefix }}-`date -Iseconds`.png;
+        aws s3 --endpoint-url=${{ inputs.s3-endpoint }} cp ./pic.png "s3://${{ inputs.image-folder }}${PICTURE_NAME}";
+        echo "url=${{ inputs.s3-endpoint }}/${{ inputs.image-folder }}${PICTURE_NAME}" >> $GITHUB_OUTPUT

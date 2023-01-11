@@ -35,12 +35,13 @@ jobs:
           command: "run"
           timeout: "5m"
           additionalArgs: >
-            --time 200
-            --shutdown-time 60
+            --time 160
+            --shutdown-time 20
             --read-rps 1000
             --write-rps 100
             --prom-pgw http://prometheus-prometheus-pushgateway:9091
 
+  # ~ 6 * (20s+3s) =± 140s
   run-errors-sheduler:
     runs-on: ubuntu-latest
     steps:
