@@ -46,7 +46,7 @@ runs:
       shell: bash
       run: >
         kubectl run -q -i --image=busybox --rm grafana-screenshoter --restart=Never -- sh -c "
-        wget -q -O- 'http://grafana/render/d/7CzMl5t4k/slo?orgId=1&from=now-5m&to=now&width=1500&height=1100&tz=Europe%2FIstanbul&kiosk=tv' 
+        wget -q -O- '${{ inputs.grafana-host }}/render/d/${{ inputs.dashboard }}/slo?orgId=1&from=now-${{ inputs.time }}&to=now&width=${{ inputs.width }}&height=${{ inputs.height }}&tz=Europe%2FIstanbul&kiosk=tv' 
         | base64" > pic.b64;
 
     - name: Log base64 picture
