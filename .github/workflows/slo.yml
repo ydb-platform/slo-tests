@@ -79,6 +79,7 @@ jobs:
         with:
           time: "5m"
           AWS_CREDENTIALS: ${{ secrets.AWS_CREDENTIALS }}
+          AWS_CONFIG: ${{ secrets.AWS_CONFIG }}
           s3-endpoint: ${{ secrets.S3_ENDPOINT }}
           s3-bucket: ${{ secrets.S3_BUCKET }}
           image-folder: "ydb-slo-results/"

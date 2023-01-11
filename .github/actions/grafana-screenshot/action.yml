@@ -16,6 +16,8 @@ inputs:
     default: "http://grafana"
   AWS_CREDENTIALS:
     required: true
+  AWS_CONFIG:
+    required: true
   s3-endpoint:
     required: true
   s3-bucket:
@@ -35,7 +37,10 @@ runs:
   steps:
     - name: Configure AWS Credentials
       shell: bash
-      run: mkdir $HOME/.aws; echo "${{ inputs.AWS_CREDENTIALS }}" | base64 -d > $HOME/.aws/credentials
+      run: |
+        mkdir $HOME/.aws
+        echo "${{ inputs.AWS_CREDENTIALS }}" | base64 -d > $HOME/.aws/credentials
+        echo "${{ inputs.AWS_CONFIG }}" | base64 -d > $HOME/.aws/config
 
     - name: Get dashboard picture from grafana
       shell: bash
@@ -50,4 +55,4 @@ runs:
       run: |
         export PICTURE_NAME=${{ inputs.image-prefix }}-`date -Iseconds`.png;
         aws s3 --endpoint-url=${{ inputs.s3-endpoint }} cp ./pic.png "s3://${{ inputs.image-folder }}${PICTURE_NAME}";
-        echo "url=${inputs.s3-endpoint}/${inputs.image-folder}${PICTURE_NAME}" >> $GITHUB_OUTPUT
+        echo "url=${{ inputs.s3-endpoint }}/${{ inputs.image-folder }}${PICTURE_NAME}" >> $GITHUB_OUTPUT
