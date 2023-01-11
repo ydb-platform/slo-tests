@@ -40,7 +40,7 @@ runs:
     - name: Get dashboard picture from grafana
       shell: bash
       run: >
-        kubectl run -it --image=busybox --rm tablet-freezer --restart=Never -- sh -c "
+        kubectl run -it -q --image=busybox --rm tablet-freezer --restart=Never -- sh -c "
         wget -q -O- 'http://grafana/render/d/7CzMl5t4k/slo?orgId=1&from=now-5m&to=now&width=1500&height=1100&tz=Europe%2FIstanbul&kiosk=tv' 
         | base64" | base64 --decode > pic.png
 
