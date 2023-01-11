@@ -14,11 +14,7 @@ inputs:
   grafana-host:
     description: "Grafana host"
     default: "http://grafana"
-  AWS_ACCESS_KEY_ID:
-    required: true
-  AWS_SECRET_ACCESS_KEY:
-    required: true
-  AWS_REGION:
+  AWS_CREDENTIALS:
     required: true
   s3-endpoint:
     required: true
@@ -38,11 +34,8 @@ runs:
   using: "composite"
   steps:
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ inputs.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ inputs.AWS_REGION }}
+      shell: bash
+      run: mkdir $HOME/.aws; echo "${{ inputs.AWS_CREDENTIALS }}" | base64 -d > $HOME/.aws/credentials
 
     - name: Get dashboard picture from grafana
       shell: bash

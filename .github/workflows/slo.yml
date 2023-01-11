@@ -78,9 +78,7 @@ jobs:
         id: screenshot
         with:
           time: "5m"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_CREDENTIALS: ${{ secrets.AWS_CREDENTIALS }}
           s3-endpoint: ${{ secrets.S3_ENDPOINT }}
           s3-bucket: ${{ secrets.S3_BUCKET }}
           image-folder: "ydb-slo-results/"
