@@ -18,6 +18,8 @@ inputs:
     required: true
   AWS_SECRET_ACCESS_KEY:
     required: true
+  AWS_REGION:
+    required: true
   s3-endpoint:
     required: true
   s3-bucket:
@@ -40,6 +42,7 @@ runs:
       with:
         aws-access-key-id: ${{ inputs.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ inputs.AWS_REGION }}
 
     - name: Get dashboard picture from grafana
       shell: bash
