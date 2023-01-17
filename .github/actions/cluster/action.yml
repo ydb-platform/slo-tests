@@ -1,0 +1,40 @@
+name: "Change cluster"
+description: "Create or delete YDB cluster in kubernetes"
+author: "Ilya Shevchenko <id.shev@yandex.ru>"
+
+inputs:
+  KUBE_CONFIG:
+    description: "base64 kube config"
+    required: true
+  command:
+    description: "Workload command"
+    required: true
+    default: apply
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+
+    - run: mkdir $HOME/.kube; echo "${{ inputs.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+      shell: bash
+
+    - name: Get existing pods
+      run: kubectl get pods
+      shell: bash
+
+    - name: Create storage nodes
+      run: kubectl ${{ inputs.command }} -f k8s/ci/storage.yaml
+      shell: bash
+
+    - name: Wait until storage nodes become ready
+      run: kubectl wait --timeout 5m --for=jsonpath="{.status.state}"="Ready" storages.ydb.tech storage-sample
+      shell: bash
+
+    - name: Create database nodes
+      run: kubectl ${{ inputs.command }} -f k8s/ci/database.yaml
+      shell: bash
+
+    - name: Wait until database nodes become ready
+      run: kubectl wait --timeout 5m --for=jsonpath="{.status.state}"="Ready" database.ydb.tech database-sample
+      shell: bash
