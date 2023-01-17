@@ -94,7 +94,7 @@ jobs:
           message: |
             Here are results of SLO test :volcano: :
 
-            [Grafana Dashboard](${{ secrets.INGRESS_ADDRESS }})
+            [Grafana Dashboard](${{ vars.INGRESS_ADDRESS }})
             ![SLO-nodejs](${{ steps.screenshot.outputs.picture-url}})
 
   # delete-cluster:
