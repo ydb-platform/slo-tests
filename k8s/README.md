@@ -83,10 +83,9 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
-helm install prometheus prometheus-community/prometheus --values k8s/ci/prometheus/prom.yaml
-helm install grafana grafana/grafana --values k8s/ci/prometheus/grafana.yaml
-kubectl apply -f k8s/ci/prometheus/grafana-renderer.yaml
-helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
+helm upgrade --install prometheus prometheus-community/prometheus --values k8s/helms/prometheus.yaml
+helm upgrade --install grafana grafana/grafana --values k8s/helms/grafana.yaml
+kubectl apply -f k8s/grafana-renderer.yaml
 ```
 
 <a name="setup-ingress"></a>
@@ -114,7 +113,7 @@ kubectl taint nodes <NODE_ID> type=DMZ:NoSchedule
 Install nginx-ingress helm chart and ingress kube config:
 
 ```
-helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace dmz-ns --create-namespace --values k8s/helms/ingress.yaml
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --values k8s/helms/ingress.yaml --namespace dmz-ns --create-namespace
 
 kubectl apply -f k8s/ingress.yaml
 ```
@@ -137,16 +136,22 @@ helm install ydb-operator ydb/operator
 kubectl get pods -l 'app.kubernetes.io/instance=ydb-operator' -o=jsonpath="{.items[0].status.phase}"
 
 # create storage
-kubectl apply -f k8s/storage.yaml
+kubectl apply -f k8s/ci/storage.yaml
 
 # check if storage created
 kubectl get storages.ydb.tech -o=jsonpath="{.items[0].status.state}"
 
 # create DBs
-kubectl apply -f k8s/database.yaml
+kubectl apply -f k8s/ci/database.yaml
 
 # check if database created
 kubectl get database.ydb.tech -o=jsonpath="{.items[0].status.state}"
+```
+
+To port-forward database admin panel run this command:
+
+```
+kubectl port-forward database-sample-0 8765
 ```
 
 <a name="manual-shutdown"></a>
