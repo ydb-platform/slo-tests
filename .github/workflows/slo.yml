@@ -2,7 +2,7 @@ name: Full SLO test workflow
 
 on:
   pull_request:
-    branches: ["slo"]
+    branches: ["main", "slo"]
 
 jobs:
   create-cluster:
@@ -93,11 +93,12 @@ jobs:
         with:
           message: |
             Here are results of SLO test :volcano: :
+
+            [Grafana Dashboard](${{ vars.INGRESS_ADDRESS }})
             ![SLO-nodejs](${{ steps.screenshot.outputs.picture-url}})
 
-  # TODO: Uncomment when will be debugged enough
   # delete-cluster:
-  #   needs: [test-flow]
+  #   needs: [grafana-screenshot]
   #   uses: ./.github/workflows/delete-cluster.yml
   #   secrets:
   #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
