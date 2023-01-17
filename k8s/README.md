@@ -5,7 +5,8 @@
    2. [Create kube config](#create-k8s-conf)
    3. [(Optionally) Test if k8s config is working](#test-k8s-conf)
 2. [Setup prometheus and grafana](#prom-grafana)
-3. [Additional commands in case of manual work](#manual)
+3. [Setup ingress controller](#setup-ingress)
+4. [Additional commands in case of manual work](#manual)
    1. [YDB cluster startup](#manual-startup)
    2. [YDB cluster shutdown](#manual-shutdown)
 
@@ -80,10 +81,42 @@ cat ci-config.kubeconfig | base64 | pbcopy
 ```
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 helm install prometheus prometheus-community/prometheus --values k8s/ci/prometheus/prom.yaml
 helm install grafana grafana/grafana --values k8s/ci/prometheus/grafana.yaml
 kubectl apply -f k8s/ci/prometheus/grafana-renderer.yaml
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
+```
+
+<a name="setup-ingress"></a>
+
+### Setup ingress controller
+
+Create htpasswd file
+
+```
+htpasswd -c auth ACC_NAME
+```
+
+Create secret from this file inside of k8s
+
+```
+kubectl create secret generic ingress-basic-auth --from-file=auth
+```
+
+Set up node with external IP in your cloud provider and run command below to disable sheduling pods on it:
+
+```
+kubectl taint nodes <NODE_ID> type=DMZ:NoSchedule
+```
+
+Install nginx-ingress helm chart and ingress kube config:
+
+```
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace dmz-ns --create-namespace --values k8s/helms/ingress.yaml
+
+kubectl apply -f k8s/ingress.yaml
 ```
 
 <hr>
@@ -128,7 +161,7 @@ kubectl delete -f k8s/database.yaml
 kubectl delete -f k8s/storage.yaml
 
 # remove PVCs
-kubectl delete pvc `kubectl get pvc -o=jsonpath="{.items[*].metadata.name}"`
+kubectl delete pvc `kubectl get pvc -o=jsonpath="{.items[*].metadata.name}"` -l ydb-cluster=slo-storage
 
 helm uninstall ydb-operator
 ```
