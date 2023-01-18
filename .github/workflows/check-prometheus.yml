@@ -1,0 +1,65 @@
+name: Check prometheus metrics workflow
+
+on:
+  workflow_call:
+    inputs:
+      test_start:
+        description: "Test start timestamp"
+        required: true
+        type: string
+      test_end:
+        description: "Test start timestamp"
+        required: true
+        type: string
+    secrets:
+      KUBE_CONFIG:
+        required: true
+
+jobs:
+  run-workload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+        # need this owing to local action usage
+
+      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+
+        # queries in grafana:
+        # count_over_time(latency{quantile="0.99"}[$__range])
+        # max_over_time(latency{quantile="0.99"}[$__range])
+      - name: Get query result from grafana
+        shell: bash
+        run: >
+          kubectl run -q -i --image=busybox --rm grafana-screenshoter --restart=Never -- sh -c "
+          wget -q -O- --header='content-type: application/json' 
+          --post-data='{"queries":[{"refId":"max_over_time","key":"Q-0207d93b-bbeb-4432-a92e-8a920e3bff93-2","datasource":{"type":"prometheus","uid":"prometheus"},"editorMode":"code","expr":"max_over_time(latency{quantile=\"0.99\"}[$__range])","legendFormat":"__auto","range":false,"instant":true,"interval":"","exemplar":false,"queryType":"timeSeriesQuery","requestId":"Q-0207d93b-bbeb-4432-a92e-8a920e3bff93-2Q-10dc8953-bdb3-4621-ac80-7cdcf565d158-1max_over_time","utcOffsetSec":14400,"datasourceId":1,"intervalMs":5000,"maxDataPoints":1671},{"refId":"count_over_time","key":"Q-10dc8953-bdb3-4621-ac80-7cdcf565d158-1","datasource":{"type":"prometheus","uid":"prometheus"},"editorMode":"code","expr":"count_over_time(latency{quantile=\"0.99\"}[$__range])","legendFormat":"__auto","range":false,"instant":true,"exemplar":false,"queryType":"timeSeriesQuery","requestId":"Q-0207d93b-bbeb-4432-a92e-8a920e3bff93-2Q-10dc8953-bdb3-4621-ac80-7cdcf565d158-1count_over_time","utcOffsetSec":14400,"interval":"","datasourceId":1,"intervalMs":5000,"maxDataPoints":1671}],"range":{"from":"2023-01-17T17:57:19.967Z","to":"2023-01-17T18:00:42.723Z","raw":{"from":"2023-01-17T17:57:19.967Z","to":"2023-01-17T18:00:42.723Z"}},"from":"1673978239967","to":"1673978442723"}'
+          'http://grafana:3000/api/ds/query'
+          | base64" > query_result.b64;
+
+      - name: Create json from base64
+        shell: bash
+        run: cat query_result.b64 | base64 --decode > query_result.json
+
+      - name: Run grafana output parser
+        shell: bash
+        run: node scripts/parseGrafanaOutput.js max_latency.json ./parsed.json
+
+      - name: Check out parsed.json
+        shell: bash
+        run: cat ./parsed.json
+
+      - name: Run grafana output parser
+        id: checker
+        shell: bash
+        run: node scripts/checkGrafanaValues.js parsed.json scripts/objectives.json
+
+      - name: Check out checks_results
+        shell: bash
+        run: ls checks_results
+
+      - name: Check out checks_matrix
+        shell: bash
+        run: echo "${{ steps.checker.outputs.checks_matrix}}"
