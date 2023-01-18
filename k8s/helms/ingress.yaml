@@ -1,0 +1,27 @@
+controller:
+  containerPort:
+    http: 80
+    https: 443
+
+  nodeSelector:
+    kubernetes.io/os: linux
+    DMZ: "true"
+
+  tolerations:
+    - key: "type"
+      operator: "Equal"
+      value: "DMZ"
+      effect: "NoExecute"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 90Mi
+
+  service:
+    namespace: dmz-ns
+
+    type: NodePort
+    nodePorts:
+      http: 32080
+      https: 32443

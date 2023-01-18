@@ -2,13 +2,23 @@ name: Full SLO test workflow
 
 on:
   pull_request:
-    branches: ["slo"]
+    branches: ["main", "slo"]
+
+concurrency: slo
 
 jobs:
   create-cluster:
-    uses: ./.github/workflows/create-cluster.yml
-    secrets:
-      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+      - name: create-cluster
+        uses: ./.github/actions/cluster
+        with:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+          command: apply
 
   build-nodejs:
     uses: ./.github/workflows/build-workload.yml
@@ -93,11 +103,20 @@ jobs:
         with:
           message: |
             Here are results of SLO test :volcano: :
+
+            [Grafana Dashboard](${{ vars.INGRESS_ADDRESS }})
             ![SLO-nodejs](${{ steps.screenshot.outputs.picture-url}})
 
-  # TODO: Uncomment when will be debugged enough
   # delete-cluster:
-  #   needs: [test-flow]
-  #   uses: ./.github/workflows/delete-cluster.yml
-  #   secrets:
-  #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  #   needs: [grafana-screenshot]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ github.ref }}
+  #     - name: create-cluster
+  #       uses: ./.github/actions/cluster
+  #       with:
+  #         KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  #         command: delete
