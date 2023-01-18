@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: ["main", "slo"]
 
+concurrency: slo
+
 jobs:
   create-cluster:
     runs-on: ubuntu-latest
