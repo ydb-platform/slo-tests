@@ -45,7 +45,7 @@ jobs:
 
       - name: Run grafana output parser
         shell: bash
-        run: node scripts/parseGrafanaOutput.js max_latency.json ./parsed.json
+        run: node scripts/parseGrafanaOutput.js query_result.json ./parsed.json
 
       - name: Check out parsed.json
         shell: bash
