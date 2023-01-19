@@ -95,10 +95,10 @@ jobs:
           path: checks_results/
 
       - run: |
-          cat checks_results/check_0_output;
-          echo "check_name=`cat checks_results/check_0_name`" >> $GITHUB_OUTPUT
-          echo "check_output=`cat checks_results/check_0_output`" >> $GITHUB_OUTPUT
-          echo "check_conclusion=`cat checks_results/check_0_conclusion`" >> $GITHUB_OUTPUT
+          cat checks_results/${{ matrix.value }}_output;
+          echo "check_name=`cat checks_results/${{ matrix.value }}_name`" >> $GITHUB_OUTPUT
+          echo "check_output=`cat checks_results/${{ matrix.value }}_output`" >> $GITHUB_OUTPUT
+          echo "check_conclusion=`cat checks_results/${{ matrix.value }}_conclusion`" >> $GITHUB_OUTPUT
         id: get_result
 
       - run: echo '${{ steps.get_result.outputs.check_output }}'
