@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Save start time
         id: start
-        run: echo "time=`node -e "console.log(new Date().valueOf())"" >> $GITHUB_OUTPUT
+        run: echo "time=`node -e 'console.log(new Date().valueOf())'`" >> $GITHUB_OUTPUT
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -57,7 +57,7 @@ jobs:
 
       - name: Save end time
         id: end
-        run: echo "time=`node -e "console.log(new Date().valueOf())"" >> $GITHUB_OUTPUT
+        run: echo "time=`node -e 'console.log(new Date().valueOf())'`" >> $GITHUB_OUTPUT
 
   # ~ 6 * (20s+3s) =± 140s
   run-errors-sheduler:
