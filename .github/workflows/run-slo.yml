@@ -14,6 +14,13 @@ on:
     secrets:
       KUBE_CONFIG:
         required: true
+    outputs:
+      test_start:
+        description: "Test start timestamp"
+        value: ${{ jobs.run-workload.outputs.start_time }}
+      test_end:
+        description: "Test end timestamp"
+        value: ${{ jobs.run-workload.outputs.end_time }}
 
 concurrency:
   group: ${{ github.ref }}-${{ inputs.language }}-test
@@ -21,7 +28,14 @@ concurrency:
 jobs:
   run-workload:
     runs-on: ubuntu-latest
+    outputs:
+      start_time: ${{ steps.start.outputs.time }}
+      end_time: ${{ steps.end.outputs.time }}
     steps:
+      - name: Save start time
+        id: start
+        run: echo "time=`node -e "console.log(new Date().valueOf())"" >> $GITHUB_OUTPUT
+
       - name: Checkout
         uses: actions/checkout@v3
         # need this owing to local action usage
@@ -40,6 +54,10 @@ jobs:
             --read-rps 1000
             --write-rps 100
             --prom-pgw http://prometheus-prometheus-pushgateway:9091
+
+      - name: Save end time
+        id: end
+        run: echo "time=`node -e "console.log(new Date().valueOf())"" >> $GITHUB_OUTPUT
 
   # ~ 6 * (20s+3s) =± 140s
   run-errors-sheduler:

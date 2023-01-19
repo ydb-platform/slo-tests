@@ -32,6 +32,8 @@ jobs:
 
       - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
+      - run: 'echo "start: ${{ inputs.test_start }}; end:${{ inputs.test_end }}"'
+
         # queries in grafana:
         # count_over_time(latency{quantile="0.99"}[$__range])
         # max_over_time(latency{quantile="0.99"}[$__range])
@@ -40,7 +42,7 @@ jobs:
         run: >
           kubectl run -q -i --image=busybox --rm grafana-result-peeker --restart=Never -- sh -c '
           wget -q -O- --header='\''content-type: application/json'\'' 
-          --post-data='\''{"queries":[{"refId":"max_over_time","key":"Q-0207d93b-bbeb-4432-a92e-8a920e3bff93-2","datasource":{"type":"prometheus","uid":"prometheus"},"editorMode":"code","expr":"max_over_time(latency{quantile=\"0.99\"}[$__range])","legendFormat":"__auto","range":false,"instant":true,"interval":"","exemplar":false,"queryType":"timeSeriesQuery","requestId":"Q-0207d93b-bbeb-4432-a92e-8a920e3bff93-2Q-10dc8953-bdb3-4621-ac80-7cdcf565d158-1max_over_time","utcOffsetSec":14400,"datasourceId":1,"intervalMs":5000,"maxDataPoints":1671},{"refId":"count_over_time","key":"Q-10dc8953-bdb3-4621-ac80-7cdcf565d158-1","datasource":{"type":"prometheus","uid":"prometheus"},"editorMode":"code","expr":"count_over_time(latency{quantile=\"0.99\"}[$__range])","legendFormat":"__auto","range":false,"instant":true,"exemplar":false,"queryType":"timeSeriesQuery","requestId":"Q-0207d93b-bbeb-4432-a92e-8a920e3bff93-2Q-10dc8953-bdb3-4621-ac80-7cdcf565d158-1count_over_time","utcOffsetSec":14400,"interval":"","datasourceId":1,"intervalMs":5000,"maxDataPoints":1671}],"range":{"from":"2023-01-17T17:57:19.967Z","to":"2023-01-17T18:00:42.723Z","raw":{"from":"2023-01-17T17:57:19.967Z","to":"2023-01-17T18:00:42.723Z"}},"from":"1673978239967","to":"1673978442723"}'\''
+          --post-data='\''{"queries":[{"refId":"max_over_time","key":"Q-0207d93b-bbeb-4432-a92e-8a920e3bff93-2","datasource":{"type":"prometheus","uid":"prometheus"},"editorMode":"code","expr":"max_over_time(latency{quantile=\"0.99\"}[$__range])","legendFormat":"__auto","range":false,"instant":true,"interval":"","exemplar":false,"queryType":"timeSeriesQuery","requestId":"Q-0207d93b-bbeb-4432-a92e-8a920e3bff93-2Q-10dc8953-bdb3-4621-ac80-7cdcf565d158-1max_over_time","utcOffsetSec":14400,"datasourceId":1,"intervalMs":5000,"maxDataPoints":1671},{"refId":"count_over_time","key":"Q-10dc8953-bdb3-4621-ac80-7cdcf565d158-1","datasource":{"type":"prometheus","uid":"prometheus"},"editorMode":"code","expr":"count_over_time(latency{quantile=\"0.99\"}[$__range])","legendFormat":"__auto","range":false,"instant":true,"exemplar":false,"queryType":"timeSeriesQuery","requestId":"Q-0207d93b-bbeb-4432-a92e-8a920e3bff93-2Q-10dc8953-bdb3-4621-ac80-7cdcf565d158-1count_over_time","utcOffsetSec":14400,"interval":"","datasourceId":1,"intervalMs":5000,"maxDataPoints":1671}],"range":{"from":"2023-01-17T17:57:19.967Z","to":"2023-01-17T18:00:42.723Z","raw":{"from":"2023-01-17T17:57:19.967Z","to":"2023-01-17T18:00:42.723Z"}},"from":"${{ inputs.test_start }}","to":"${{ inputs.test_end }}"}'\''
           '\''http://grafana/api/ds/query'\''
           | base64' > query_result.b64;
 
