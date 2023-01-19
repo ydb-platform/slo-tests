@@ -54,6 +54,15 @@ jobs:
     with:
       language: nodejs
 
+  check-results:
+    needs: [run-nodejs]
+    uses: ./.github/workflows/check-prometheus.yml
+    secrets:
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+    with:
+      test_start: ${{ needs.run-nodejs.outputs.test_start }}
+      test_end: ${{ needs.run-nodejs.outputs.test_end }}
+
   cleanup-tables:
     needs: [run-nodejs]
     if: always()

@@ -1,0 +1,46 @@
+[
+    {
+        "find": {
+            "jobName": "read",
+            "status": "ok"
+        },
+        "cmp": [
+            "max_over_time",
+            "<",
+            40
+        ]
+    },
+    {
+        "find": {
+            "jobName": "write",
+            "status": "ok"
+        },
+        "cmp": [
+            "max_over_time",
+            "<",
+            50
+        ]
+    },
+    {
+        "find": {
+            "jobName": "read",
+            "status": "err"
+        },
+        "cmp": [
+            "max_over_time",
+            "<",
+            50
+        ]
+    },
+    {
+        "find": {
+            "jobName": "write",
+            "status": "err"
+        },
+        "cmp": [
+            "max_over_time",
+            "<",
+            50
+        ]
+    }
+]
