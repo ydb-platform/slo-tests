@@ -19,7 +19,6 @@ jobs:
   get-metrics:
     runs-on: ubuntu-latest
     permissions:
-      checks: write
       pull-requests: read
       contents: read
     outputs:
@@ -69,6 +68,50 @@ jobs:
       - name: Check out checks_matrix
         shell: bash
         run: echo "${{ steps.checker.outputs.checks_matrix }}"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: checks_results
+          path: checks_results/
+
+  dummy-test:
+    runs-on: ubuntu-latest
+    needs: [get-metrics]
+
+    steps:
+      - name: test
+        run: echo "${{ needs.get-metrics.outputs.checks_matrix }}"
+
+  set-checks-statuses:
+    runs-on: ubuntu-latest
+    needs: [get-metrics]
+
+    strategy:
+      matrix:
+        value: ${{ fromJson(needs.get-metrics.outputs.checks_matrix) }}
+
+    permissions:
+      checks: write
+      pull-requests: read
+      # contents: read
+
+    steps:
+      - name: load artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: checks_results
+          path: checks_results/
+
+      - run: |
+          cat checks_results/check_0_output;
+          echo "check_name=`cat checks_results/check_0_name`" >> $GITHUB_OUTPUT
+          echo "check_output=`cat checks_results/check_0_output`" >> $GITHUB_OUTPUT
+          echo "check_conclusion=`cat checks_results/check_0_conclusion`" >> $GITHUB_OUTPUT
+        id: get_result
+
+      - run: echo "${{ steps.get_result.outputs.check_output }}"
+      - run: echo "${{ steps.get_result.outputs.check_name }}"
+      - run: echo "${{ steps.get_result.outputs.check_conclusion }}"
 
       - uses: LouisBrunner/checks-action@v1.5.0
         if: always()

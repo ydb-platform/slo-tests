@@ -74,6 +74,7 @@ checksResults.map((result, i) => {
       summary: `Must be ${result.name}\nbut actual is: ${result.actual}`,
     })
   );
+  fs.writeFileSync(`checks_results/check_${i}_name`, result.name);
 });
 
 /////////////////
