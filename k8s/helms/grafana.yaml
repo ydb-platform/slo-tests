@@ -308,18 +308,6 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "delta(inflight[2s]) / 2",
-                  "format": "time_series",
-                  "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} In flight",
-                  "range": true,
-                  "refId": "A"
-                },
-                {
-                  "datasource": {
-                    "type": "prometheus",
-                    "uid": "prometheus"
-                  },
-                  "editorMode": "builder",
                   "expr": "delta(oks[2s]) / 2",
                   "hide": false,
                   "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} OK",
@@ -734,8 +722,8 @@ dashboards:
             "list": []
           },
           "time": {
-            "from": "now-5m",
-            "to": "now"
+            "from": "2023-01-19T11:15:09.870Z",
+            "to": "2023-01-19T11:19:24.632Z"
           },
           "timepicker": {},
           "timezone": "",
