@@ -16,6 +16,7 @@ export default class Executor {
   private readonly inflight: Gauge
   private readonly latencies: Summary
   private readonly gateway: Pushgateway
+  private collectingMetrics: Boolean = true
   public readonly realRPS: Gauge
 
   constructor(driver: Driver, pushGateway: string) {
@@ -70,24 +71,33 @@ export default class Executor {
     })
   }
 
+  /** Stop collecting metrics to prevent non-null values after resetting them */
+  stopCollectingMetrics() {
+    this.collectingMetrics = false
+  }
+
   withSession(jobName: string) {
     return async <T>(callback: (session: Session) => Promise<T>, timeout?: number): Promise<T> => {
-      this.inflight.inc({ jobName }, 1)
+      if (this.collectingMetrics) this.inflight.inc({ jobName }, 1)
       let result: any
       const startSession = new Date().valueOf()
       let endSession: number
       try {
         result = await this.driver.tableClient.withSession(callback, timeout)
         endSession = new Date().valueOf()
-        this.latencies.observe({ status: 'ok', jobName }, endSession - startSession)
-        this.oks.inc({ jobName })
+        if (this.collectingMetrics) {
+          this.latencies.observe({ status: 'ok', jobName }, endSession - startSession)
+          this.oks.inc({ jobName })
+        }
       } catch (error) {
         endSession = new Date().valueOf()
         console.log(error)
-        this.latencies.observe({ status: 'err', jobName }, endSession - startSession)
-        this.notOks.inc({ jobName })
+        if (this.collectingMetrics) {
+          this.latencies.observe({ status: 'err', jobName }, endSession - startSession)
+          this.notOks.inc({ jobName })
+        }
       }
-      this.inflight.dec({ jobName }, 1)
+      if (this.collectingMetrics) this.inflight.dec({ jobName }, 1)
       return result
     }
   }
@@ -113,6 +123,7 @@ export default class Executor {
     this.realRPS.set({ jobName: 'read' }, 0)
     this.inflight.set({ jobName: 'write' }, 0)
     this.inflight.set({ jobName: 'read' }, 0)
+    this.latencies.remove('jobName', 'status')
     this.oks.set({ jobName: 'write' }, 0)
     this.oks.set({ jobName: 'read' }, 0)
     this.notOks.set({ jobName: 'write' }, 0)

@@ -102,6 +102,7 @@ function main() {
         await executor.pushStats()
         await executor.printStats('runStats.json')
         console.log('Reset metrics')
+        executor.stopCollectingMetrics()
         await executor.resetStats()
         await new Promise((resolve) => setTimeout(resolve, 2000))
         await executor.pushStats()
