@@ -4,6 +4,7 @@ import { cleanup } from './cleanup'
 import { create } from './create'
 import { MetricsJob } from './metricsJob'
 import { readJob } from './readJob'
+import { createDriver } from './utils/createDriver'
 import { TABLE_NAME, SHUTDOWN_TIME, PROMETHEUS_PUSH_GATEWAY } from './utils/defaults'
 import Executor from './utils/Executor'
 import { getMaxId } from './utils/getMaxId'
@@ -13,38 +14,6 @@ const defaultArgs = (p: typeof program) => {
   return p
     .argument('<endpoint>', 'YDB endpoint to connect to')
     .argument('<db>', 'YDB database to connect to')
-}
-
-async function createDriver(endpoint: string, database: string): Promise<Driver> {
-  const authService = getCredentialsFromEnv()
-  console.log('Driver initializing...')
-  const logFunction = (lvl: string, suppress: boolean = false) => {
-    return (msg: string, ...args: any[]) =>
-      !suppress && console.log(`[${new Date().toISOString()}] ${lvl} ${msg}`, args)
-  }
-  const logger = {
-    trace: logFunction('trace', true),
-    debug: logFunction('debug'),
-    fatal: logFunction('fatal'),
-    error: logFunction('error'),
-    warn: logFunction('warn'),
-    info: logFunction('info'),
-  }
-  const driver = new Driver({
-    endpoint,
-    database,
-    authService,
-    poolSettings: { minLimit: 10 },
-    // logger,
-  })
-
-  const timeout = 30000
-  if (!(await driver.ready(timeout))) {
-    console.log(`Driver has not become ready in ${timeout}ms!`)
-    process.exit(1)
-  }
-  console.log('Initialized succesfully')
-  return driver
 }
 
 interface ICreateOptions {
@@ -134,6 +103,7 @@ function main() {
         await executor.printStats('runStats.json')
         console.log('Reset metrics')
         await executor.resetStats()
+        await new Promise((resolve) => setTimeout(resolve, 2000))
         await executor.pushStats()
         process.exit(0)
       }
