@@ -118,17 +118,16 @@ export default class Executor {
     await this.gateway.pushAdd({ jobName: 'workload-nodejs' })
   }
   resetStats() {
+    this.registry.resetMetrics()
     // workaround due to not working resetting metrics via registry.resetMetrics()
-    this.realRPS.set({ jobName: 'write' }, 0)
-    this.realRPS.set({ jobName: 'read' }, 0)
+    this.realRPS.remove('jobName')
+    this.latencies.remove('jobName', 'status')
     this.inflight.set({ jobName: 'write' }, 0)
     this.inflight.set({ jobName: 'read' }, 0)
-    this.latencies.remove('jobName', 'status')
     this.oks.set({ jobName: 'write' }, 0)
     this.oks.set({ jobName: 'read' }, 0)
     this.notOks.set({ jobName: 'write' }, 0)
     this.notOks.set({ jobName: 'read' }, 0)
-    this.registry.resetMetrics()
     this.pushStats()
   }
 }
