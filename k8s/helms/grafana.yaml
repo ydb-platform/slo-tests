@@ -174,8 +174,8 @@ dashboards:
               "options": {
                 "legend": {
                   "calcs": [],
-                  "displayMode": "list",
-                  "placement": "bottom",
+                  "displayMode": "table",
+                  "placement": "right",
                   "showLegend": true
                 },
                 "tooltip": {
@@ -292,8 +292,8 @@ dashboards:
               "options": {
                 "legend": {
                   "calcs": [],
-                  "displayMode": "list",
-                  "placement": "bottom",
+                  "displayMode": "table",
+                  "placement": "right",
                   "showLegend": true
                 },
                 "tooltip": {
@@ -308,7 +308,19 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "delta(oks[2s]) / 2",
+                  "expr": "irate(inflight[2s])",
+                  "format": "time_series",
+                  "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} In flight",
+                  "range": true,
+                  "refId": "A"
+                },
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus"
+                  },
+                  "editorMode": "builder",
+                  "expr": "irate(oks[2s])",
                   "hide": false,
                   "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} OK",
                   "range": true,
@@ -320,7 +332,7 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "changes(not_oks[2s])",
+                  "expr": "irate(not_oks[2s])",
                   "hide": false,
                   "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} not OK",
                   "range": true,
@@ -722,8 +734,8 @@ dashboards:
             "list": []
           },
           "time": {
-            "from": "2023-01-19T11:15:09.870Z",
-            "to": "2023-01-19T11:19:24.632Z"
+            "from": "now-15m",
+            "to": "now"
           },
           "timepicker": {},
           "timezone": "",
