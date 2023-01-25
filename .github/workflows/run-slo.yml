@@ -21,6 +21,12 @@ on:
       test_end:
         description: "Test end timestamp"
         value: ${{ jobs.run-workload.outputs.end_time }}
+      test_start_iso:
+        description: "Test start timestamp"
+        value: ${{ jobs.run-workload.outputs.start_time_iso }}
+      test_end_iso:
+        description: "Test end timestamp"
+        value: ${{ jobs.run-workload.outputs.end_time_iso }}
 
 concurrency:
   group: ${{ github.ref }}-${{ inputs.language }}-test
@@ -30,11 +36,17 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       start_time: ${{ steps.start.outputs.time }}
+      start_time_iso: ${{ steps.start_iso.outputs.time }}
       end_time: ${{ steps.end.outputs.time }}
+      end_time_iso: ${{ steps.end_iso.outputs.time }}
     steps:
       - name: Save start time
         id: start
         run: echo "time=`node -e 'console.log(new Date().valueOf())'`" >> $GITHUB_OUTPUT
+
+      - name: Save start ISO time
+        id: start_iso
+        run: echo "time=`node -e 'console.log(new Date())'`" >> $GITHUB_OUTPUT
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -59,8 +71,12 @@ jobs:
         id: end
         run: echo "time=`node -e 'console.log(new Date().valueOf())'`" >> $GITHUB_OUTPUT
 
+      - name: Save end ISO time
+        id: end_iso
+        run: echo "time=`node -e 'console.log(new Date())'`" >> $GITHUB_OUTPUT
+
   # ~ 6 * (20s+3s) =± 140s
-  run-errors-sheduler:
+  run-errors-scheduler:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
