@@ -1,46 +1,34 @@
 [
-    {
-        "find": {
-            "jobName": "read",
-            "status": "ok"
-        },
-        "cmp": [
-            "max_over_time",
-            "<",
-            40
-        ]
-    },
-    {
-        "find": {
-            "jobName": "write",
-            "status": "ok"
-        },
-        "cmp": [
-            "max_over_time",
-            "<",
-            50
-        ]
-    },
-    {
-        "find": {
-            "jobName": "read",
-            "status": "err"
-        },
-        "cmp": [
-            "max_over_time",
-            "<",
-            50
-        ]
-    },
-    {
-        "find": {
-            "jobName": "write",
-            "status": "err"
-        },
-        "cmp": [
-            "max_over_time",
-            "<",
-            50
-        ]
-    }
+  {
+    "find": { "jobName": "read", "status": "ok" },
+    "cmp": ["max_99_latency", "<", 50]
+  },
+  {
+    "find": { "jobName": "write", "status": "ok" },
+    "cmp": ["max_99_latency", "<", 50]
+  },
+  {
+    "find": { "jobName": "read", "status": "err" },
+    "cmp": ["max_99_latency", "<", 30000]
+  },
+  {
+    "find": { "jobName": "write", "status": "err" },
+    "cmp": ["max_99_latency", "<", 30000]
+  },
+  {
+    "find": { "jobName": "read" },
+    "cmp": ["success_rate", ">", 0.98]
+  },
+  {
+    "find": { "jobName": "write" },
+    "cmp": ["success_rate", ">", 0.98]
+  },
+  {
+    "find": { "jobName": "read" },
+    "cmp": ["fail_interval", "<", 20]
+  },
+  {
+    "find": { "jobName": "write" },
+    "cmp": ["fail_interval", "<", 20]
+  }
 ]
