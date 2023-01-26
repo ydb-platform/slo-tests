@@ -51,89 +51,13 @@ jobs:
         run: >
           kubectl run -q -i --image=busybox --rm grafana-result-peeker --restart=Never -- sh -c '
           wget -q -O- --header='\''content-type: application/json'\'' 
-          --post-data='\''{
-            "queries": [
-              {
-                  "refId": "success_rate",
-                  "datasource": {
-                      "type": "prometheus",
-                      "uid": "prometheus"
-                  },
-                  "editorMode": "code",
-                  "expr": "max_over_time(oks[$__range])/(0.0001+max_over_time(not_oks[$__range])+max_over_time(oks[$__range]))",
-                  "legendFormat": "__auto",
-                  "range": false,
-                  "instant": true,
-                  "interval": "1s",
-                  "key": "Q-23633ba7-91cd-4dae-bda9-0534c737bacf-0",
-                  "exemplar": false,
-                  "hide": false,
-                  "queryType": "timeSeriesQuery",
-                  "requestId": "Q-23633ba7-91cd-4dae-bda9-0534c737bacf-0Q-5b00819a-64cf-4684-8067-4caef59d2641-1Q-1e3c314b-70a4-44a4-8927-0be5c932483f-3success_rate",
-                  "utcOffsetSec": 14400,
-                  "datasourceId": 1,
-                  "intervalMs": 5000,
-                  "maxDataPoints": 1514
-              },
-              {
-                  "refId": "max_99_latency",
-                  "key": "Q-5b00819a-64cf-4684-8067-4caef59d2641-1",
-                  "datasource": {
-                      "type": "prometheus",
-                      "uid": "prometheus"
-                  },
-                  "editorMode": "code",
-                  "expr": "max_over_time(latency{quantile=\"0.99\"}[$__range])",
-                  "legendFormat": "__auto",
-                  "range": false,
-                  "instant": true,
-                  "exemplar": false,
-                  "hide": false,
-                  "queryType": "timeSeriesQuery",
-                  "requestId": "Q-23633ba7-91cd-4dae-bda9-0534c737bacf-0Q-5b00819a-64cf-4684-8067-4caef59d2641-1Q-1e3c314b-70a4-44a4-8927-0be5c932483f-3max_99_latency",
-                  "utcOffsetSec": 14400,
-                  "interval": "",
-                  "datasourceId": 1,
-                  "intervalMs": 5000,
-                  "maxDataPoints": 1514
-              },
-              {
-                  "refId": "fail_interval",
-                  "key": "Q-1e3c314b-70a4-44a4-8927-0be5c932483f-3",
-                  "datasource": {
-                      "type": "prometheus",
-                      "uid": "prometheus"
-                  },
-                  "editorMode": "code",
-                  "expr": "sum_over_time(clamp(irate(not_oks[2s])*2, 0, 1)[$__range:1s])",
-                  "legendFormat": "__auto",
-                  "range": false,
-                  "instant": true,
-                  "interval": "1s",
-                  "hide": false,
-                  "exemplar": false,
-                  "format": "time_series",
-                  "queryType": "timeSeriesQuery",
-                  "requestId": "Q-23633ba7-91cd-4dae-bda9-0534c737bacf-0Q-5b00819a-64cf-4684-8067-4caef59d2641-1Q-1e3c314b-70a4-44a4-8927-0be5c932483f-3fail_interval",
-                  "utcOffsetSec": 14400,
-                  "datasourceId": 1,
-                  "intervalMs": 5000,
-                  "maxDataPoints": 1514
-              }
-            ],
-            "range": {
-              "from": "${{ inputs.test_start_iso }}",
-              "to": "${{ inputs.test_end_iso }}",
-              "raw": {
-                "from": "${{ inputs.test_start_iso }}",
-                "to": "${{ inputs.test_end_iso }}"
-              }
-            },
-            "from":"${{ inputs.test_start }}",
-            "to":"${{ inputs.test_end }}
-          }'\''
+          --post-data='\''{"queries": [  {"refId": "success_rate","datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "max_over_time(oks[$__range])/(0.0001+max_over_time(not_oks[$__range])+max_over_time(oks[$__range]))","legendFormat": "__auto","range": false,"instant": true,"interval": "1s","key": "Q-23633ba7-91cd-4dae-bda9-0534c737bacf-0","exemplar": false,"hide": false,"queryType": "timeSeriesQuery","requestId": "Q-23633ba7-91cd-4dae-bda9-0534c737bacf-0Q-5b00819a-64cf-4684-8067-4caef59d2641-1Q-1e3c314b-70a4-44a4-8927-0be5c932483f-3success_rate","utcOffsetSec": 14400,"datasourceId": 1,"intervalMs": 5000,"maxDataPoints": 1514  },  {"refId": "max_99_latency","key": "Q-5b00819a-64cf-4684-8067-4caef59d2641-1","datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "max_over_time(latency{quantile=\"0.99\"}[$__range])","legendFormat": "__auto","range": false,"instant": true,"exemplar": false,"hide": false,"queryType": "timeSeriesQuery","requestId": "Q-23633ba7-91cd-4dae-bda9-0534c737bacf-0Q-5b00819a-64cf-4684-8067-4caef59d2641-1Q-1e3c314b-70a4-44a4-8927-0be5c932483f-3max_99_latency","utcOffsetSec": 14400,"interval": "","datasourceId": 1,"intervalMs": 5000,"maxDataPoints": 1514  },  {"refId": "fail_interval","key": "Q-1e3c314b-70a4-44a4-8927-0be5c932483f-3","datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "sum_over_time(clamp(irate(not_oks[2s])*2, 0, 1)[$__range:1s])","legendFormat": "__auto","range": false,"instant": true,"interval": "1s","hide": false,"exemplar": false,"format": "time_series","queryType": "timeSeriesQuery","requestId": "Q-23633ba7-91cd-4dae-bda9-0534c737bacf-0Q-5b00819a-64cf-4684-8067-4caef59d2641-1Q-1e3c314b-70a4-44a4-8927-0be5c932483f-3fail_interval","utcOffsetSec": 14400,"datasourceId": 1,"intervalMs": 5000,"maxDataPoints": 1514  }],"range": {  "from": "${{ inputs.test_start_iso }}",  "to": "${{ inputs.test_end_iso }}",  "raw": {"from": "${{ inputs.test_start_iso }}","to": "${{ inputs.test_end_iso }}"  }},"from":"${{ inputs.test_start }}","to":"${{ inputs.test_end }}}'\''
           '\''http://grafana/api/ds/query'\''
           | base64' > query_result.b64;
+
+      - name: Print result
+        shell: bash
+        run: cat query_result.b64
 
       - name: Create json from base64
         shell: bash
