@@ -1,30 +1,39 @@
 name: "Take screenshot in grafana"
+description: "Take grafana screenshot from inside of k8s cluster and save it into comment to pull request"
 author: "Ilya Shevchenko <id.shev@yandex.ru>"
 inputs:
   dashboard:
     description: "Dashboard UID"
     default: "7CzMl5t4k"
   width:
-    default: 1500
+    description: "Image width"
+    default: "1500"
   height:
-    default: 1100
-  time:
-    description: "How much time from now to be captured"
-    default: "5m"
+    description: "Image height"
+    default: "1100"
+  time_from:
+    description: "Capture graph from this time"
+    required: true
+  time_to:
+    description: "Capture graph to this time"
+    required: true
   grafana-host:
     description: "Grafana host"
     default: "http://grafana"
   AWS_CREDENTIALS:
+    description: "AWS credentials ($HOME/.aws/credentials) in base64"
     required: true
   AWS_CONFIG:
+    description: "AWS config ($HOME/.aws/config) in base64"
     required: true
   s3-endpoint:
-    required: true
-  s3-bucket:
+    description: "AWS s3 --endpoint-url param"
     required: true
   image-folder:
+    description: "AWS s3 folder"
     default: "ydb-slo-results/"
   image-prefix:
+    description: "Image filename prefix, e.g. '<image-prefix>-`date -Iseconds`.png;'"
     required: true
 
 outputs:
@@ -46,7 +55,7 @@ runs:
       shell: bash
       run: >
         kubectl run -q -i --image=busybox --rm grafana-screenshoter --restart=Never -- sh -c "
-        wget -q -O- '${{ inputs.grafana-host }}/render/d/${{ inputs.dashboard }}/slo?orgId=1&from=now-${{ inputs.time }}&to=now&width=${{ inputs.width }}&height=${{ inputs.height }}&tz=Europe%2FIstanbul&kiosk=tv' 
+        wget -q -O- '${{ inputs.grafana-host }}/render/d/${{ inputs.dashboard }}/slo?orgId=1&from=${{ inputs.time_from }}&to=${{ inputs.time_to }}&width=${{ inputs.width }}&height=${{ inputs.height }}&tz=Europe%2FIstanbul&kiosk=tv' 
         | base64" > pic.b64;
 
     - name: Create picture from base64

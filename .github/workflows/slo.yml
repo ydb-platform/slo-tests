@@ -98,11 +98,11 @@ jobs:
         uses: ./.github/actions/grafana-screenshot
         id: screenshot
         with:
-          time: "5m"
+          time_from: ${{ needs.run-nodejs.outputs.test_start }}
+          time_to: ${{ needs.run-nodejs.outputs.test_end }}
           AWS_CREDENTIALS: ${{ secrets.AWS_CREDENTIALS }}
           AWS_CONFIG: ${{ secrets.AWS_CONFIG }}
           s3-endpoint: ${{ secrets.S3_ENDPOINT }}
-          s3-bucket: ${{ secrets.S3_BUCKET }}
           image-folder: "ydb-slo-results/"
           image-prefix: "nodejs"
 
@@ -116,7 +116,7 @@ jobs:
           message: |
             Here are results of SLO test :volcano: :
 
-            [Grafana Dashboard](${{ vars.INGRESS_ADDRESS }})
+            [Grafana Dashboard](${{ vars.INGRESS_ADDRESS }}/d/${{ vars.GRAFANA_DASHBOARD }}?orgId=1&from=${{ needs.run-nodejs.outputs.test_start }}&to=${{ needs.run-nodejs.outputs.test_end }})
 
             ![SLO-nodejs](${{ steps.screenshot.outputs.picture-url}})
 
