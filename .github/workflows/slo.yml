@@ -112,10 +112,12 @@ jobs:
       - name: Add comment to PR
         uses: thollander/actions-comment-pull-request@v2
         with:
+          comment_tag: slo-image
           message: |
             Here are results of SLO test :volcano: :
 
             [Grafana Dashboard](${{ vars.INGRESS_ADDRESS }})
+
             ![SLO-nodejs](${{ steps.screenshot.outputs.picture-url}})
 
   # delete-cluster:
