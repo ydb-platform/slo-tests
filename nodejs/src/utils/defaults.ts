@@ -14,3 +14,4 @@ export const WRITE_TIME = 360 // seconds
 
 export const SHUTDOWN_TIME = 30
 export const PROMETHEUS_PUSH_GATEWAY = 'http://127.0.0.1:9091'
+export const PROMETHEUS_PUSH_PERIOD = 250

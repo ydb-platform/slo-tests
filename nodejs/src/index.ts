@@ -1,10 +1,15 @@
 import { program } from 'commander'
-import { Driver, getCredentialsFromEnv } from 'ydb-sdk'
 import { cleanup } from './cleanup'
 import { create } from './create'
 import { MetricsJob } from './metricsJob'
 import { readJob } from './readJob'
-import { TABLE_NAME, SHUTDOWN_TIME, PROMETHEUS_PUSH_GATEWAY } from './utils/defaults'
+import { createDriver } from './utils/createDriver'
+import {
+  TABLE_NAME,
+  SHUTDOWN_TIME,
+  PROMETHEUS_PUSH_GATEWAY,
+  PROMETHEUS_PUSH_PERIOD,
+} from './utils/defaults'
 import Executor from './utils/Executor'
 import { getMaxId } from './utils/getMaxId'
 import { writeJob } from './writeJob'
@@ -13,38 +18,6 @@ const defaultArgs = (p: typeof program) => {
   return p
     .argument('<endpoint>', 'YDB endpoint to connect to')
     .argument('<db>', 'YDB database to connect to')
-}
-
-async function createDriver(endpoint: string, database: string): Promise<Driver> {
-  const authService = getCredentialsFromEnv()
-  console.log('Driver initializing...')
-  const logFunction = (lvl: string, suppress: boolean = false) => {
-    return (msg: string, ...args: any[]) =>
-      !suppress && console.log(`[${new Date().toISOString()}] ${lvl} ${msg}`, args)
-  }
-  const logger = {
-    trace: logFunction('trace', true),
-    debug: logFunction('debug'),
-    fatal: logFunction('fatal'),
-    error: logFunction('error'),
-    warn: logFunction('warn'),
-    info: logFunction('info'),
-  }
-  const driver = new Driver({
-    endpoint,
-    database,
-    authService,
-    poolSettings: { minLimit: 10 },
-    // logger,
-  })
-
-  const timeout = 30000
-  if (!(await driver.ready(timeout))) {
-    console.log(`Driver has not become ready in ${timeout}ms!`)
-    process.exit(1)
-  }
-  console.log('Initialized succesfully')
-  return driver
 }
 
 interface ICreateOptions {
@@ -96,15 +69,27 @@ function main() {
     .option('--write-timeout <writeTimeout>', 'write timeout milliseconds')
     .option('--time <time>', 'run time in seconds')
     .option('--shutdown-time <shutdownTime>', 'graceful shutdown time in seconds')
+    .option('--report-period <reportPeriod>', 'prometheus push period in milliseconds')
     .action(
       async (
         endpoint,
         db,
-        { tableName, readRps, readTimeout, writeRps, writeTimeout, time, shutdownTime, promPgw }
+        {
+          tableName,
+          readRps,
+          readTimeout,
+          writeRps,
+          writeTimeout,
+          time,
+          shutdownTime,
+          promPgw,
+          reportPeriod,
+        }
       ) => {
         if (!tableName) tableName = TABLE_NAME
         if (!shutdownTime) shutdownTime = SHUTDOWN_TIME
         if (!promPgw) promPgw = PROMETHEUS_PUSH_GATEWAY
+        if (!reportPeriod) reportPeriod = PROMETHEUS_PUSH_PERIOD
         console.log('Run workload over', {
           tableName,
           readRps,
@@ -120,7 +105,7 @@ function main() {
         const maxId = await getMaxId(driver, tableName)
         console.log('Max id', { maxId })
         const executor = new Executor(driver, promPgw)
-        const metricsJob = new MetricsJob(executor, 1000, time + shutdownTime)
+        const metricsJob = new MetricsJob(executor, reportPeriod, time + shutdownTime)
 
         await executor.printStats()
         await executor.pushStats()
@@ -133,7 +118,9 @@ function main() {
         await executor.pushStats()
         await executor.printStats('runStats.json')
         console.log('Reset metrics')
+        executor.stopCollectingMetrics()
         await executor.resetStats()
+        await new Promise((resolve) => setTimeout(resolve, 2000))
         await executor.pushStats()
         process.exit(0)
       }

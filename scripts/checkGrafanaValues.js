@@ -16,10 +16,12 @@ try {
 }
 
 let checksResults = desiredParams.map((desiredParam, index) => {
-  const filtered = parsed.filter((value) =>
-    Object.entries(desiredParam.find)
-      .map(([k, v]) => value[k] == v)
-      .every((v) => v)
+  // find values where every search value is valid AND value of param is not undefined
+  const filtered = parsed.filter(
+    (value) =>
+      Object.entries(desiredParam.find)
+        .map(([k, v]) => value[k] == v)
+        .every((v) => v) && typeof value[desiredParam.cmp[0]] !== "undefined"
   );
   const paramsForPrint = JSON.stringify(desiredParam.find);
   console.log(

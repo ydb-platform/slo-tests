@@ -62,6 +62,8 @@ jobs:
     with:
       test_start: ${{ needs.run-nodejs.outputs.test_start }}
       test_end: ${{ needs.run-nodejs.outputs.test_end }}
+      test_start_iso: ${{ needs.run-nodejs.outputs.test_start_iso }}
+      test_end_iso: ${{ needs.run-nodejs.outputs.test_end_iso }}
 
   cleanup-tables:
     needs: [run-nodejs]
@@ -96,11 +98,11 @@ jobs:
         uses: ./.github/actions/grafana-screenshot
         id: screenshot
         with:
-          time: "5m"
+          time_from: ${{ needs.run-nodejs.outputs.test_start }}
+          time_to: ${{ needs.run-nodejs.outputs.test_end }}
           AWS_CREDENTIALS: ${{ secrets.AWS_CREDENTIALS }}
           AWS_CONFIG: ${{ secrets.AWS_CONFIG }}
           s3-endpoint: ${{ secrets.S3_ENDPOINT }}
-          s3-bucket: ${{ secrets.S3_BUCKET }}
           image-folder: "ydb-slo-results/"
           image-prefix: "nodejs"
 
@@ -110,10 +112,12 @@ jobs:
       - name: Add comment to PR
         uses: thollander/actions-comment-pull-request@v2
         with:
+          comment_tag: slo-image
           message: |
             Here are results of SLO test :volcano: :
 
-            [Grafana Dashboard](${{ vars.INGRESS_ADDRESS }})
+            [Grafana Dashboard](${{ vars.INGRESS_ADDRESS }}/d/${{ vars.GRAFANA_DASHBOARD }}?orgId=1&from=${{ needs.run-nodejs.outputs.test_start }}&to=${{ needs.run-nodejs.outputs.test_end }})
+
             ![SLO-nodejs](${{ steps.screenshot.outputs.picture-url}})
 
   # delete-cluster:
