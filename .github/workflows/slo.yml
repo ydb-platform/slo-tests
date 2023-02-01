@@ -76,7 +76,8 @@ jobs:
   run-workload:
     needs: [create-cluster, create-tables, build-workload]
     uses: ./.github/workflows/run-slo.yml
-    secrets: inherit
+    secrets:
+      KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
     with:
       language: ${{ inputs.language }}
 
