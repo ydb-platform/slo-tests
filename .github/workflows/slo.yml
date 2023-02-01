@@ -12,21 +12,21 @@ on:
         required: true
         type: string
     secrets:
-      KUBE_CONFIG:
+      SLO_KUBE_CONFIG:
         required: true
-      DOCKER_REPO:
+      SLO_DOCKER_REPO:
         required: true
-      DOCKER_FOLDER:
+      SLO_DOCKER_FOLDER:
         required: true
-      DOCKER_USERNAME:
+      SLO_DOCKER_USERNAME:
         required: true
-      DOCKER_PASSWORD:
+      SLO_DOCKER_PASSWORD:
         required: true
-      AWS_CREDENTIALS:
+      SLO_AWS_CREDENTIALS:
         required: true
-      AWS_CONFIG:
+      SLO_AWS_CONFIG:
         required: true
-      s3-endpoint:
+      SLO_s3-endpoint:
         required: true
 
 concurrency: slo
@@ -42,17 +42,17 @@ jobs:
       - name: create-cluster
         uses: ./.github/actions/cluster
         with:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+          KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
           command: apply
 
   build-workload:
     uses: ./.github/workflows/build-workload.yml
     secrets:
-      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
-      DOCKER_FOLDER: ${{ secrets.DOCKER_FOLDER }}
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
+      DOCKER_REPO: ${{ secrets.SLO_DOCKER_REPO }}
+      DOCKER_FOLDER: ${{ secrets.SLO_DOCKER_FOLDER }}
+      DOCKER_USERNAME: ${{ secrets.SLO_DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.SLO_DOCKER_PASSWORD }}
     with:
       language: ${{ inputs.language }}
       workload-path: ${{ inputs.workload-path }}
@@ -64,7 +64,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+      - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Run workload
         uses: ./.github/actions/workload
@@ -84,7 +84,7 @@ jobs:
     needs: [run-workload]
     uses: ./.github/workflows/check-prometheus.yml
     secrets:
-      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
     with:
       test_start: ${{ needs.run-workload.outputs.test_start }}
       test_end: ${{ needs.run-workload.outputs.test_end }}
@@ -99,7 +99,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+      - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Run workload
         uses: ./.github/actions/workload
@@ -118,7 +118,7 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+      - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Create screenshot
         uses: ./.github/actions/grafana-screenshot
@@ -126,9 +126,9 @@ jobs:
         with:
           time_from: ${{ needs.run-workload.outputs.test_start }}
           time_to: ${{ needs.run-workload.outputs.test_end }}
-          AWS_CREDENTIALS: ${{ secrets.AWS_CREDENTIALS }}
-          AWS_CONFIG: ${{ secrets.AWS_CONFIG }}
-          s3-endpoint: ${{ secrets.S3_ENDPOINT }}
+          AWS_CREDENTIALS: ${{ secrets.SLO_AWS_CREDENTIALS }}
+          AWS_CONFIG: ${{ secrets.SLO_AWS_CONFIG }}
+          s3-endpoint: ${{ secrets.SLO_S3_ENDPOINT }}
           image-folder: "ydb-slo-results/"
           image-prefix: "${{ inputs.language }}"
 
@@ -157,5 +157,5 @@ jobs:
   #     - name: create-cluster
   #       uses: ./.github/actions/cluster
   #       with:
-  #         KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  #         KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
   #         command: delete
