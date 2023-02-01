@@ -7,7 +7,7 @@ on:
         description: "SDK language or language+variant"
         required: true
         type: string
-      workload-path:
+      workload_path:
         description: "Workload folder to build docker image from"
         required: true
         type: string
