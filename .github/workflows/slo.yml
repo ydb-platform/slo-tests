@@ -1,8 +1,33 @@
 name: Full SLO test workflow
 
 on:
-  pull_request:
-    branches: ["main", "slo"]
+  workflow_call:
+    inputs:
+      language:
+        description: "SDK language or language+variant"
+        required: true
+        type: string
+      workload_path:
+        description: "Workload folder to build docker image from"
+        required: true
+        type: string
+    secrets:
+      SLO_KUBE_CONFIG:
+        required: true
+      SLO_DOCKER_REPO:
+        required: true
+      SLO_DOCKER_FOLDER:
+        required: true
+      SLO_DOCKER_USERNAME:
+        required: true
+      SLO_DOCKER_PASSWORD:
+        required: true
+      SLO_AWS_CREDENTIALS:
+        required: true
+      SLO_AWS_CONFIG:
+        required: true
+      SLO_s3-endpoint:
+        required: true
 
 concurrency: slo
 
@@ -17,73 +42,75 @@ jobs:
       - name: create-cluster
         uses: ./.github/actions/cluster
         with:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+          KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
           command: apply
 
-  build-nodejs:
+  build-workload:
     uses: ./.github/workflows/build-workload.yml
     secrets:
-      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
-      DOCKER_FOLDER: ${{ secrets.DOCKER_FOLDER }}
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
+      DOCKER_REPO: ${{ secrets.SLO_DOCKER_REPO }}
+      DOCKER_FOLDER: ${{ secrets.SLO_DOCKER_FOLDER }}
+      DOCKER_USERNAME: ${{ secrets.SLO_DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.SLO_DOCKER_PASSWORD }}
     with:
-      language: nodejs
+      language: ${{ inputs.language }}
+      workload-path: ${{ inputs.workload-path }}
 
   create-tables:
-    needs: [create-cluster, build-nodejs]
+    needs: [create-cluster, build-workload]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+      - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Run workload
         uses: ./.github/actions/workload
         with:
-          language: "nodejs"
+          language: "${{ inputs.language }}"
           command: "create"
           timeout: "20s"
 
-  run-nodejs:
-    needs: [create-cluster, create-tables, build-nodejs]
+  run-workload:
+    needs: [create-cluster, create-tables, build-workload]
     uses: ./.github/workflows/run-slo.yml
-    secrets: inherit
+    secrets:
+      KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
     with:
-      language: nodejs
+      language: ${{ inputs.language }}
 
   check-results:
-    needs: [run-nodejs]
+    needs: [run-workload]
     uses: ./.github/workflows/check-prometheus.yml
     secrets:
-      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
     with:
-      test_start: ${{ needs.run-nodejs.outputs.test_start }}
-      test_end: ${{ needs.run-nodejs.outputs.test_end }}
-      test_start_iso: ${{ needs.run-nodejs.outputs.test_start_iso }}
-      test_end_iso: ${{ needs.run-nodejs.outputs.test_end_iso }}
+      test_start: ${{ needs.run-workload.outputs.test_start }}
+      test_end: ${{ needs.run-workload.outputs.test_end }}
+      test_start_iso: ${{ needs.run-workload.outputs.test_start_iso }}
+      test_end_iso: ${{ needs.run-workload.outputs.test_end_iso }}
 
   cleanup-tables:
-    needs: [run-nodejs]
+    needs: [run-workload]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+      - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Run workload
         uses: ./.github/actions/workload
         with:
-          language: "nodejs"
+          language: "${{ inputs.language }}"
           command: "cleanup"
           timeout: "20s"
 
   grafana-screenshot:
-    needs: [run-nodejs]
+    needs: [run-workload]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -92,19 +119,19 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+      - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Create screenshot
         uses: ./.github/actions/grafana-screenshot
         id: screenshot
         with:
-          time_from: ${{ needs.run-nodejs.outputs.test_start }}
-          time_to: ${{ needs.run-nodejs.outputs.test_end }}
-          AWS_CREDENTIALS: ${{ secrets.AWS_CREDENTIALS }}
-          AWS_CONFIG: ${{ secrets.AWS_CONFIG }}
-          s3-endpoint: ${{ secrets.S3_ENDPOINT }}
+          time_from: ${{ needs.run-workload.outputs.test_start }}
+          time_to: ${{ needs.run-workload.outputs.test_end }}
+          AWS_CREDENTIALS: ${{ secrets.SLO_AWS_CREDENTIALS }}
+          AWS_CONFIG: ${{ secrets.SLO_AWS_CONFIG }}
+          s3-endpoint: ${{ secrets.SLO_S3_ENDPOINT }}
           image-folder: "ydb-slo-results/"
-          image-prefix: "nodejs"
+          image-prefix: "${{ inputs.language }}"
 
       - name: Log image URL
         run: echo "${{ steps.screenshot.outputs.picture-url}}"
@@ -116,9 +143,9 @@ jobs:
           message: |
             Here are results of SLO test :volcano: :
 
-            [Grafana Dashboard](${{ vars.INGRESS_ADDRESS }}/d/${{ vars.GRAFANA_DASHBOARD }}?orgId=1&from=${{ needs.run-nodejs.outputs.test_start }}&to=${{ needs.run-nodejs.outputs.test_end }})
+            [Grafana Dashboard](${{ vars.INGRESS_ADDRESS }}/d/${{ vars.GRAFANA_DASHBOARD }}?orgId=1&from=${{ needs.run-workload.outputs.test_start }}&to=${{ needs.run-workload.outputs.test_end }})
 
-            ![SLO-nodejs](${{ steps.screenshot.outputs.picture-url}})
+            ![SLO-${{ inputs.language }}](${{ steps.screenshot.outputs.picture-url}})
 
   # delete-cluster:
   #   needs: [grafana-screenshot]
@@ -131,5 +158,5 @@ jobs:
   #     - name: create-cluster
   #       uses: ./.github/actions/cluster
   #       with:
-  #         KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  #         KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
   #         command: delete
