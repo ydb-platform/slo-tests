@@ -18,7 +18,7 @@
 
 ### Create Service Account
 
-`kubectl create -f k8s/ci/create-sa.yaml`
+`kubectl create -f k8s/create-sa.yaml`
 
 Get service account token and save it to `$SA_TOKEN`
 
