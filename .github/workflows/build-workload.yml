@@ -13,8 +13,6 @@ on:
         required: false
         type: string
     secrets:
-      KUBE_CONFIG:
-        required: true
       DOCKER_REPO:
         required: true
       DOCKER_FOLDER:

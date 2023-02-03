@@ -11,7 +11,6 @@ on:
         description: "Workload folder to build docker image from"
         required: true
         type: string
-
     secrets:
       SLO_KUBE_CONFIG:
         required: true
@@ -49,7 +48,6 @@ jobs:
   build-workload:
     uses: ./.github/workflows/build-workload.yml
     secrets:
-      KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
       DOCKER_REPO: ${{ secrets.SLO_DOCKER_REPO }}
       DOCKER_FOLDER: ${{ secrets.SLO_DOCKER_FOLDER }}
       DOCKER_USERNAME: ${{ secrets.SLO_DOCKER_USERNAME }}
