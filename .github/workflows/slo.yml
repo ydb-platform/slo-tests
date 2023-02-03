@@ -11,6 +11,7 @@ on:
         description: "Workload folder to build docker image from"
         required: true
         type: string
+
     secrets:
       SLO_KUBE_CONFIG:
         required: true
@@ -26,7 +27,7 @@ on:
         required: true
       SLO_AWS_CONFIG:
         required: true
-      SLO_s3-endpoint:
+      SLO_S3_ENDPOINT:
         required: true
 
 concurrency: slo
@@ -129,8 +130,8 @@ jobs:
           time_to: ${{ needs.run-workload.outputs.test_end }}
           AWS_CREDENTIALS: ${{ secrets.SLO_AWS_CREDENTIALS }}
           AWS_CONFIG: ${{ secrets.SLO_AWS_CONFIG }}
-          s3-endpoint: ${{ secrets.SLO_S3_ENDPOINT }}
-          image-folder: "ydb-slo-results/"
+          s3-endpoint: ${{ vars.SLO_S3_ENDPOINT }}
+          image-folder: "${{ vars.SLO_S3_IMAGES_FOLDER }}"
           image-prefix: "${{ inputs.language }}"
 
       - name: Log image URL
