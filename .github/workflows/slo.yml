@@ -54,7 +54,7 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.SLO_DOCKER_PASSWORD }}
     with:
       language: ${{ inputs.language }}
-      workload-path: ${{ inputs.workload-path }}
+      workload_path: ${{ inputs.workload_path }}
 
   create-tables:
     needs: [create-cluster, build-workload]

@@ -12,6 +12,11 @@ on:
         default: "3m"
         required: false
         type: string
+      workload_path:
+        description: "Workload folder to build docker image from"
+        required: true
+        type: string
+
     secrets:
       DOCKER_REPO:
         required: true
@@ -39,7 +44,7 @@ jobs:
           --password-stdin
 
       - name: Build ${{ inputs.language }} image
-        working-directory: ${{ inputs.language }}
+        working-directory: ${{ inputs.workload_path }}
         run: >
           docker build 
           -t ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:latest
