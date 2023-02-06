@@ -35,12 +35,8 @@ jobs:
   create-cluster:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
       - name: create-cluster
-        uses: ./.github/actions/cluster
+        uses: ydb-platform/slo-tests/.github/actions/cluster@main
         with:
           KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
           command: apply
@@ -62,11 +58,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          path: _slo_test_workflow_
+          repository: ydb-platform/slo-tests
 
       - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Run workload
-        uses: ./.github/actions/workload
+        uses: ./_slo_test_workflow_/.github/actions/workload
         with:
           language: "${{ inputs.language }}"
           command: "create"
@@ -98,11 +97,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          path: _slo_test_workflow_
+          repository: ydb-platform/slo-tests
 
       - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Run workload
-        uses: ./.github/actions/workload
+        uses: ./_slo_test_workflow_/.github/actions/workload
         with:
           language: "${{ inputs.language }}"
           command: "cleanup"
@@ -116,12 +118,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref }}
+          path: _slo_test_workflow_
+          repository: ydb-platform/slo-tests
 
       - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Create screenshot
-        uses: ./.github/actions/grafana-screenshot
+        uses: ./_slo_test_workflow_/.github/actions/grafana-screenshot
         id: screenshot
         with:
           time_from: ${{ needs.run-workload.outputs.test_start }}
@@ -153,9 +156,10 @@ jobs:
   #     - name: Checkout
   #       uses: actions/checkout@v3
   #       with:
-  #         ref: ${{ github.ref }}
+  #         path: _slo_test_workflow_
+  #         repository: ydb-platform/slo-tests
   #     - name: create-cluster
-  #       uses: ./.github/actions/cluster
+  #       uses: ./_slo_test_workflow_/.github/actions/cluster
   #       with:
   #         KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
   #         command: delete

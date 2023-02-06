@@ -14,7 +14,17 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v3
+    # - uses: actions/checkout@v3
+    - run: echo $GITHUB_WORKSPACE
+      shell: bash
+    - run: ls -la /home/runner/work
+      shell: bash
+    - run: ls -la /home/runner/work/_actions/ydb-platform/slo-tests
+      shell: bash
+    - run: ls -la /home/runner
+      shell: bash
+    - run: ls -la /home
+      shell: bash
 
     - run: mkdir $HOME/.kube; echo "${{ inputs.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
       shell: bash
