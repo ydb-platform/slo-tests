@@ -9,12 +9,17 @@ inputs:
   command:
     description: "Workload command"
     required: true
-    default: apply
+  subfolder:
+    description: "Subfolder to clone repo into"
+    required: true
 
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
+      with:
+        repository: "ydb-platform/slo-tests"
+        path: "${{ inputs.subfolder }}"
 
     - run: mkdir $HOME/.kube; echo "${{ inputs.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
       shell: bash
@@ -24,7 +29,7 @@ runs:
       shell: bash
 
     - name: Create storage nodes
-      run: kubectl ${{ inputs.command }} -f k8s/ci/storage.yaml
+      run: kubectl ${{ inputs.command }} -f ${{ inputs.subfolder }}/k8s/ci/storage.yaml
       shell: bash
 
     - name: Wait until storage nodes become ready
@@ -32,7 +37,7 @@ runs:
       shell: bash
 
     - name: Create database nodes
-      run: kubectl ${{ inputs.command }} -f k8s/ci/database.yaml
+      run: kubectl ${{ inputs.command }} -f ${{ inputs.subfolder }}/k8s/ci/database.yaml
       shell: bash
 
     - name: Wait until database nodes become ready

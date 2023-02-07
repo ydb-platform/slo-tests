@@ -38,6 +38,7 @@ jobs:
       - name: create-cluster
         uses: ydb-platform/slo-tests/.github/actions/cluster@main
         with:
+          subfolder: cluster_create_action
           KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
           command: apply
 
