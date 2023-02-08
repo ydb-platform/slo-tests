@@ -14,6 +14,10 @@ on:
     secrets:
       KUBE_CONFIG:
         required: true
+      DOCKER_REPO:
+        required: true
+      DOCKER_FOLDER:
+        required: true
     outputs:
       test_start:
         description: "Test start timestamp"
@@ -60,6 +64,8 @@ jobs:
           language: "nodejs"
           command: "run"
           timeout: "5m"
+          DOCKER_REPO: "${{ secrets.DOCKER_REPO }}"
+          DOCKER_FOLDER: "${{ secrets.DOCKER_FOLDER }}"
           additionalArgs: >
             --time 160
             --shutdown-time 20

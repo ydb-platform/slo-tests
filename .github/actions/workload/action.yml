@@ -20,6 +20,14 @@ inputs:
     default: "5m"
     required: false
     type: string
+  DOCKER_REPO:
+    description: "Workload docker repo"
+    required: true
+    type: string
+  DOCKER_FOLDER:
+    description: "Workload docker folder"
+    required: true
+    type: string
 
 runs:
   using: "composite"
@@ -54,7 +62,7 @@ runs:
             spec:
               containers:
               - name: ${{ inputs.language }}-wl-${{ inputs.command }}
-                image: cr.yandex/crpho4srfnemeb9mi57a/${{ inputs.language }}:latest
+                image: ${{ inputs.DOCKER_REPO }}/${{ inputs.DOCKER_FOLDER }}/${{ inputs.language }}:latest
                 args:
                   - "--"
                   - "${{ inputs.command }}"
@@ -62,8 +70,6 @@ runs:
                   - "/root/database-sample"
                   - "${{ steps.args-string.outputs.args }}"
               restartPolicy: Never
-              imagePullSecrets:
-                - name: innerregistry
         EOF
 
     - name: Check builded yaml

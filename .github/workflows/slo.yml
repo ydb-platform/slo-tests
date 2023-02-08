@@ -65,12 +65,16 @@ jobs:
           language: "${{ inputs.language }}"
           command: "create"
           timeout: "20s"
+          DOCKER_REPO: "${{ secrets.SLO_DOCKER_REPO }}"
+          DOCKER_FOLDER: "${{ secrets.SLO_DOCKER_FOLDER }}"
 
   run-workload:
     needs: [create-cluster, create-tables, build-workload]
     uses: ./.github/workflows/run-slo.yml
     secrets:
       KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
+      DOCKER_REPO: "${{ secrets.SLO_DOCKER_REPO }}"
+      DOCKER_FOLDER: "${{ secrets.SLO_DOCKER_FOLDER }}"
     with:
       language: ${{ inputs.language }}
 
@@ -98,6 +102,8 @@ jobs:
           language: "${{ inputs.language }}"
           command: "cleanup"
           timeout: "20s"
+          DOCKER_REPO: "${{ secrets.SLO_DOCKER_REPO }}"
+          DOCKER_FOLDER: "${{ secrets.SLO_DOCKER_FOLDER }}"
 
   grafana-screenshot:
     needs: [run-workload]
