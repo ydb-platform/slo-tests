@@ -138,17 +138,13 @@ jobs:
 
             ![SLO-${{ inputs.language }}](${{ steps.screenshot.outputs.picture-url}})
 
-  # delete-cluster:
-  #   needs: [grafana-screenshot]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #       with:
-  #         path: _slo_test_workflow_
-  #         repository: ydb-platform/slo-tests
-  #     - name: create-cluster
-  #       uses: ./_slo_test_workflow_/.github/actions/cluster
-  #       with:
-  #         KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
-  #         command: delete
+  delete-cluster:
+    needs: [cleanup-tables]
+    runs-on: ubuntu-latest
+    steps:
+      - name: delete-cluster
+        uses: ydb-platform/slo-tests/.github/actions/cluster@main
+        with:
+          subfolder: cluster_delete_action
+          KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
+          command: delete
