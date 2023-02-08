@@ -32,7 +32,8 @@ runs:
       run: kubectl ${{ inputs.command }} -f ${{ inputs.subfolder }}/k8s/ci/storage.yaml
       shell: bash
 
-    - name: Wait until storage nodes become ready
+    - if: inputs.command == 'apply'
+      name: Wait until storage nodes become ready
       run: kubectl wait --timeout 5m --for=jsonpath="{.status.state}"="Ready" storages.ydb.tech storage-sample
       shell: bash
 
@@ -40,6 +41,7 @@ runs:
       run: kubectl ${{ inputs.command }} -f ${{ inputs.subfolder }}/k8s/ci/database.yaml
       shell: bash
 
-    - name: Wait until database nodes become ready
+    - if: inputs.command == 'apply'
+      name: Wait until database nodes become ready
       run: kubectl wait --timeout 5m --for=jsonpath="{.status.state}"="Ready" database.ydb.tech database-sample
       shell: bash
