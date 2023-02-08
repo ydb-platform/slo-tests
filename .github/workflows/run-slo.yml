@@ -59,7 +59,7 @@ jobs:
       - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Run workload
-        uses: ./.github/actions/workload
+        uses: ydb-platform/slo-tests/.github/actions/workload@main
         with:
           language: "nodejs"
           command: "run"
@@ -105,7 +105,7 @@ jobs:
         run: echo ${MARTYR_IP} ${GRAFANA_POD}
 
       - name: Annotate freeze in grafana
-        uses: ./.github/actions/grafana-annotate
+        uses: ydb-platform/slo-tests/.github/actions/grafana-annotate@main
         with:
           text: "Freeze tablet"
           tags: '["freeze", "tablet"]'
@@ -118,7 +118,7 @@ jobs:
       - run: sleep ${{ inputs.time_between_phases }}
 
       - name: Annotate unfreeze in grafana
-        uses: ./.github/actions/grafana-annotate
+        uses: ydb-platform/slo-tests/.github/actions/grafana-annotate@main
         with:
           text: "Unfreeze tablet"
           tags: '["unfreeze", "tablet"]'
@@ -131,7 +131,7 @@ jobs:
       - run: sleep ${{ inputs.time_between_phases }}
 
       - name: Annotate deletion of the database pod in grafana
-        uses: ./.github/actions/grafana-annotate
+        uses: ydb-platform/slo-tests/.github/actions/grafana-annotate@main
         with:
           text: "Delete database pod"
           tags: '["kube", "pod", "kubectl-delete"]'
@@ -142,7 +142,7 @@ jobs:
       - run: sleep ${{ inputs.time_between_phases }}
 
       - name: Annotate hard shutdown of the database pod in grafana
-        uses: ./.github/actions/grafana-annotate
+        uses: ydb-platform/slo-tests/.github/actions/grafana-annotate@main
         with:
           text: "Hard shutdown database pod"
           tags: '["kube", "pod", "kubectl-delete-force"]'
@@ -153,7 +153,7 @@ jobs:
       - run: sleep ${{ inputs.time_between_phases }}
 
       - name: Annotate kill of the database pod from inside in grafana
-        uses: ./.github/actions/grafana-annotate
+        uses: ydb-platform/slo-tests/.github/actions/grafana-annotate@main
         with:
           text: "Kill pod from inside"
           tags: '["kube", "pod", "kubectl-kill"]'
