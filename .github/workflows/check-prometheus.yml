@@ -19,6 +19,10 @@ on:
         description: "Test end  in ISO format"
         required: true
         type: string
+      subfolder:
+        required: false
+        default: "check-prometheus"
+        type: string
     secrets:
       KUBE_CONFIG:
         required: true
@@ -35,8 +39,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref }}
-        # need this owing to local action usage
+          repository: "ydb-platform/slo-tests"
+          path: "${{ inputs.subfolder }}"
 
       - run: mkdir $HOME/.kube; echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
@@ -145,7 +149,7 @@ jobs:
 
       - name: Run grafana output parser
         shell: bash
-        run: node scripts/parseGrafanaOutput.js query_result.json ./parsed.json
+        run: node ${{ inputs.subfolder }}/scripts/parseGrafanaOutput.js query_result.json ./parsed.json
 
       - name: Check out parsed.json
         shell: bash
@@ -154,7 +158,7 @@ jobs:
       - name: Run grafana output parser
         id: checker
         shell: bash
-        run: node scripts/checkGrafanaValues.js parsed.json scripts/objectives.json
+        run: node ${{ inputs.subfolder }}/scripts/checkGrafanaValues.js parsed.json ${{ inputs.subfolder }}/scripts/objectives.json
 
       - name: Check out checks_results
         shell: bash

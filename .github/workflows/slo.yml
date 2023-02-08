@@ -120,7 +120,7 @@ jobs:
           time_to: ${{ needs.run-workload.outputs.test_end }}
           AWS_CREDENTIALS: ${{ secrets.SLO_AWS_CREDENTIALS }}
           AWS_CONFIG: ${{ secrets.SLO_AWS_CONFIG }}
-          s3-endpoint: ${{ vars.SLO_S3_ENDPOINT }}
+          s3-endpoint: ${{ secrets.SLO_S3_ENDPOINT }}
           image-folder: "${{ vars.SLO_S3_IMAGES_FOLDER }}"
           image-prefix: "${{ inputs.language }}"
 
