@@ -134,7 +134,7 @@ jobs:
           message: |
             Here are results of SLO test :volcano: :
 
-            [Grafana Dashboard](${{ vars.INGRESS_ADDRESS }}/d/${{ vars.GRAFANA_DASHBOARD }}?orgId=1&from=${{ needs.run-workload.outputs.test_start }}&to=${{ needs.run-workload.outputs.test_end }})
+            [Grafana Dashboard](${{ vars.SLO_GRAFANA_DOMAIN }}/d/${{ vars.SLO_GRAFANA_DASHBOARD }}?orgId=1&from=${{ needs.run-workload.outputs.test_start }}&to=${{ needs.run-workload.outputs.test_end }})
 
             ![SLO-${{ inputs.language }}](${{ steps.screenshot.outputs.picture-url}})
 
