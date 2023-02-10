@@ -64,7 +64,7 @@ jobs:
         with:
           language: "${{ inputs.language }}"
           command: "create"
-          timeout: "20s"
+          timeout: "40s"
           DOCKER_REPO: "${{ secrets.SLO_DOCKER_REPO }}"
           DOCKER_FOLDER: "${{ secrets.SLO_DOCKER_FOLDER }}"
 
@@ -101,7 +101,7 @@ jobs:
         with:
           language: "${{ inputs.language }}"
           command: "cleanup"
-          timeout: "20s"
+          timeout: "40s"
           DOCKER_REPO: "${{ secrets.SLO_DOCKER_REPO }}"
           DOCKER_FOLDER: "${{ secrets.SLO_DOCKER_FOLDER }}"
 
