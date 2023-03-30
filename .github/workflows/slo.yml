@@ -140,6 +140,7 @@ jobs:
 
   delete-cluster:
     needs: [cleanup-tables]
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: delete-cluster
