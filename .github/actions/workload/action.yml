@@ -89,9 +89,9 @@ runs:
     - name: Check status of workload
       shell: bash
       run: >
-        if test -n "`kubectl get job/${{ inputs.language }}-wl-${{ inputs.command }} -o=jsonpath={.status.failed}`";
-        then echo 'Failed'; exit 2;
-        else; echo 'Not failed'; fi
+        if test -n "`kubectl get job/${{ inputs.language }}-wl-${{ inputs.command }} -o=jsonpath={.status.failed}`"; then
+        echo 'Failed'; exit 3;
+        fi
 
     - name: Get logs
       if: success() || failure()
