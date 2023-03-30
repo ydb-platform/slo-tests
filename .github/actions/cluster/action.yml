@@ -50,12 +50,12 @@ runs:
 
     - name: Delete database nodes
       if: inputs.command == 'delete'
-      run: kubectl apply -f ${{ inputs.subfolder }}/k8s/ci/database.yaml
+      run: kubectl delete -f ${{ inputs.subfolder }}/k8s/ci/database.yaml
       shell: bash
 
     - name: Delete storage nodes
       if: inputs.command == 'delete'
-      run: kubectl apply -f ${{ inputs.subfolder }}/k8s/ci/storage.yaml
+      run: kubectl delete -f ${{ inputs.subfolder }}/k8s/ci/storage.yaml
       shell: bash
 
     - name: Delete PVC
