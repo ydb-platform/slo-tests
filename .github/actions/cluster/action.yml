@@ -24,12 +24,13 @@ runs:
     - run: mkdir $HOME/.kube; echo "${{ inputs.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
       shell: bash
 
-    - name: Get existing pods
-      run: kubectl get pods
+    - name: Get existing pods and PVC
+      run: kubectl get pods; kubectl get pvc
       shell: bash
 
     - name: Create storage nodes
-      run: kubectl ${{ inputs.command }} -f ${{ inputs.subfolder }}/k8s/ci/storage.yaml
+      if: inputs.command == 'apply'
+      run: kubectl apply -f ${{ inputs.subfolder }}/k8s/ci/storage.yaml
       shell: bash
 
     - if: inputs.command == 'apply'
@@ -38,10 +39,30 @@ runs:
       shell: bash
 
     - name: Create database nodes
-      run: kubectl ${{ inputs.command }} -f ${{ inputs.subfolder }}/k8s/ci/database.yaml
+      if: inputs.command == 'apply'
+      run: kubectl apply -f ${{ inputs.subfolder }}/k8s/ci/database.yaml
       shell: bash
 
     - if: inputs.command == 'apply'
       name: Wait until database nodes become ready
       run: kubectl wait --timeout 5m --for=jsonpath="{.status.state}"="Ready" database.ydb.tech database-sample
+      shell: bash
+
+    - name: Delete database nodes
+      if: inputs.command == 'delete'
+      run: kubectl apply -f ${{ inputs.subfolder }}/k8s/ci/database.yaml
+      shell: bash
+
+    - name: Delete storage nodes
+      if: inputs.command == 'delete'
+      run: kubectl apply -f ${{ inputs.subfolder }}/k8s/ci/storage.yaml
+      shell: bash
+
+    - name: Delete PVC
+      if: inputs.command == 'delete'
+      run: kubectl delete pvc `kubectl get pvc -o=jsonpath="{.items[*].metadata.name}" -l ydb-cluster=slo-storage`
+      shell: bash
+
+    - name: Get pods and PVC
+      run: kubectl get pods; kubectl get pvc
       shell: bash
