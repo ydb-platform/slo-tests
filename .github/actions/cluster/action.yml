@@ -35,7 +35,7 @@ runs:
 
     - if: inputs.command == 'apply'
       name: Wait until storage nodes become ready
-      run: kubectl wait --timeout 5m --for=jsonpath="{.status.state}"="Ready" storages.ydb.tech storage-sample
+      run: kubectl wait --timeout 7m --for=jsonpath="{.status.state}"="Ready" storages.ydb.tech storage-sample
       shell: bash
 
     - name: Create database nodes
@@ -45,7 +45,7 @@ runs:
 
     - if: inputs.command == 'apply'
       name: Wait until database nodes become ready
-      run: kubectl wait --timeout 5m --for=jsonpath="{.status.state}"="Ready" database.ydb.tech database-sample
+      run: kubectl wait --timeout 7m --for=jsonpath="{.status.state}"="Ready" database.ydb.tech database-sample
       shell: bash
 
     - name: Delete database nodes
