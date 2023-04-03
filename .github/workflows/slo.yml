@@ -162,7 +162,7 @@ jobs:
 
   delete-cluster:
     needs: [cleanup-tables, create-cluster]
-    if: always() && needs.create-cluster.results == 'success'
+    if: always() && needs.create-cluster.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: delete-cluster
