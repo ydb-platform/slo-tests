@@ -161,8 +161,8 @@ jobs:
             ![SLO-${{ inputs.language }}](${{ steps.screenshot.outputs.picture-url}})
 
   delete-cluster:
-    needs: [cleanup-tables]
-    if: always()
+    needs: [cleanup-tables, create-cluster]
+    if: always() && needs.create-cluster.results == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: delete-cluster
@@ -173,8 +173,9 @@ jobs:
           command: delete
 
   release-mutex:
+    needs: [delete-cluster, obtain-mutex]
+    if: always() && needs.obtain-mutex.result == 'success'
     runs-on: ubuntu-latest
-    needs: [delete-cluster]
     steps:
       - name: release-mutex
         uses: ydb-platform/slo-tests/.github/actions/mutex@main
