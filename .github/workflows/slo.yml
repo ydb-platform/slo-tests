@@ -11,6 +11,14 @@ on:
         description: "Workload folder to build docker image from"
         required: true
         type: string
+      workload_build_context:
+        description: "Path to docker build context - cwd is workload_path"
+        default: "."
+        type: string
+      workload_build_options:
+        description: "String with additional options, such as --build-arg and others from https://docs.docker.com/engine/reference/commandline/build/#options"
+        default: ""
+        type: string
     secrets:
       SLO_KUBE_CONFIG:
         required: true
@@ -64,6 +72,8 @@ jobs:
     with:
       language: ${{ inputs.language }}
       workload_path: ${{ inputs.workload_path }}
+      context: ${{ inputs.workload_build_context }}
+      options: ${{ inputs.workload_build_options }}
 
   create-tables:
     needs: [create-cluster, build-workload]

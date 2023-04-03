@@ -16,6 +16,14 @@ on:
         description: "Workload folder to build docker image from"
         required: true
         type: string
+      context:
+        description: "Path to docker build context - cwd is workload_path"
+        default: "."
+        type: string
+      options:
+        description: "String with additional options, such as --build-arg and others from https://docs.docker.com/engine/reference/commandline/build/#options"
+        default: ""
+        type: string
 
     secrets:
       DOCKER_REPO:
@@ -49,7 +57,8 @@ jobs:
           docker build 
           -t ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:latest
           -t ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:gh-${{ github.sha }}
-          .
+          ${{ inputs.options }}
+          ${{ inputs.context }}
 
       - name: Push image with all tags
         run: >
