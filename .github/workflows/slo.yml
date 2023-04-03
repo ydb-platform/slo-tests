@@ -154,7 +154,7 @@ jobs:
         with:
           comment_tag: slo-image-${{ inputs.language }}
           message: |
-            Here are results of SLO test :volcano: :
+            Here are results of SLO test for ${{ inputs.language }} :volcano: :
 
             [Grafana Dashboard](${{ vars.SLO_GRAFANA_DOMAIN }}/d/${{ vars.SLO_GRAFANA_DASHBOARD }}?orgId=1&from=${{ needs.run-workload.outputs.test_start }}&to=${{ needs.run-workload.outputs.test_end }})
 
