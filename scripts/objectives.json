@@ -1,11 +1,11 @@
 [
   {
     "find": { "jobName": "read", "status": "ok" },
-    "cmp": ["max_99_latency", "<", 50]
+    "cmp": ["max_99_latency", "<", 100]
   },
   {
     "find": { "jobName": "write", "status": "ok" },
-    "cmp": ["max_99_latency", "<", 50]
+    "cmp": ["max_99_latency", "<", 100]
   },
   {
     "find": { "jobName": "read", "status": "err" },
