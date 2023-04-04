@@ -2,7 +2,7 @@ name: "Github Action for workload actions"
 author: "Ilya Shevchenko <id.shev@yandex.ru>"
 
 inputs:
-  language:
+  language_id:
     description: "SDK language or language+variant"
     required: true
     type: string
@@ -45,24 +45,24 @@ runs:
         echo "$ARGS" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
-    - name: Create ${{ inputs.language }} test run yaml
+    - name: Create ${{ inputs.language_id }} test run yaml
       shell: bash
       run: |
-        cat > ${{ inputs.language }}-wl-${{ inputs.command }}.yaml <<EOF
+        cat > ${{ inputs.language_id }}-wl-${{ inputs.command }}.yaml <<EOF
         apiVersion: batch/v1
         kind: Job
         metadata:
-          name: ${{ inputs.language }}-wl-${{ inputs.command }}
+          name: ${{ inputs.language_id }}-wl-${{ inputs.command }}
         spec:
           ttlSecondsAfterFinished: 120
           backoffLimit: 0
           template:
             metadata:
-              name: ${{ inputs.language }}-wl-${{ inputs.command }}
+              name: ${{ inputs.language_id }}-wl-${{ inputs.command }}
             spec:
               containers:
-              - name: ${{ inputs.language }}-wl-${{ inputs.command }}
-                image: ${{ inputs.DOCKER_REPO }}/${{ inputs.DOCKER_FOLDER }}/${{ inputs.language }}:latest
+              - name: ${{ inputs.language_id }}-wl-${{ inputs.command }}
+                image: ${{ inputs.DOCKER_REPO }}/${{ inputs.DOCKER_FOLDER }}/${{ inputs.language_id }}:latest
                 args:
                   - "--"
                   - "${{ inputs.command }}"
@@ -74,26 +74,26 @@ runs:
 
     - name: Check builded yaml
       shell: bash
-      run: cat ${{ inputs.language }}-wl-${{ inputs.command }}.yaml
+      run: cat ${{ inputs.language_id }}-wl-${{ inputs.command }}.yaml
 
-    - name: Run ${{ inputs.language }} workload
+    - name: Run ${{ inputs.language_id }} workload
       shell: bash
-      run: kubectl apply -f ${{ inputs.language }}-wl-${{ inputs.command }}.yaml
+      run: kubectl apply -f ${{ inputs.language_id }}-wl-${{ inputs.command }}.yaml
 
     - name: Wait for workload to end
       shell: bash
       run: >
         kubectl wait --for=jsonpath="{.status['failed','complete','succeeded']}"=1
-        --timeout ${{ inputs.timeout }} job/${{ inputs.language }}-wl-${{ inputs.command }};
+        --timeout ${{ inputs.timeout }} job/${{ inputs.language_id }}-wl-${{ inputs.command }};
 
     - name: Check status of workload
       shell: bash
       run: >
-        if test -n "`kubectl get job/${{ inputs.language }}-wl-${{ inputs.command }} -o=jsonpath={.status.failed}`"; then
+        if test -n "`kubectl get job/${{ inputs.language_id }}-wl-${{ inputs.command }} -o=jsonpath={.status.failed}`"; then
         echo 'Failed'; exit 3;
         fi
 
     - name: Get logs
       if: success() || failure()
       shell: bash
-      run: kubectl logs job/${{ inputs.language }}-wl-${{ inputs.command }}
+      run: kubectl logs job/${{ inputs.language_id }}-wl-${{ inputs.command }}

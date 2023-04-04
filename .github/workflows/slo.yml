@@ -3,9 +3,13 @@ name: Full SLO test workflow
 on:
   workflow_call:
     inputs:
-      language:
-        description: "SDK language or language+variant"
+      language_id:
+        description: "SDK language or language+variant for kuberetes, prometheus metrics, PR comments"
         required: true
+        type: string
+      language:
+        description: "SDK name for PR comments"
+        default: ""
         type: string
       workload_path:
         description: "Workload folder to build docker image from"
@@ -48,7 +52,7 @@ jobs:
         with:
           KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
           command: obtain
-          language: "${{ inputs.language }}"
+          language_id: "${{ inputs.language_id }}"
 
   create-cluster:
     needs: [obtain-mutex]
@@ -70,7 +74,7 @@ jobs:
       DOCKER_USERNAME: ${{ secrets.SLO_DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.SLO_DOCKER_PASSWORD }}
     with:
-      language: ${{ inputs.language }}
+      language_id: ${{ inputs.language_id }}
       workload_path: ${{ inputs.workload_path }}
       context: ${{ inputs.workload_build_context }}
       options: ${{ inputs.workload_build_options }}
@@ -84,7 +88,7 @@ jobs:
       - name: Run workload
         uses: ydb-platform/slo-tests/.github/actions/workload@main
         with:
-          language: "${{ inputs.language }}"
+          language_id: "${{ inputs.language_id }}"
           command: "create"
           timeout: "40s"
           DOCKER_REPO: "${{ secrets.SLO_DOCKER_REPO }}"
@@ -98,7 +102,7 @@ jobs:
       DOCKER_REPO: "${{ secrets.SLO_DOCKER_REPO }}"
       DOCKER_FOLDER: "${{ secrets.SLO_DOCKER_FOLDER }}"
     with:
-      language: ${{ inputs.language }}
+      language_id: ${{ inputs.language_id }}
 
   check-results:
     needs: [run-workload]
@@ -121,7 +125,7 @@ jobs:
       - name: Run workload
         uses: ydb-platform/slo-tests/.github/actions/workload@main
         with:
-          language: "${{ inputs.language }}"
+          language_id: "${{ inputs.language_id }}"
           command: "cleanup"
           timeout: "40s"
           DOCKER_REPO: "${{ secrets.SLO_DOCKER_REPO }}"
@@ -144,7 +148,7 @@ jobs:
           AWS_CONFIG: ${{ secrets.SLO_AWS_CONFIG }}
           s3-endpoint: ${{ secrets.SLO_S3_ENDPOINT }}
           image-folder: "${{ vars.SLO_S3_IMAGES_FOLDER }}"
-          image-prefix: "${{ inputs.language }}"
+          image-prefix: "${{ inputs.language_id }}"
 
       - name: Log image URL
         run: echo "${{ steps.screenshot.outputs.picture-url}}"
@@ -152,13 +156,13 @@ jobs:
       - name: Add comment to PR
         uses: thollander/actions-comment-pull-request@v2
         with:
-          comment_tag: slo-image-${{ inputs.language }}
+          comment_tag: slo-image-${{ inputs.language_id }}
           message: |
-            Here are results of SLO test for ${{ inputs.language }} :volcano: :
+            :volcano: Here are results of SLO test for **${{ inputs.language }}**:
 
             [Grafana Dashboard](${{ vars.SLO_GRAFANA_DOMAIN }}/d/${{ vars.SLO_GRAFANA_DASHBOARD }}?orgId=1&from=${{ needs.run-workload.outputs.test_start }}&to=${{ needs.run-workload.outputs.test_end }})
 
-            ![SLO-${{ inputs.language }}](${{ steps.screenshot.outputs.picture-url}})
+            ![SLO-${{ inputs.language_id }}](${{ steps.screenshot.outputs.picture-url}})
 
   delete-cluster:
     needs: [cleanup-tables, create-cluster]
@@ -182,4 +186,4 @@ jobs:
         with:
           KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
           command: release
-          language: "${{ inputs.language }}"
+          language_id: "${{ inputs.language_id }}"

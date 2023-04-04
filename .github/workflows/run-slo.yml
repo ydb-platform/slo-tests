@@ -3,7 +3,7 @@ name: Workload and errors sheduler concurrent workflow
 on:
   workflow_call:
     inputs:
-      language:
+      language_id:
         description: "SDK language or language+variant"
         required: true
         type: string
@@ -33,7 +33,7 @@ on:
         value: ${{ jobs.run-workload.outputs.end_time_iso }}
 
 concurrency:
-  group: ${{ github.ref }}-${{ inputs.language }}-test
+  group: ${{ github.ref }}-${{ inputs.language_id }}-test
 
 jobs:
   run-workload:
@@ -61,7 +61,7 @@ jobs:
       - name: Run workload
         uses: ydb-platform/slo-tests/.github/actions/workload@main
         with:
-          language: ${{ inputs.language }}
+          language: ${{ inputs.language_id }}
           command: "run"
           timeout: "5m"
           DOCKER_REPO: "${{ secrets.DOCKER_REPO }}"

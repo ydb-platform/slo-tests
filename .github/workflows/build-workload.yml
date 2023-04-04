@@ -3,7 +3,7 @@ name: Build SDK workload flow
 on:
   workflow_call:
     inputs:
-      language:
+      language_id:
         description: "SDK language or language+variant"
         required: true
         type: string
@@ -37,7 +37,7 @@ on:
 
 jobs:
   build-workload-image:
-    name: build-${{ inputs.language }}
+    name: build-${{ inputs.language_id }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -51,16 +51,16 @@ jobs:
           -u ${{ secrets.DOCKER_USERNAME }}
           --password-stdin
 
-      - name: Build ${{ inputs.language }} image
+      - name: Build ${{ inputs.language_id }} image
         working-directory: ${{ inputs.workload_path }}
         run: >
           docker build 
-          -t ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:latest
-          -t ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:gh-${{ github.sha }}
+          -t ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language_id }}:latest
+          -t ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language_id }}:gh-${{ github.sha }}
           ${{ inputs.options }}
           ${{ inputs.context }}
 
       - name: Push image with all tags
         run: >
-          docker image push ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:latest;
-          docker image push ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language }}:gh-${{ github.sha }}
+          docker image push ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language_id }}:latest;
+          docker image push ${{ secrets.DOCKER_REPO }}/${{ secrets.DOCKER_FOLDER }}/${{ inputs.language_id }}:gh-${{ github.sha }}
