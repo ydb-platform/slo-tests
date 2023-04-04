@@ -61,7 +61,7 @@ jobs:
       - name: Run workload
         uses: ydb-platform/slo-tests/.github/actions/workload@main
         with:
-          language: ${{ inputs.language_id }}
+          language_id: ${{ inputs.language_id }}
           command: "run"
           timeout: "5m"
           DOCKER_REPO: "${{ secrets.DOCKER_REPO }}"
