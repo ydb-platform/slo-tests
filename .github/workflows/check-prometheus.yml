@@ -64,7 +64,7 @@ jobs:
                   "uid": "prometheus"
                 },
                 "editorMode": "code",
-                "expr": "max_over_time(oks[$__range])/(0.0001+max_over_time(not_oks[$__range])+max_over_time(oks[$__range]))",
+                "expr": "max_over_time(oks[$__range])/(0.0001+max_over_time(not_oks[$__range])+max_over_time(oks[$__range]))>0",
                 "legendFormat": "__auto",
                 "range": false,
                 "instant": true,
@@ -87,7 +87,7 @@ jobs:
                   "uid": "prometheus"
                 },
                 "editorMode": "code",
-                "expr": "max_over_time(latency{quantile=\"0.99\"}[$__range])",
+                "expr": "max_over_time(latency{quantile=\"0.99\"}[$__range])>0",
                 "legendFormat": "__auto",
                 "range": false,
                 "instant": true,
@@ -109,7 +109,7 @@ jobs:
                   "uid": "prometheus"
                 },
                 "editorMode": "code",
-                "expr": "sum_over_time(clamp(irate(not_oks[2s])*2, 0, 1)[$__range:1s])",
+                "expr": "sum_over_time(clamp(irate(not_oks[2s])*2, 0, 1)[$__range:1s])>0",
                 "legendFormat": "__auto",
                 "range": false,
                 "instant": true,
@@ -155,7 +155,7 @@ jobs:
         shell: bash
         run: cat ./parsed.json
 
-      - name: Run grafana output parser
+      - name: Run grafana output checker
         id: checker
         shell: bash
         run: node ${{ inputs.subfolder }}/scripts/checkGrafanaValues.js parsed.json ${{ inputs.subfolder }}/scripts/objectives.json

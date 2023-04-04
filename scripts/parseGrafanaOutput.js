@@ -17,14 +17,17 @@ console.log("queries", queries);
 
 const res = new Map();
 queries.map((q) => {
-  results[q].frames.map((v) => {
-    const key = Object.values(v.schema.fields[1].labels).join(";");
-    res.set(key, {
-      ...res.get(key),
-      ...v.schema.fields[1].labels,
-      [q]: v.data.values[1][0],
+  if (!results[q].frames) {
+    console.log(`No results for ${q}`, results[q]);
+  } else
+    results[q].frames.map((v) => {
+      const key = Object.values(v.schema.fields[1].labels).join(";");
+      res.set(key, {
+        ...res.get(key),
+        ...v.schema.fields[1].labels,
+        [q]: v.data.values[1][0],
+      });
     });
-  });
 });
 
 const array = Array.from(res.values());
