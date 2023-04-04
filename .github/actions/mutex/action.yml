@@ -6,7 +6,7 @@ inputs:
   KUBE_CONFIG:
     description: "base64 kube config"
     required: true
-  language:
+  language_id:
     description: "Language variant to obtain mutex by"
     required: true
   command:
@@ -44,7 +44,7 @@ runs:
           sleep 30;
         done
 
-        kubectl create configmap slo-mutex --from-literal=busy=true --from-literal=lockedBy=${{ inputs.language }} -o=yaml --dry-run=client | kubectl apply -f -
+        kubectl create configmap slo-mutex --from-literal=busy=true --from-literal=lockedBy=${{ inputs.language_id }} -o=yaml --dry-run=client | kubectl apply -f -
       shell: bash
 
     - name: Unlock mutex
