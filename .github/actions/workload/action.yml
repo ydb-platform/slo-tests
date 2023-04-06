@@ -64,7 +64,6 @@ runs:
               - name: ${{ inputs.language_id }}-wl-${{ inputs.command }}
                 image: ${{ inputs.DOCKER_REPO }}/${{ inputs.DOCKER_FOLDER }}/${{ inputs.language_id }}:latest
                 args:
-                  - "--"
                   - "${{ inputs.command }}"
                   - "grpc://database-sample-grpc:2135"
                   - "/root/database-sample"
