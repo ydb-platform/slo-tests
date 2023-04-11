@@ -85,7 +85,7 @@ jobs:
     steps:
       - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
-      - name: Run workload
+      - name: Initialize tables using workload image
         uses: ydb-platform/slo-tests/.github/actions/workload@main
         with:
           language_id: "${{ inputs.language_id }}"
@@ -93,6 +93,11 @@ jobs:
           timeout: "40s"
           DOCKER_REPO: "${{ secrets.SLO_DOCKER_REPO }}"
           DOCKER_FOLDER: "${{ secrets.SLO_DOCKER_FOLDER }}"
+          additionalArgs: >
+            --min-partitions-count 6
+            --max-partitions-count 1000
+            --partition-size 1
+            --initial-data-count 1000
 
   run-workload:
     needs: [create-cluster, create-tables, build-workload]
