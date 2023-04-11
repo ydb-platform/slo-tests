@@ -85,7 +85,7 @@ jobs:
     steps:
       - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
-      - name: Run workload
+      - name: Initialize tables using workload image
         uses: ydb-platform/slo-tests/.github/actions/workload@main
         with:
           language_id: "${{ inputs.language_id }}"
