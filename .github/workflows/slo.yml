@@ -154,7 +154,7 @@ jobs:
             ![SLO-${{ inputs.language_id }}](${{ steps.screenshot.outputs.picture-url}})
 
   delete-cluster:
-    needs: [cleanup-tables, create-cluster]
+    needs: [create-cluster]
     if: always() && needs.create-cluster.result == 'success'
     runs-on: ubuntu-latest
     steps:
