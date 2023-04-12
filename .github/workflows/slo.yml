@@ -120,25 +120,9 @@ jobs:
       test_start_iso: ${{ needs.run-workload.outputs.test_start_iso }}
       test_end_iso: ${{ needs.run-workload.outputs.test_end_iso }}
 
-  cleanup-tables:
-    needs: [run-workload]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-
-      - name: Run workload
-        uses: ydb-platform/slo-tests/.github/actions/workload@main
-        with:
-          language_id: "${{ inputs.language_id }}"
-          command: "cleanup"
-          timeout: "40s"
-          DOCKER_REPO: "${{ secrets.SLO_DOCKER_REPO }}"
-          DOCKER_FOLDER: "${{ secrets.SLO_DOCKER_FOLDER }}"
-
   grafana-screenshot:
     needs: [run-workload]
-    if: always()
+    if: always() && needs.create-cluster.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
@@ -170,7 +154,7 @@ jobs:
             ![SLO-${{ inputs.language_id }}](${{ steps.screenshot.outputs.picture-url}})
 
   delete-cluster:
-    needs: [cleanup-tables, create-cluster]
+    needs: [create-cluster]
     if: always() && needs.create-cluster.result == 'success'
     runs-on: ubuntu-latest
     steps:
