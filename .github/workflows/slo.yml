@@ -122,7 +122,7 @@ jobs:
 
   grafana-screenshot:
     needs: [run-workload]
-    if: always()
+    if: always() && needs.create-cluster.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - run: mkdir $HOME/.kube; echo "${{ secrets.SLO_KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
