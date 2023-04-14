@@ -83,7 +83,10 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
-helm upgrade --install prometheus prometheus-community/prometheus --values k8s/helms/prometheus.yaml
+
+kubectl create -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.64.0/bundle.yaml
+kubectl apply -f k8s/prometheus.yaml
+helm upgrade --install prometheus-pushgateway prometheus-community/prometheus-pushgateway --values k8s/helms/prometheus-pushgateway.yaml
 helm upgrade --install grafana grafana/grafana --values k8s/helms/grafana.yaml
 kubectl apply -f k8s/grafana-renderer.yaml
 ```
@@ -130,7 +133,7 @@ kubectl apply -f k8s/ingress.yaml
 
 ```
 # install ydb-operator
-helm install ydb-operator ydb/operator
+helm upgrade --install ydb-operator ydb/operator --values k8s/helms/ydb-operator.yaml
 
 # check if ydb-operator is up
 kubectl get pods -l 'app.kubernetes.io/instance=ydb-operator' -o=jsonpath="{.items[0].status.phase}"
