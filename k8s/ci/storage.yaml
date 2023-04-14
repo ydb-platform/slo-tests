@@ -3,8 +3,12 @@ kind: Storage
 metadata:
   name: storage-sample
 spec:
+  monitoring:
+    enabled: true
+    interval: 3s
   additionalLabels:
     ydb-cluster: slo-storage
+    ydb-cluster-monitor: slo-storage
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
