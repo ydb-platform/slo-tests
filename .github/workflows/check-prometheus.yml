@@ -208,6 +208,6 @@ jobs:
         if: always()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: ${{ steps.get_result.outputs.check_name }}
+          name: "slo_check_${{ steps.get_result.outputs.check_name }}"
           conclusion: ${{ steps.get_result.outputs.check_conclusion }}
           output: ${{ steps.get_result.outputs.check_output }}
