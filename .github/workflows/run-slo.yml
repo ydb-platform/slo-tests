@@ -67,7 +67,6 @@ jobs:
           DOCKER_REPO: "${{ secrets.DOCKER_REPO }}"
           DOCKER_FOLDER: "${{ secrets.DOCKER_FOLDER }}"
           additionalArgs: >
-            --initial-data-count 1000
             --time 160
             --shutdown-time 20
             --read-rps 1000
