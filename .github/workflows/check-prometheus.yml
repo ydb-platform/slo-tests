@@ -19,6 +19,10 @@ on:
         description: "Test end  in ISO format"
         required: true
         type: string
+      language_id:
+        description: "Language id"
+        required: true
+        type: string
       subfolder:
         required: false
         default: "check-prometheus"
@@ -208,6 +212,6 @@ jobs:
         if: always()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: "slo_check_${{ steps.get_result.outputs.check_name }}"
+          name: "slo_check_${{ inputs.language_id }}_${{ steps.get_result.outputs.check_name }}"
           conclusion: ${{ steps.get_result.outputs.check_conclusion }}
           output: ${{ steps.get_result.outputs.check_output }}

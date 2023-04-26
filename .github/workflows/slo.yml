@@ -119,6 +119,7 @@ jobs:
       test_end: ${{ needs.run-workload.outputs.test_end }}
       test_start_iso: ${{ needs.run-workload.outputs.test_start_iso }}
       test_end_iso: ${{ needs.run-workload.outputs.test_end_iso }}
+      language_id: ${{ inputs.language_id }}
 
   grafana-screenshot:
     needs: [run-workload]
