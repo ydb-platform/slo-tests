@@ -133,7 +133,7 @@ kubectl apply -f k8s/ingress.yaml
 
 ```
 # install ydb-operator
-helm upgrade --install ydb-operator ydb/operator --values k8s/helms/ydb-operator.yaml
+helm upgrade --install ydb-operator ydb/ydb-operator --values k8s/helms/ydb-operator.yaml
 
 # check if ydb-operator is up
 kubectl get pods -l 'app.kubernetes.io/instance=ydb-operator' -o=jsonpath="{.items[0].status.phase}"
