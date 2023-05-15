@@ -2,10 +2,21 @@ import * as core from '@actions/core'
 import {IWorkloadOptions, parseArguments} from './parseArguments'
 import {prepareK8S} from './callExecutables'
 import {obtainMutex, releaseMutex} from './mutex'
+import {createCluster, deleteCluster, getYdbVersions} from './cluster'
 
 async function main(): Promise<void> {
   try {
     let workloads: IWorkloadOptions[] = parseArguments()
+    const base64kubeconfig = ''
+    let version = ''
+
+    if (version === '') version = '23.1.26'
+    if (version === 'newest') {
+      core.info('Get YDB docker versions')
+      const ydbVersions = getYdbVersions()
+      version = ydbVersions[ydbVersions.length - 1]
+      core.info(`Use YDB docker version = '${version}'`)
+    }
 
     core.info(
       workloads
@@ -28,13 +39,12 @@ async function main(): Promise<void> {
         ? workloads.map(v => v.id).join('__+__')
         : workloads[0].id
 
-    prepareK8S('')
+    prepareK8S(base64kubeconfig)
 
     await obtainMutex(mutexId, 30)
 
     // can be parallel with next step (build workload)
-    core.info('Create cluster')
-    //
+    await createCluster(version, 15)
 
     core.info('Build workload')
     //
@@ -56,8 +66,7 @@ async function main(): Promise<void> {
     core.info('Grafana screenshot')
     //
 
-    core.info('Delete cluster')
-    //
+    deleteCluster()
 
     releaseMutex()
   } catch (error) {
