@@ -36,9 +36,9 @@ export function prepareK8S(base64kubeconfig: string) {
   })
 }
 
-export function call(command: string) {
-  core.info(`Call command: '${command}'`)
-  const spawnResult = execSync(command, {encoding: 'utf8'})
+export function call(command: string, secret = false) {
+  !secret && core.info(`Call command: '${command}'`)
+  const spawnResult = execSync(command, {encoding: 'utf8', stdio: 'pipe'})
   return spawnResult
 }
 

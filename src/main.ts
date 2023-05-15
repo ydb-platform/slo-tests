@@ -3,11 +3,15 @@ import {IWorkloadOptions, parseArguments} from './parseArguments'
 import {prepareK8S} from './callExecutables'
 import {obtainMutex, releaseMutex} from './mutex'
 import {createCluster, deleteCluster, getYdbVersions} from './cluster'
+import {dockerLogin} from './workload'
 
 async function main(): Promise<void> {
   try {
     let workloads: IWorkloadOptions[] = parseArguments()
     const base64kubeconfig = ''
+    const dockerRepo = '',
+      dockerUser = '',
+      dockerPass = ''
     let version = ''
 
     if (version === '') version = '23.1.26'
@@ -17,6 +21,8 @@ async function main(): Promise<void> {
       version = ydbVersions[ydbVersions.length - 1]
       core.info(`Use YDB docker version = '${version}'`)
     }
+
+    dockerLogin(dockerRepo, dockerUser, dockerPass)
 
     core.info(
       workloads
