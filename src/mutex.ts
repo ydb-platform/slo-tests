@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import {callKubernetes, callKubernetesPath} from './callExecutables'
 import {logGroup} from './utils/groupDecorator'
+import {withTimeout} from './utils/withTimeout'
 
 /** Is mutex busy (configmap has field busy) */
 function isBusy(name: string): boolean {
@@ -38,22 +39,15 @@ export function obtainMutex(
   checkPeriod: number = 20
 ) {
   return logGroup('Obtain mutex', async () => {
-    const deadline = new Date().valueOf() + timeout * 1000 * 60
-    core.info(
-      `Deadline to obtain mutex is set to: ${deadline} ( ${new Date(
-        deadline
-      ).toISOString()} )`
-    )
-    do {
+    withTimeout(timeout, checkPeriod, 'Obtain mutex', () => {
       const busy = isBusy('slo-mutex')
       if (!busy) {
         setBusy(workloadId)
         core.info('Mutex obtained')
-        return
+        return true
       }
-      await new Promise(resolve => setTimeout(resolve, checkPeriod * 1000))
-    } while (new Date().valueOf() < deadline)
-    throw new Error('Deadline exceeded')
+      return false
+    })
   })
 }
 

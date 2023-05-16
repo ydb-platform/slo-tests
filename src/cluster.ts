@@ -4,6 +4,7 @@ import {call, callKubernetes, callKubernetesPath} from './callExecutables'
 
 // npx fs-to-json --input "k8s/ci/*.yaml" --output src/manifests.json
 import manifests from './manifests.json'
+import {withTimeout} from './utils/withTimeout'
 
 let databaseManifest = manifests['k8s/ci/database.yaml'].content
 let storageManifest = manifests['k8s/ci/storage.yaml'].content
@@ -42,25 +43,30 @@ export function createCluster(
 
     core.info('Check creation process')
 
-    const deadline = new Date().valueOf() + timeout * 1000 * 60
-    core.info(
-      `Deadline to create cluster is set to: ${deadline} ( ${new Date(
-        deadline
-      ).toISOString()} )`
-    )
-
-    do {
+    let lastDatabaseStatus = getStatus('database')
+    let lastStorageStatus = getStatus('storage')
+    withTimeout(timeout, checkPeriod, 'YDB cluster create', () => {
       core.debug('check status of cluster')
       const databaseStatus = getStatus('database')
       const storageStatus = getStatus('storage')
-      core.info(
+      core.debug(
         `Current status of cluster: database - ${databaseStatus}, storage - ${storageStatus}`
       )
-      if (databaseStatus === 'Ready' && storageStatus === 'Ready') return
-      await new Promise(resolve => setTimeout(resolve, checkPeriod * 1000))
-    } while (new Date().valueOf() < deadline)
-
-    throw new Error(`Not created cluster within timeout of ${timeout}min`)
+      if (databaseStatus !== lastDatabaseStatus) {
+        core.info(
+          `Database become '${databaseStatus}', storage is '${storageStatus}'`
+        )
+        lastDatabaseStatus = databaseStatus
+      }
+      if (storageStatus !== lastStorageStatus) {
+        core.info(
+          `Storage become '${databaseStatus}', database is '${storageStatus}'`
+        )
+        lastStorageStatus = storageStatus
+      }
+      if (databaseStatus === 'Ready' && storageStatus === 'Ready') return true
+      return false
+    })
   })
 }
 
