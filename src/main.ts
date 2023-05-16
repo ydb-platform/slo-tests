@@ -3,13 +3,14 @@ import {IWorkloadOptions, parseArguments} from './parseArguments'
 import {prepareK8S} from './callExecutables'
 import {obtainMutex, releaseMutex} from './mutex'
 import {createCluster, deleteCluster, getYdbVersions} from './cluster'
-import {dockerLogin} from './workload'
+import {buildWorkload, dockerLogin} from './workload'
 
 async function main(): Promise<void> {
   try {
     let workloads: IWorkloadOptions[] = parseArguments()
     const base64kubeconfig = ''
     const dockerRepo = '',
+      dockerFolder = '',
       dockerUser = '',
       dockerPass = ''
     let version = ''
@@ -25,20 +26,21 @@ async function main(): Promise<void> {
     dockerLogin(dockerRepo, dockerUser, dockerPass)
 
     core.info(
-      workloads
-        .map(option => {
-          let str = `Run SLO tests for #${option.id}`
-          str += option.name ? `(${option.name})\n` : '\n'
-          str += `path: '${option.path}'\n`
-          str += option.buildContext
-            ? `build context: '${option.buildContext}'\n`
-            : ''
-          str += option.buildOptions
-            ? `build options: '${option.buildOptions}'\n`
-            : ''
-          return str
-        })
-        .join('')
+      'Run SLO tests for: \n' +
+        workloads
+          .map(option => {
+            let str = `#${option.id}`
+            str += option.name ? `(${option.name})\n` : '\n'
+            str += `path: '${option.path}'\n`
+            str += option.buildContext
+              ? `build context: '${option.buildContext}'\n`
+              : ''
+            str += option.buildOptions
+              ? `build options: '${option.buildOptions}'\n`
+              : ''
+            return str
+          })
+          .join('===')
     )
     const mutexId =
       workloads.length > 1
@@ -49,11 +51,20 @@ async function main(): Promise<void> {
 
     await obtainMutex(mutexId, 30)
 
-    // can be parallel with next step (build workload)
-    await createCluster(version, 15)
+    core.info('Create cluster and build all workloads')
+    await Promise.all([
+      createCluster(version, 15),
 
-    core.info('Build workload')
-    //
+      ...workloads.map(wl => async () => {
+        buildWorkload(
+          dockerRepo,
+          dockerFolder,
+          wl.id,
+          wl.buildOptions,
+          wl.buildContext
+        )
+      })
+    ])
 
     core.info('Create tables')
     //
