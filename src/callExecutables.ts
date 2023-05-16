@@ -3,7 +3,7 @@ import {execSync} from 'child_process'
 import {mkdirSync, writeFileSync} from 'fs'
 import {homedir} from 'os'
 import path from 'path'
-import {logGroup} from './groupDecorator'
+import {logGroup} from './utils/groupDecorator'
 
 let kubectlPath: string | null = null
 

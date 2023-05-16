@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import {callKubernetes, callKubernetesPath} from './callExecutables'
-import {logGroup} from './groupDecorator'
+import {logGroup} from './utils/groupDecorator'
 
 /** Is mutex busy (configmap has field busy) */
 function isBusy(name: string): boolean {

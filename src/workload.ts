@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {call, callKubernetesPath} from './callExecutables'
-import {logGroup} from './groupDecorator'
+import {logGroup} from './utils/groupDecorator'
 
 // npx fs-to-json --input "k8s/ci/*.yaml" --output src/manifests.json
 import manifests from './manifests.json'
@@ -64,6 +64,7 @@ export function buildWorkload(
 export interface IWorkloadRunOptions {
   id: string
   dockerPath: string
+  timeoutMins: number
   args: string
 }
 
@@ -91,5 +92,6 @@ export function runWorkload(
           kubectl => `${kubectl} apply -f - <<EOF\n${workloadManifest}\nEOF`
         )
     )
+    // wait till result with timeout and periodic checks
   })
 }

@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import {logGroup} from './groupDecorator'
+import {logGroup} from './utils/groupDecorator'
 import {call, callKubernetes, callKubernetesPath} from './callExecutables'
 
 // npx fs-to-json --input "k8s/ci/*.yaml" --output src/manifests.json

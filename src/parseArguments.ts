@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import {logGroup} from './groupDecorator'
+import {logGroup} from './utils/groupDecorator'
 
 export interface IWorkloadOptions {
   /** SDK language or language+variant for kuberetes, prometheus metrics, PR comments */
