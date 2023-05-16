@@ -3,7 +3,13 @@ import {IWorkloadOptions, parseArguments} from './parseArguments'
 import {prepareK8S} from './callExecutables'
 import {obtainMutex, releaseMutex} from './mutex'
 import {createCluster, deleteCluster, getYdbVersions} from './cluster'
-import {buildWorkload, dockerLogin} from './workload'
+import {
+  IWorkloadRunOptions,
+  buildWorkload,
+  dockerLogin,
+  generateDockerPath,
+  runWorkload
+} from './workload'
 
 async function main(): Promise<void> {
   try {
@@ -51,37 +57,63 @@ async function main(): Promise<void> {
 
     await obtainMutex(mutexId, 30)
 
+    const dockerPaths = workloads.map(w =>
+      generateDockerPath(dockerRepo, dockerFolder, w.id)
+    )
+
     core.info('Create cluster and build all workloads')
-    await Promise.all([
+    const builded = workloads.map(() => false)
+    await Promise.allSettled([
       createCluster(version, 15),
 
-      ...workloads.map(wl => async () => {
-        buildWorkload(
-          dockerRepo,
-          dockerFolder,
-          wl.id,
-          wl.buildOptions,
-          wl.buildContext
-        )
+      ...workloads.map((wl, idx) => {
+        return (async () => {
+          buildWorkload(
+            wl.id,
+            dockerPaths[idx],
+            wl.buildOptions,
+            wl.buildContext
+          )
+          builded[idx] = true
+        })()
       })
     ])
 
-    core.info('Create tables')
-    //
+    /** Indicates that some of workloads builded and it's possible to run wl */
+    const continueRun = builded.filter(v => v).length > 0
+    core.debug(`builded: [${builded.toString()}], continueRun: ${continueRun}`)
 
-    // retry on error? run in parrallel? run one by one?
-    core.info('Run workload')
-    //
+    if (builded.every(v => v)) {
+      core.info('All workloads builded successfully')
+    } else {
+      if (continueRun) {
+        builded.map((done, i) => {
+          if (!done) core.info(`Error in '${workloads[i].id}' build`)
+          else core.info(`'${workloads[i].id}' build successful`)
+        })
+      } else {
+        core.info('No workloads builded!')
+      }
+    }
 
-    // run in parralel with workload
-    core.info('Run error scheduler')
-    //
+    if (continueRun) {
+      core.info('Create tables')
+      //
 
-    core.info('Check results')
-    //
+      // retry on error? run in parrallel? run one by one?
+      core.info('Run workload')
+      //
 
-    core.info('Grafana screenshot')
-    //
+      // run in parralel with workload
+      core.info('Run error scheduler')
+      //
+
+      core.info('Check results')
+      //
+
+      core.info('Grafana screenshot')
+      //
+    }
 
     deleteCluster()
 
