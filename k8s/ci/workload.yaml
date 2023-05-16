@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ${{LANGUAGE_ID}}-wl-${{COMMAND}}
+spec:
+  ttlSecondsAfterFinished: 120
+  backoffLimit: 0
+  template:
+    metadata:
+      name: ${{LANGUAGE_ID}}-wl-${{COMMAND}}
+    spec:
+      containers:
+        - name: ${{LANGUAGE_ID}}-wl-${{COMMAND}}
+          image: ${{ inputs.DOCKER_REPO }}/${{ inputs.DOCKER_FOLDER }}/${{ inputs.language_id }}:latest
+          args:
+            - '${{COMMAND}}'
+            - 'grpc://database-sample-grpc:2135'
+            - '/root/database-sample'
+            - ${{ARGS}}
+      restartPolicy: Never

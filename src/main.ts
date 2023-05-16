@@ -97,22 +97,33 @@ async function main(): Promise<void> {
     }
 
     if (continueRun) {
-      core.info('Create tables')
-      //
+      await Promise.allSettled(
+        workloads.map((wl, idx) => {
+          return (async () => {
+            const wlOptions: IWorkloadRunOptions = {
+              id: wl.id,
+              dockerPath: dockerPaths[idx],
+              args: `--min-partitions-count 6 --max-partitions-count 1000 --partition-size 1 --initial-data-count 1000`
+            }
 
-      // retry on error? run in parrallel? run one by one?
-      core.info('Run workload')
-      //
+            runWorkload('create', wlOptions)
 
-      // run in parralel with workload
-      core.info('Run error scheduler')
-      //
+            // retry on error? run in parrallel? run one by one?
+            core.info('Run workload')
+            //
 
-      core.info('Check results')
-      //
+            // run in parralel with workload
+            core.info('Run error scheduler')
+            //
 
-      core.info('Grafana screenshot')
-      //
+            core.info('Check results')
+            //
+
+            core.info('Grafana screenshot')
+            //
+          })()
+        })
+      )
     }
 
     deleteCluster()
