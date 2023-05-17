@@ -1,13 +1,9 @@
 import * as core from '@actions/core'
 
-export function logGroup<T extends any>(
-  name: string,
-  fun: () => Promise<T>
-): Promise<T>
-
-export function logGroup<T extends any>(name: string, fun: () => T): T
-
-export function logGroup<T extends any>(
+export function logGroup<T>(name: string, fun: () => Promise<T>): Promise<T>
+export function logGroup<T>(name: string, fun: () => T): T
+// eslint-disable-next-line @typescript-eslint/promise-function-async
+export function logGroup<T>(
   name: string,
   fun: () => Promise<T> | T
 ): Promise<T> | T {
