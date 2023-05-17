@@ -100,17 +100,24 @@ async function main(): Promise<void> {
       await Promise.allSettled(
         workloads.map((wl, idx) => {
           return (async () => {
-            const wlOptions: IWorkloadRunOptions = {
+            runWorkload('create', {
               id: wl.id,
               dockerPath: dockerPaths[idx],
-              args: `--min-partitions-count 6 --max-partitions-count 1000 --partition-size 1 --initial-data-count 1000`
-            }
-
-            runWorkload('create', wlOptions)
+              timeoutMins: 2,
+              args:
+                `--min-partitions-count 6 --max-partitions-count 1000` +
+                ` --partition-size 1 --initial-data-count 1000`
+            })
 
             // retry on error? run in parrallel? run one by one?
-            core.info('Run workload')
-            //
+            runWorkload('run', {
+              id: wl.id,
+              dockerPath: dockerPaths[idx],
+              timeoutMins: 6,
+              args:
+                `--time 180 --shutdown-time 20 --read-rps 1000` +
+                ` --write-rps 100 --prom-pgw http://prometheus-pushgateway:9091`
+            })
 
             // run in parralel with workload
             core.info('Run error scheduler')

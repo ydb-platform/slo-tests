@@ -1,10 +1,11 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import {call, callKubernetesPath} from './callExecutables'
+import {call, callKubernetes, callKubernetesPath} from './callExecutables'
 import {logGroup} from './utils/groupDecorator'
 
 // npx fs-to-json --input "k8s/ci/*.yaml" --output src/manifests.json
 import manifests from './manifests.json'
+import {withTimeout} from './utils/withTimeout'
 
 const workloadManifestTemplate = manifests['k8s/ci/workload.yaml'].content
 
@@ -86,12 +87,49 @@ export function runWorkload(
 
     core.debug(`Workload manifest: \n\n${workloadManifest}`)
 
+    const startTime = new Date()
     core.info(
       `Workload apply ${command} result:\n` +
         callKubernetesPath(
           kubectl => `${kubectl} apply -f - <<EOF\n${workloadManifest}\nEOF`
         )
     )
-    // wait till result with timeout and periodic checks
+
+    withTimeout(
+      options.timeoutMins,
+      15,
+      `Workload ${options.id} ${command}`,
+      () => {
+        const status = JSON.parse(
+          callKubernetes(
+            `get job/${options.id}-wl-${command} -o=jsonpath={.status}`
+          )
+        )
+        core.debug('Workload status check: ' + JSON.stringify(status))
+        if (status.failed) {
+          const msg = `Workload ${options.id} ${command} failed`
+          core.info(msg)
+          // print logs
+          core.info(
+            `Workload ${options.id} ${command} logs:\n` +
+              callKubernetes(
+                `logs job/${options.id}-wl-${command} -o=jsonpath={.status}`
+              )
+          )
+          throw new Error(msg)
+        }
+        if (status.complete || status.succeeded) return true
+        return false
+      }
+    )
+    const endTime = new Date()
+    // print logs
+    core.info(
+      `Workload ${options.id} ${command} logs:\n` +
+        callKubernetes(
+          `logs job/${options.id}-wl-${command} -o=jsonpath={.status}`
+        )
+    )
+    return {startTime, endTime}
   })
 }
