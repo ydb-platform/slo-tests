@@ -1,6 +1,10 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import {call, callKubernetes, callKubernetesPath} from './callExecutables'
+import {
+  callAsync,
+  callKubernetesAsync,
+  callKubernetesPathAsync
+} from './callExecutables'
 import {logGroup} from './utils/groupDecorator'
 
 // npx fs-to-json --input "k8s/ci/*.yaml" --output src/manifests.json
@@ -10,9 +14,9 @@ import {withTimeout} from './utils/withTimeout'
 const workloadManifestTemplate = manifests['k8s/ci/workload.yaml'].content
 
 export function dockerLogin(repo: string, user: string, password: string) {
-  return logGroup('Docker login', () => {
+  return logGroup('Docker login', async () => {
     try {
-      call(
+      await callAsync(
         `echo "${password}" | base64 -d | docker login ${repo} -u ${user} --password-stdin`,
         true
       )
@@ -46,9 +50,9 @@ export function buildWorkload(
   if (!options || options.length === 0) options = ''
   if (!context || context.length === 0) context = '.'
 
-  return logGroup(`Build workload ${id}`, () => {
+  return logGroup(`Build workload ${id}`, async () => {
     core.info('Build docker image')
-    call(
+    await callAsync(
       `docker build ` +
         `-t ${dockerPath}:latest ` +
         `-t ${dockerPath}:gh-${github.context.sha} ` +
@@ -56,9 +60,9 @@ export function buildWorkload(
         `${context}`
     )
     core.info('Push docker tag @latest')
-    call(`docker image push ${dockerPath}:latest`)
+    await callAsync(`docker image push ${dockerPath}:latest`)
     core.info(`Push docker tag '@gh-${github.context.sha}'`)
-    call(`docker image push ${dockerPath}:gh-${github.context.sha}`)
+    await callAsync(`docker image push ${dockerPath}:gh-${github.context.sha}`)
   })
 }
 
@@ -73,7 +77,7 @@ export function runWorkload(
   command: 'create' | 'run',
   options: IWorkloadRunOptions
 ) {
-  return logGroup(`Workload ${options.id} - ${command}`, () => {
+  return logGroup(`Workload ${options.id} - ${command}`, async () => {
     const workloadManifest = workloadManifestTemplate
       .replace('${{LANGUAGE_ID}}', options.id)
       .replace('${{COMMAND}}', command)
@@ -90,18 +94,18 @@ export function runWorkload(
     const startTime = new Date()
     core.info(
       `Workload apply ${command} result:\n` +
-        callKubernetesPath(
+        (await callKubernetesPathAsync(
           kubectl => `${kubectl} apply -f - <<EOF\n${workloadManifest}\nEOF`
-        )
+        ))
     )
 
     withTimeout(
       options.timeoutMins,
       15,
       `Workload ${options.id} ${command}`,
-      () => {
+      async () => {
         const status = JSON.parse(
-          callKubernetes(
+          await callKubernetesAsync(
             `get job/${options.id}-wl-${command} -o=jsonpath={.status}`
           )
         )
@@ -112,9 +116,9 @@ export function runWorkload(
           // print logs
           core.info(
             `Workload ${options.id} ${command} logs:\n` +
-              callKubernetes(
+              (await callKubernetesAsync(
                 `logs job/${options.id}-wl-${command} -o=jsonpath={.status}`
-              )
+              ))
           )
           throw new Error(msg)
         }
@@ -126,9 +130,9 @@ export function runWorkload(
     // print logs
     core.info(
       `Workload ${options.id} ${command} logs:\n` +
-        callKubernetes(
+        (await callKubernetesAsync(
           `logs job/${options.id}-wl-${command} -o=jsonpath={.status}`
-        )
+        ))
     )
     return {startTime, endTime}
   })

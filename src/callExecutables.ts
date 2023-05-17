@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import {execSync} from 'child_process'
+import {exec, execSync} from 'child_process'
 import {mkdirSync, writeFileSync} from 'fs'
 import {homedir} from 'os'
 import path from 'path'
@@ -43,6 +43,37 @@ export function call(command: string, secret = false) {
   return spawnResult
 }
 
+export function callAsync(command: string, secret = false): Promise<string> {
+  return new Promise((resolve, reject) => {
+    !secret && core.info(`Call async command: '${command}'`)
+    const proc = exec(command, {encoding: 'utf8'})
+    if (!proc.stdio || !proc.stdout || !proc.stderr) {
+      core.info(`Error in callAsync: can't spawn process`)
+      throw new Error(`Error in callAsync: can't spawn process`)
+    }
+
+    let out = '',
+      err = ''
+    proc.stdout.on('data', data => (out += data.toString()))
+    proc.stderr.on('data', data => (err += data.toString()))
+
+    proc.on('close', code => {
+      core.debug(`Call async code = ${code}`)
+      if (code == 0) {
+        core.debug(`Call async output\n${out}`)
+        resolve(out)
+      } else {
+        core.debug('Call async failed:\n' + err)
+        reject(err)
+      }
+    })
+    proc.on('error', err => {
+      core.debug('Call async failed:\n' + err)
+      reject(err)
+    })
+  })
+}
+
 export function callKubernetes(command: string) {
   if (kubectlPath === null)
     throw new Error('K8s not initialized, call prepareK8S first')
@@ -55,4 +86,18 @@ export function callKubernetesPath(
   if (kubectlPath === null)
     throw new Error('K8s not initialized, call prepareK8S first')
   return call(commandGenerator(kubectlPath))
+}
+
+export function callKubernetesAsync(command: string) {
+  if (kubectlPath === null)
+    throw new Error('K8s not initialized, call prepareK8S first')
+  return callAsync(`${kubectlPath} ${command}`)
+}
+
+export function callKubernetesPathAsync(
+  commandGenerator: (kPath: string) => string
+) {
+  if (kubectlPath === null)
+    throw new Error('K8s not initialized, call prepareK8S first')
+  return callAsync(commandGenerator(kubectlPath))
 }

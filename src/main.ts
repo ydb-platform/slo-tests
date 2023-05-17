@@ -29,7 +29,7 @@ async function main(): Promise<void> {
       core.info(`Use YDB docker version = '${version}'`)
     }
 
-    dockerLogin(dockerRepo, dockerUser, dockerPass)
+    await dockerLogin(dockerRepo, dockerUser, dockerPass)
 
     core.info(
       'Run SLO tests for: \n' +
@@ -67,15 +67,14 @@ async function main(): Promise<void> {
       createCluster(version, 15),
 
       ...workloads.map((wl, idx) => {
-        return (async () => {
-          buildWorkload(
-            wl.id,
-            dockerPaths[idx],
-            wl.buildOptions,
-            wl.buildContext
-          )
+        return buildWorkload(
+          wl.id,
+          dockerPaths[idx],
+          wl.buildOptions,
+          wl.buildContext
+        ).then(() => {
           builded[idx] = true
-        })()
+        })
       })
     ])
 
@@ -98,17 +97,17 @@ async function main(): Promise<void> {
 
     if (continueRun) {
       await Promise.allSettled(
-        workloads.map((wl, idx) => {
-          return (async () => {
-            runWorkload('create', {
-              id: wl.id,
-              dockerPath: dockerPaths[idx],
-              timeoutMins: 2,
-              args:
-                `--min-partitions-count 6 --max-partitions-count 1000` +
-                ` --partition-size 1 --initial-data-count 1000`
-            })
+        workloads.map(async (wl, idx) => {
+          await runWorkload('create', {
+            id: wl.id,
+            dockerPath: dockerPaths[idx],
+            timeoutMins: 2,
+            args:
+              `--min-partitions-count 6 --max-partitions-count 1000` +
+              ` --partition-size 1 --initial-data-count 1000`
+          })
 
+          await Promise.allSettled([
             // retry on error? run in parrallel? run one by one?
             runWorkload('run', {
               id: wl.id,
@@ -118,17 +117,15 @@ async function main(): Promise<void> {
                 `--time 180 --shutdown-time 20 --read-rps 1000` +
                 ` --write-rps 100 --prom-pgw http://prometheus-pushgateway:9091`
             })
-
             // run in parralel with workload
-            core.info('Run error scheduler')
-            //
+            // core.info('Run error scheduler')
+          ])
 
-            core.info('Check results')
-            //
+          core.info('Check results')
+          //
 
-            core.info('Grafana screenshot')
-            //
-          })()
+          core.info('Grafana screenshot')
+          //
         })
       )
     }
