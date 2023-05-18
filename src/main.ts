@@ -4,12 +4,12 @@ import {prepareK8S} from './callExecutables'
 import {obtainMutex, releaseMutex} from './mutex'
 import {createCluster, deleteCluster, getYdbVersions} from './cluster'
 import {
-  IWorkloadRunOptions,
   buildWorkload,
   dockerLogin,
   generateDockerPath,
   runWorkload
 } from './workload'
+import {getInfrastractureEndpoints} from './getInfrastractureEndpoints'
 
 async function main(): Promise<void> {
   try {
@@ -29,7 +29,13 @@ async function main(): Promise<void> {
       core.info(`Use YDB docker version = '${version}'`)
     }
 
+    prepareK8S(base64kubeconfig)
+
     await dockerLogin(dockerRepo, dockerUser, dockerPass)
+
+    // check if all parts working: prometheus, prometheus-pushgateway, grafana, grafana-renderer
+    const servicesPods = await getInfrastractureEndpoints()
+    core.info(`Services pods: ${JSON.stringify(servicesPods)}`)
 
     core.info(
       'Run SLO tests for: \n' +
@@ -53,8 +59,6 @@ async function main(): Promise<void> {
         ? workloads.map(v => v.id).join('__+__')
         : workloads[0].id
 
-    prepareK8S(base64kubeconfig)
-
     await obtainMutex(mutexId, 30)
 
     const dockerPaths = workloads.map(w =>
@@ -63,7 +67,7 @@ async function main(): Promise<void> {
 
     core.info('Create cluster and build all workloads')
     const builded = workloads.map(() => false)
-    await Promise.allSettled([
+    const clusterWorkloadRes = await Promise.allSettled([
       createCluster(version, 15),
 
       ...workloads.map((wl, idx) => {
@@ -78,8 +82,10 @@ async function main(): Promise<void> {
       })
     ])
 
-    /** Indicates that some of workloads builded and it's possible to run wl */
-    const continueRun = builded.filter(v => v).length > 0
+    /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
+    const continueRun =
+      clusterWorkloadRes[0].status === 'fulfilled' &&
+      builded.filter(v => v).length > 0
     core.debug(`builded: [${builded.toString()}], continueRun: ${continueRun}`)
 
     if (builded.every(v => v)) {

@@ -39,7 +39,7 @@ export function prepareK8S(base64kubeconfig: string) {
 export function call(command: string, secret = false) {
   !secret && core.info(`Call command: '${command}'`)
   const spawnResult = execSync(command, {encoding: 'utf8', stdio: 'pipe'})
-  core.debug('call result' + spawnResult)
+  core.debug('call result ' + spawnResult)
   return spawnResult
 }
 
@@ -60,15 +60,19 @@ export function callAsync(command: string, secret = false): Promise<string> {
     proc.on('close', code => {
       core.debug(`Call async code = ${code}`)
       if (code == 0) {
-        core.debug(`Call async output\n${out}`)
+        core.debug(`Call async output \n${out}`)
         resolve(out)
       } else {
-        core.debug('Call async failed:\n' + err)
-        reject(err)
+        if (secret) core.debug('Call async with secrets failed - on close')
+        else core.debug('Call async failed - on close:\n' + err)
+
+        reject(new Error(err))
       }
     })
     proc.on('error', err => {
-      core.debug('Call async failed:\n' + err)
+      if (secret) core.debug('Call async with secrets failed - on error')
+      else core.debug('Call async failed - on error:\n' + err)
+
       reject(err)
     })
   })

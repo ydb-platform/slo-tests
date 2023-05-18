@@ -25,8 +25,8 @@ export function dockerLogin(repo: string, user: string, password: string) {
       // suppress error revealing user and password
       const msg = 'Incorrect docker repo, username or password'
       if (
-        (error?.message as string).indexOf('incorrect username or password') >
-        -1
+        error?.message &&
+        (error?.message as string).indexOf('username or password') > -1
       ) {
         core.info(msg)
       } else {
