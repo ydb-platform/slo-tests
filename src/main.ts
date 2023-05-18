@@ -70,8 +70,8 @@ async function main(): Promise<void> {
     const clusterWorkloadRes = await Promise.allSettled([
       createCluster(version, 15),
 
-      ...workloads.map((wl, idx) => {
-        return buildWorkload(
+      ...workloads.map((wl, idx) =>
+        buildWorkload(
           wl.id,
           dockerPaths[idx],
           wl.buildOptions,
@@ -79,7 +79,7 @@ async function main(): Promise<void> {
         ).then(() => {
           builded[idx] = true
         })
-      })
+      )
     ])
 
     /** Indicates that cluster created, some of workloads builded and it's possible to run wl */

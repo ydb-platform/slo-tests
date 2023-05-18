@@ -15,7 +15,7 @@ let storageManifest = manifests['k8s/ci/storage.yaml'].content
  * @param timeout timeout in minutes
  * @param checkPeriod update period in seconds
  */
-export function createCluster(
+export async function createCluster(
   version: string = '23.1.19',
   timeout: number,
   checkPeriod: number = 10
@@ -45,7 +45,7 @@ export function createCluster(
 
     let lastDatabaseStatus = getStatus('database')
     let lastStorageStatus = getStatus('storage')
-    withTimeout(timeout, checkPeriod, 'YDB cluster create', () => {
+    await withTimeout(timeout, checkPeriod, 'YDB cluster create', () => {
       core.debug('check status of cluster')
       const databaseStatus = getStatus('database')
       const storageStatus = getStatus('storage')
