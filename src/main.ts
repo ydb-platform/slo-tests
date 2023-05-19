@@ -74,6 +74,7 @@ async function main(): Promise<void> {
         buildWorkload(
           wl.id,
           dockerPaths[idx],
+          wl.path,
           wl.buildOptions,
           wl.buildContext
         ).then(() => {

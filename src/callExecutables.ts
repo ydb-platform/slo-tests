@@ -43,10 +43,14 @@ export function call(command: string, secret = false) {
   return spawnResult
 }
 
-export function callAsync(command: string, secret = false): Promise<string> {
+export function callAsync(
+  command: string,
+  secret = false,
+  cwd = '.'
+): Promise<string> {
   return new Promise((resolve, reject) => {
     !secret && core.info(`Call async command: '${command}'`)
-    const proc = exec(command, {encoding: 'utf8'})
+    const proc = exec(command, {encoding: 'utf8', cwd})
     if (!proc.stdio || !proc.stdout || !proc.stderr) {
       core.info(`Error in callAsync: can't spawn process`)
       throw new Error(`Error in callAsync: can't spawn process`)

@@ -43,7 +43,8 @@ export function generateDockerPath(repo: string, folder: string, id: string) {
 
 export function buildWorkload(
   id: string,
-  dockerPath: string,
+  dockerImage: string,
+  workingDir: string,
   options?: string,
   context?: string
 ) {
@@ -54,15 +55,17 @@ export function buildWorkload(
     core.info('Build docker image')
     await callAsync(
       `docker build ` +
-        `-t ${dockerPath}:latest ` +
-        `-t ${dockerPath}:gh-${github.context.sha} ` +
+        `-t ${dockerImage}:latest ` +
+        `-t ${dockerImage}:gh-${github.context.sha} ` +
         `${options} ` +
-        `${context}`
+        `${context}`,
+      false,
+      workingDir
     )
     core.info('Push docker tag @latest')
-    await callAsync(`docker image push ${dockerPath}:latest`)
+    await callAsync(`docker image push ${dockerImage}:latest`)
     core.info(`Push docker tag '@gh-${github.context.sha}'`)
-    await callAsync(`docker image push ${dockerPath}:gh-${github.context.sha}`)
+    await callAsync(`docker image push ${dockerImage}:gh-${github.context.sha}`)
   })
 }
 
@@ -79,8 +82,9 @@ export function runWorkload(
 ) {
   return logGroup(`Workload ${options.id} - ${command}`, async () => {
     const workloadManifest = workloadManifestTemplate
-      .replace('${{LANGUAGE_ID}}', options.id)
-      .replace('${{COMMAND}}', command)
+      .replace(/\$\{\{LANGUAGE_ID\}\}/g, options.id)
+      .replace(/\$\{\{COMMAND\}\}/g, command)
+      .replace(/\$\{\{DOCKER_IMAGE\}\}/g, options.dockerPath)
       .replace(
         '${{ARGS}}',
         options.args
@@ -99,7 +103,7 @@ export function runWorkload(
         ))
     )
 
-    withTimeout(
+    await withTimeout(
       options.timeoutMins,
       15,
       `Workload ${options.id} ${command}`,
@@ -117,7 +121,7 @@ export function runWorkload(
           core.info(
             `Workload ${options.id} ${command} logs:\n` +
               (await callKubernetesAsync(
-                `logs job/${options.id}-wl-${command} -o=jsonpath={.status}`
+                `logs job/${options.id}-wl-${command}`
               ))
           )
           throw new Error(msg)
@@ -130,9 +134,7 @@ export function runWorkload(
     // print logs
     core.info(
       `Workload ${options.id} ${command} logs:\n` +
-        (await callKubernetesAsync(
-          `logs job/${options.id}-wl-${command} -o=jsonpath={.status}`
-        ))
+        (await callKubernetesAsync(`logs job/${options.id}-wl-${command}`))
     )
     return {startTime, endTime}
   })

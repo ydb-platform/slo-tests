@@ -45,7 +45,7 @@ export async function createCluster(
 
     let lastDatabaseStatus = getStatus('database')
     let lastStorageStatus = getStatus('storage')
-    await withTimeout(timeout, checkPeriod, 'YDB cluster create', () => {
+    await withTimeout(timeout, checkPeriod, 'YDB cluster create', async () => {
       core.debug('check status of cluster')
       const databaseStatus = getStatus('database')
       const storageStatus = getStatus('storage')
