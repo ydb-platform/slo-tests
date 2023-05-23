@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import {callKubernetesPathAsync} from './callExecutables'
 
 interface IGrafanaQuery {
@@ -9,17 +10,32 @@ interface IGrafanaQuery {
   format?: 'time_series'
 }
 
+export function getUUID() {
+  const hexstring = crypto.randomBytes(16).toString('hex')
+  return (
+    hexstring.substring(0, 8) +
+    '-' +
+    hexstring.substring(8, 12) +
+    '-' +
+    hexstring.substring(12, 16) +
+    '-' +
+    hexstring.substring(16, 20) +
+    '-' +
+    hexstring.substring(20)
+  )
+}
+
 export function getDataFromGrafana(
   fromDate: Date,
   toDate: Date,
   queries: IGrafanaQuery[]
 ) {
   const data = {
-    queries: queries.map(q => ({
+    queries: queries.map((q, i) => ({
       refId: q.refId,
       expr: q.expr,
-      key: q.key,
-      requestId: q.reqId,
+      key: `Q-${getUUID()}-${i}`,
+      // requestId: `Q-${getUUID()}-${i}`,
       interval: q.interval,
       ...(q.format ? {format: q.format} : {}),
       datasource: {
@@ -49,6 +65,12 @@ export function getDataFromGrafana(
     from: fromDate.valueOf(),
     to: toDate.valueOf()
   }
+
+  let requestId = data.queries.reduce((acc, v) => (acc += v.key), '')
+  data.queries = data.queries.map(q => ({
+    requestId: `${requestId}${q.refId}`,
+    ...q
+  }))
 
   let busyboxCmd = `wget -q -O- --header='content-type: application/json' --post-data='${JSON.stringify(
     data

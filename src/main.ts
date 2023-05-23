@@ -115,8 +115,8 @@ async function main(): Promise<void> {
             dockerPath: dockerPaths[idx],
             timeoutMins: 2,
             args:
-              `--min-partitions-count 6 --max-partitions-count 1000` +
-              ` --partition-size 1 --initial-data-count 1000`
+              `--min-partitions-count 6 --max-partitions-count 1000 ` +
+              `--partition-size 1 --initial-data-count 1000`
           })
         )
       )
@@ -133,8 +133,8 @@ async function main(): Promise<void> {
               args:
                 `--time ${
                   (5 + 2) * timeBetweenPhases
-                } --shutdown-time 30 --read-rps 1000` +
-                ` --write-rps 100 --prom-pgw http://prometheus-pushgateway:9091`
+                } --shutdown-time 30 --read-rps 1000 ` +
+                `--write-rps 100 --prom-pgw http://prometheus-pushgateway:9091`
             })
           ),
           errorScheduler(servicesPods.grafana, timeBetweenPhases)
