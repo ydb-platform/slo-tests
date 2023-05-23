@@ -39,7 +39,7 @@ export function obtainMutex(
   checkPeriod: number = 20
 ) {
   return logGroup('Obtain mutex', async () => {
-    withTimeout(timeout, checkPeriod, 'Obtain mutex', () => {
+    return withTimeout(timeout, checkPeriod, 'Obtain mutex', () => {
       const busy = isBusy('slo-mutex')
       if (!busy) {
         setBusy(workloadId)

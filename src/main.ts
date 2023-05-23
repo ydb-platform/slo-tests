@@ -60,6 +60,7 @@ async function main(): Promise<void> {
         : workloads[0].id
 
     await obtainMutex(mutexId, 30)
+    core.info('Mutex obtained!')
 
     const dockerPaths = workloads.map(w =>
       generateDockerPath(dockerRepo, dockerFolder, w.id)
@@ -69,7 +70,8 @@ async function main(): Promise<void> {
     const builded = workloads.map(() => false)
     const clusterWorkloadRes = await Promise.allSettled([
       createCluster(version, 15),
-
+      // TODO: create placeholder pods for databases
+      // TODO: catch build error and stop cluster creation
       ...workloads.map((wl, idx) =>
         buildWorkload(
           wl.id,
