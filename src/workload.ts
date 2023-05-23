@@ -54,7 +54,7 @@ export function buildWorkload(
   return logGroup(`Build workload ${id}`, async () => {
     core.info('Build docker image')
     await callAsync(
-      `docker build ` +
+      `docker buildx build --platform linux/amd64 ` +
         `-t ${dockerImage}:latest ` +
         `-t ${dockerImage}:gh-${github.context.sha} ` +
         `${options} ` +
@@ -81,13 +81,15 @@ export function runWorkload(
   options: IWorkloadRunOptions
 ) {
   return logGroup(`Workload ${options.id} - ${command}`, async () => {
+    const containerArgs = `database-sample-grpc:2135 /root/db-${options.id} ${options.args}`
+
     const workloadManifest = workloadManifestTemplate
       .replace(/\$\{\{LANGUAGE_ID\}\}/g, options.id)
       .replace(/\$\{\{COMMAND\}\}/g, command)
       .replace(/\$\{\{DOCKER_IMAGE\}\}/g, options.dockerPath)
       .replace(
         '${{ARGS}}',
-        options.args
+        containerArgs
           .split(' ')
           .map(s => `'${s}'`)
           .join('\n            - ')
