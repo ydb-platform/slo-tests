@@ -1,21 +1,14 @@
 import {expect, test, jest} from '@jest/globals'
 
-// const callExecutables = jest.createMockFromModule(
-//   '../callExecutables'
-// ) as typeof import('../callExecutables')
-// callExecutables.callKubernetesPathAsync = async generator => {
-//   return generator('kubectl')
-// }
-
 jest.mock('../callExecutables', () => ({
   __esModule: true, // this property makes it work
   callKubernetesPathAsync: async (generator: (s: string) => string) => {
     return generator('kubectl')
-  }
+  },
+  callAsync: async (v: string) => v,
+  callKubernetesAsync: async (v: string) => 'kubectl ' + v
 }))
 
-import {callKubernetesPathAsync, prepareK8S} from '../callExecutables'
-callKubernetesPathAsync(t => 'test')
 import {getDataFromGrafana} from '../checkResults'
 
 test('checkResults wget generation', async () => {
