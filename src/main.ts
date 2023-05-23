@@ -10,6 +10,7 @@ import {
   runWorkload
 } from './workload'
 import {getInfrastractureEndpoints} from './getInfrastractureEndpoints'
+import {errorScheduler} from './errorScheduler'
 
 async function main(): Promise<void> {
   try {
@@ -20,6 +21,7 @@ async function main(): Promise<void> {
       dockerUser = '',
       dockerPass = ''
     let version = ''
+    const timeBetweenPhases = 30
 
     if (version === '') version = '23.1.26'
     if (version === 'newest') {
@@ -105,9 +107,10 @@ async function main(): Promise<void> {
     }
 
     if (continueRun) {
-      await Promise.allSettled(
-        workloads.map(async (wl, idx) => {
-          await runWorkload('create', {
+      // retry on error? run in parrallel? run one by one?
+      const createResult = await Promise.allSettled(
+        workloads.map(async (wl, idx) =>
+          runWorkload('create', {
             id: wl.id,
             dockerPath: dockerPaths[idx],
             timeoutMins: 2,
@@ -115,28 +118,39 @@ async function main(): Promise<void> {
               `--min-partitions-count 6 --max-partitions-count 1000` +
               ` --partition-size 1 --initial-data-count 1000`
           })
-
-          await Promise.allSettled([
-            // retry on error? run in parrallel? run one by one?
+        )
+      )
+      core.debug('create results: ' + JSON.stringify(createResult))
+      if (createResult.filter(r => r.status === 'fulfilled').length === 0) {
+        throw new Error('No workloads performed `create` action, exit')
+      } else {
+        const runResult = await Promise.allSettled([
+          ...workloads.map(async (wl, idx) =>
             runWorkload('run', {
               id: wl.id,
               dockerPath: dockerPaths[idx],
               timeoutMins: 6,
               args:
-                `--time 180 --shutdown-time 20 --read-rps 1000` +
+                `--time ${
+                  (5 + 2) * timeBetweenPhases
+                } --shutdown-time 30 --read-rps 1000` +
                 ` --write-rps 100 --prom-pgw http://prometheus-pushgateway:9091`
             })
-            // run in parralel with workload
-            // core.info('Run error scheduler')
+          ),
+          errorScheduler(servicesPods.grafana, timeBetweenPhases)
+        ])
+
+        core.debug('run results: ' + JSON.stringify(runResult))
+        if (runResult.filter(r => r.status === 'fulfilled').length === 0) {
+        } else {
+          await Promise.allSettled([
+            // core.info('Check results')
+            // //
+            // core.info('Grafana screenshot')
+            // //
           ])
-
-          core.info('Check results')
-          //
-
-          core.info('Grafana screenshot')
-          //
-        })
-      )
+        }
+      }
     }
 
     deleteCluster()
