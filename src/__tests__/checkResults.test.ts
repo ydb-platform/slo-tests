@@ -1,4 +1,11 @@
+import {expect, test, jest, afterEach, beforeAll} from '@jest/globals'
 import * as core from '@actions/core'
+import * as callExecutables from '../callExecutables'
+import {
+  filterGraphData,
+  getDataFromGrafana,
+  checkGraphValues
+} from '../checkResults'
 
 beforeAll(() => {
   // @ts-ignore
@@ -7,22 +14,32 @@ beforeAll(() => {
   core.info = () => {}
 })
 
-import {getDataFromGrafana} from '../checkResults'
+afterEach(() => {
+  jest.restoreAllMocks()
+})
 
 test('checkResults wget generation', async () => {
+  const spiedСallAsync = jest
+    .spyOn(callExecutables, 'callAsync')
+    .mockImplementation(async (v: string) => v)
+  const spiedСallKubernetesAsync = jest
+    .spyOn(callExecutables, 'callKubernetesAsync')
+    .mockImplementation(async (v: string) => 'kubectl ' + v)
+  const spiedСallKubernetesPathAsync = jest
+    .spyOn(callExecutables, 'callKubernetesPathAsync')
+    .mockImplementation(async (generator: (s: string) => string) => {
+      return Buffer.from(generator('kubectl'), 'utf8').toString('base64')
+    })
+
   const res = await getDataFromGrafana(new Date(1234000), new Date(5678000), [
     {
       expr: 'expr1',
-      key: 'key1',
       refId: 'refId1',
-      reqId: 'req1',
       interval: '1s'
     },
     {
       expr: 'expr2',
-      key: 'key2',
       refId: 'refId2',
-      reqId: 'req2',
       interval: '',
       format: 'time_series'
     }
@@ -87,14 +104,54 @@ test('checkResults wget generation', async () => {
     "to": "1970-01-01T01:34:38.000Z"
   }
 },
-"from": 1234000,
-"to": 5678000
+"from": "1234000",
+"to": "5678000"
 }'\\''`.replace(/[\n ]/g, '')
 
-  expect(res).toStrictEqual(
-    `kubectl run -q -i --image=busybox --rm grafana-result-peeker --restart=Never -- sh -c '` +
-      `wget -q -O- --header='\\''content-type: application/json'\\'' ` +
+  expect(res).toContain(
+    'kubectl run -q -i --image=busybox --rm grafana-result-peeker'
+  )
+  expect(res).toContain(
+    ` --restart=Never -- sh -c 'wget -q -O- --header='\\''content-type: application/json'\\'' ` +
       sample +
       ` '\\''http://grafana/api/ds/query'\\'' | base64'`
   )
+})
+
+test('filterGraphData', () => {
+  const sampleFilter = filterGraphData({a: '123', b: '234'})
+  expect(sampleFilter({value: 1, labels: {a: '123'}})).toBe(false)
+  expect(sampleFilter({value: 1, labels: {a: '123', b: '234'}})).toBe(true)
+})
+
+test('checkGraphValues', () => {
+  const checks = checkGraphValues(
+    {
+      abc: [{labels: {a: 'a', b: 'b', c: 'c'}, value: 15}],
+      def: [
+        {labels: {d: 'd', e: 'e'}, value: -10},
+        {labels: {e: 'e', f: 'f'}, value: 10}
+      ]
+    },
+    {
+      abc: [
+        {filter: {a: 'a', b: 'b', c: 'c'}, value: ['>', 10]},
+        {filter: {}, value: ['<', 10]}
+      ],
+      def: [
+        {filter: {e: 'e'}, value: ['<', 0]},
+        {filter: {c: 'c', e: 'e'}, value: ['<', 0]}
+      ],
+      xyz: [{filter: {a: 'a'}, value: ['>', 0]}]
+    }
+  )
+
+  expect(checks).toStrictEqual([
+    ['abc{"a":"a","b":"b","c":"c"}[0]', 'ok', '15 > 10'],
+    ['abc{}[0]', 'error', '15 !< 10'],
+    ['def{"e":"e"}[0]', 'ok', '-10 < 0'],
+    ['def{"e":"e"}[1]', 'error', '10 !< 0'],
+    ['def{"c":"c","e":"e"}', 'error', 'Not found results by filter to inspect'],
+    ['xyz{"a":"a"}', 'error', 'Not found results by filter to inspect']
+  ])
 })
