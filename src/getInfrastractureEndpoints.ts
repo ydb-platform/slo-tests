@@ -1,4 +1,6 @@
 import {callKubernetesAsync} from './callExecutables'
+import {retry} from './utils/retry'
+import {withTimeoutSimple} from './utils/withTimeout'
 
 export async function getInfrastractureEndpoints() {
   const services = [
@@ -31,7 +33,12 @@ export async function getInfrastractureEndpoints() {
 }
 
 function getEndpoint(kubeName: string) {
-  return callKubernetesAsync(
-    `get pods -l "app.kubernetes.io/name=${kubeName}" -o jsonpath="{.items[0].metadata.name}"`
-  ).then(s => s.split('\n')[0])
+  return retry(2, () => {
+    return withTimeoutSimple(
+      10,
+      callKubernetesAsync(
+        `get pods -l "app.kubernetes.io/name=${kubeName}" -o jsonpath="{.items[0].metadata.name}"`
+      ).then(s => s.split('\n')[0])
+    )
+  })
 }

@@ -11,6 +11,7 @@ import {
 } from './workload'
 import {getInfrastractureEndpoints} from './getInfrastractureEndpoints'
 import {errorScheduler} from './errorScheduler'
+import {retry} from './utils/retry'
 
 async function main(): Promise<void> {
   try {
@@ -107,17 +108,19 @@ async function main(): Promise<void> {
     }
 
     if (continueRun) {
-      // retry on error? run in parrallel? run one by one?
+      // retry create operation one time in case of error
       const createResult = await Promise.allSettled(
         workloads.map(async (wl, idx) =>
-          runWorkload('create', {
-            id: wl.id,
-            dockerPath: dockerPaths[idx],
-            timeoutMins: 2,
-            args:
-              `--min-partitions-count 6 --max-partitions-count 1000 ` +
-              `--partition-size 1 --initial-data-count 1000`
-          })
+          retry(2, () =>
+            runWorkload('create', {
+              id: wl.id,
+              dockerPath: dockerPaths[idx],
+              timeoutMins: 2,
+              args:
+                `--min-partitions-count 6 --max-partitions-count 1000 ` +
+                `--partition-size 1 --initial-data-count 1000`
+            })
+          )
         )
       )
       core.debug('create results: ' + JSON.stringify(createResult))
