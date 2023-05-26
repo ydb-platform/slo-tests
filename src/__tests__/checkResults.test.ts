@@ -1,13 +1,11 @@
-import {expect, test, jest} from '@jest/globals'
+import * as core from '@actions/core'
 
-jest.mock('../callExecutables', () => ({
-  __esModule: true, // this property makes it work
-  callKubernetesPathAsync: async (generator: (s: string) => string) => {
-    return generator('kubectl')
-  },
-  callAsync: async (v: string) => v,
-  callKubernetesAsync: async (v: string) => 'kubectl ' + v
-}))
+beforeAll(() => {
+  // @ts-ignore
+  core.debug = () => {}
+  // @ts-ignore
+  core.info = () => {}
+})
 
 import {getDataFromGrafana} from '../checkResults'
 

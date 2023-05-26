@@ -1,5 +1,12 @@
-import {expect, test} from '@jest/globals'
+import {expect, test, beforeAll} from '@jest/globals'
+import * as core from '@actions/core'
 import {callAsync} from '../callExecutables'
+beforeAll(() => {
+  // @ts-ignore
+  core.debug = () => {}
+  // @ts-ignore
+  core.info = () => {}
+})
 
 test('Sleep in parallel', async () => {
   const timeStart = new Date().valueOf()

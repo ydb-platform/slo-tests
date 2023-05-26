@@ -1,8 +1,20 @@
-import {expect, test, jest, afterEach} from '@jest/globals'
+import {expect, test, jest, afterEach, beforeAll} from '@jest/globals'
+import * as core from '@actions/core'
 
 import * as callExecutables from '../callExecutables'
 import * as withTimeoutUtils from '../utils/withTimeout'
 import {runWorkload} from '../workload'
+
+beforeAll(() => {
+  // @ts-ignore
+  core.debug = () => {}
+  // @ts-ignore
+  core.info = () => {}
+  // @ts-ignore
+  core.startGroup = () => {}
+  // @ts-ignore
+  core.endGroup = () => {}
+})
 
 afterEach(() => {
   jest.restoreAllMocks()
