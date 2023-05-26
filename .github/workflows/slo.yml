@@ -41,8 +41,6 @@ on:
       SLO_S3_ENDPOINT:
         required: true
 
-concurrency: slo
-
 jobs:
   obtain-mutex:
     runs-on: ubuntu-latest
