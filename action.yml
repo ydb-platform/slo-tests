@@ -43,6 +43,52 @@ inputs:
   shutdownTime:
     description: 'SLO workload shutdown timeout'
     required: true
+  # You need to use sequential ids for workloads to run
+  language_id0:
+    description: 'SLO workload #0 language ID'
+    required: false
+  workload_path0:
+    description: 'SLO workload #0 workload path'
+    required: false
+  language0:
+    description: 'SLO workload #0 language name'
+    required: false
+  workload_build_context0:
+    description: 'SLO workload #0 docker build context'
+    required: false
+  workload_build_options0:
+    description: 'SLO workload #0 docker build arguments'
+    required: false
+  language_id1:
+    description: 'SLO workload #1 language ID'
+    required: false
+  workload_path1:
+    description: 'SLO workload #1 workload path'
+    required: false
+  language1:
+    description: 'SLO workload #1 language name'
+    required: false
+  workload_build_context1:
+    description: 'SLO workload #1 docker build context'
+    required: false
+  workload_build_options1:
+    description: 'SLO workload #1 docker build arguments'
+    required: false
+  language_id2:
+    description: 'SLO workload #2 language ID'
+    required: false
+  workload_path2:
+    description: 'SLO workload #2 workload path'
+    required: false
+  language2:
+    description: 'SLO workload #2 language name'
+    required: false
+  workload_build_context2:
+    description: 'SLO workload #2 docker build context'
+    required: false
+  workload_build_options2:
+    description: 'SLO workload #2 docker build arguments'
+    required: false
 runs:
   using: 'node16'
   main: 'dist/index.js'
