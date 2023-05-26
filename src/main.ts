@@ -14,6 +14,9 @@ import {
 import {getInfrastractureEndpoints} from './getInfrastractureEndpoints'
 import {errorScheduler} from './errorScheduler'
 import {retry} from './utils/retry'
+import {IDesiredResults, checkResults} from './checkResults'
+import {grafanaScreenshot, postComment} from './grafanaScreenshot'
+import {createHash} from 'crypto'
 
 const isPullRequest = !!github.context.payload.pull_request
 
@@ -157,14 +160,85 @@ async function main(): Promise<void> {
         ])
 
         core.debug('run results: ' + JSON.stringify(runResult))
-        if (runResult.filter(r => r.status === 'fulfilled').length === 0) {
+        if (
+          runResult
+            .slice(0, workloads.length)
+            .filter(r => r.status === 'fulfilled').length === 0
+        ) {
+          core.info('No successfull workload runs!')
+          throw new Error('No workloads runs completed successfully')
         } else {
-          await Promise.allSettled([
-            // core.info('Check results')
-            // //
-            // core.info('Grafana screenshot')
-            // //
-          ])
+          // TODO: somehow use objectives as input
+          const objectives: IDesiredResults = {
+            success_rate: [{filter: {}, value: ['>', 0.98]}],
+            max_99_latency: [
+              {filter: {status: 'ok'}, value: ['<', 100]},
+              {filter: {status: 'err'}, value: ['<', 30000]}
+            ],
+            fail_interval: [{filter: {}, value: ['<', 20]}]
+          }
+          let promises: Promise<boolean | void>[] = []
+
+          runResult.map((r, i) => {
+            if (r.status === 'fulfilled' && i !== runResult.length - 1) {
+              const timings = (
+                r as PromiseFulfilledResult<{
+                  startTime: Date
+                  endTime: Date
+                }>
+              ).value
+              promises.push(
+                checkResults(
+                  octokit,
+                  workloads[i].id,
+                  timings.startTime,
+                  timings.endTime,
+                  objectives
+                )
+              )
+
+              core.debug('isPullRequest=' + isPullRequest)
+              if (isPullRequest) {
+                core.debug(
+                  'Push to promises grafana screenshot and postComment'
+                )
+                promises.push(
+                  (async () => {
+                    const pictureUri = await grafanaScreenshot(
+                      s3Endpoint,
+                      s3Folder,
+                      workloads[i].id,
+                      timings.startTime,
+                      timings.endTime
+                    )
+                    const comment = `
+                      :volcano: Here are results of SLO test for **${
+                        workloads[i].name ?? workloads[i].id
+                      }**:
+                      
+                      [Grafana Dashboard](${grafanaDomain}/d/${grafanaDashboard}?orgId=1&from=${timings.startTime.valueOf()}&to=${timings.endTime.valueOf()})
+                      
+                      ![SLO-${workloads[i].id}](${pictureUri})`
+
+                    await postComment(
+                      octokit,
+                      createHash('sha1')
+                        .update('nodejs-1')
+                        .digest()
+                        .readUint32BE(),
+                      comment
+                    )
+                  })()
+                )
+              }
+            }
+          })
+
+          const res = await Promise.allSettled(promises)
+
+          core.info(
+            'checkResults and grafana screenshot result: ' + JSON.stringify(res)
+          )
         }
       }
     }
