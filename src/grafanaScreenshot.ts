@@ -17,7 +17,9 @@ export async function grafanaScreenshot(
   core.debug(
     `grafanaScreenshot(${s3Endpoint}, ${s3Folder}, ${workloadId}, ${startTime}, ${endTime}, ${dashboard}, ${width}, ${height})`
   )
-  const query = `http://grafana/render/d/${dashboard}/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv`
+  const query = `http://grafana/render/d/${
+    dashboard.split('/')[0]
+  }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv`
   core.debug('grafana query: ' + query)
   const imageb64 = await callKubernetesAsync(
     `run -q -i --image=busybox --rm grafana-screenshoter --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`

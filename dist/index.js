@@ -730,7 +730,7 @@ const callExecutables_1 = __nccwpck_require__(9419);
 function grafanaScreenshot(s3Endpoint, s3Folder, workloadId, startTime, endTime, dashboard = '7CzMl5t4k', width = 1500, height = 1100) {
     return __awaiter(this, void 0, void 0, function* () {
         core.debug(`grafanaScreenshot(${s3Endpoint}, ${s3Folder}, ${workloadId}, ${startTime}, ${endTime}, ${dashboard}, ${width}, ${height})`);
-        const query = `http://grafana/render/d/${dashboard}/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv`;
+        const query = `http://grafana/render/d/${dashboard.split('/')[0]}/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv`;
         core.debug('grafana query: ' + query);
         const imageb64 = yield (0, callExecutables_1.callKubernetesAsync)(`run -q -i --image=busybox --rm grafana-screenshoter --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`);
         core.debug('grafana imageb64: ' +
