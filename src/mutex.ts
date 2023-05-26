@@ -1,10 +1,10 @@
 import * as core from '@actions/core'
-import {callKubernetes, callKubernetesPath} from './callExecutables'
+import {call, callKubernetes, callKubernetesPath} from './callExecutables'
 import {logGroup} from './utils/groupDecorator'
 import {withTimeout} from './utils/withTimeout'
 
 /** Is mutex busy (configmap has field busy) */
-function isBusy(name: string): boolean {
+function isBusy(name: string): false | string {
   core.debug(`isBusy(${name})`)
   const res = callKubernetes(`get configmaps ${name} -ojson`)
   core.debug('isBusy result: ' + res)
@@ -14,8 +14,9 @@ function isBusy(name: string): boolean {
 
   if (configmap?.data?.busy !== undefined) {
     core.info(`Mutex locked by ${configmap?.data?.lockedBy}`)
+    return configmap?.data?.lockedBy
   }
-  return configmap?.data?.busy !== undefined
+  return false
 }
 
 function setBusy(lockedBy: string) {
@@ -41,9 +42,18 @@ export function obtainMutex(
   return logGroup('Obtain mutex', async () => {
     return withTimeout(timeout, checkPeriod, 'Obtain mutex', () => {
       const busy = isBusy('slo-mutex')
-      if (!busy) {
+      if (typeof busy === 'boolean' && !busy) {
+        core.debug('Set mutex')
         setBusy(workloadId)
         core.info('Mutex obtained')
+        core.debug('Mutex sleep 5s')
+        call('sleep 5')
+        core.debug('Re-check after sleep')
+        const mutexObtainedBy = isBusy('slo-mutex')
+        if (mutexObtainedBy !== workloadId) {
+          core.info('Mutex is not obtained!')
+          return false
+        }
         return true
       }
       return false
