@@ -1,8 +1,10 @@
 import * as core from '@actions/core'
-import {IWorkloadOptions, parseArguments} from './parseArguments'
-import {prepareK8S} from './callExecutables'
+import * as github from '@actions/github'
+import {GitHub} from '@actions/github/lib/utils'
+import {parseArguments} from './parseArguments'
+import {call, prepareAWS, prepareK8S} from './callExecutables'
 import {obtainMutex, releaseMutex} from './mutex'
-import {createCluster, deleteCluster, getYdbVersions} from './cluster'
+import {createCluster, deleteCluster} from './cluster'
 import {
   buildWorkload,
   dockerLogin,
@@ -13,28 +15,36 @@ import {getInfrastractureEndpoints} from './getInfrastractureEndpoints'
 import {errorScheduler} from './errorScheduler'
 import {retry} from './utils/retry'
 
+const isPullRequest = !!github.context.payload.pull_request
+
 async function main(): Promise<void> {
   try {
-    let workloads: IWorkloadOptions[] = parseArguments()
-    const base64kubeconfig = ''
-    const dockerRepo = '',
-      dockerFolder = '',
-      dockerUser = '',
-      dockerPass = ''
-    let version = ''
-    const timeBetweenPhases = 30
+    let {
+      workloads,
+      githubToken,
+      kubeconfig,
+      awsCredentials,
+      awsConfig,
+      s3Endpoint,
+      s3Folder,
+      dockerRepo,
+      dockerFolder,
+      dockerUsername,
+      dockerPassword,
+      ydbVersion,
+      timeBetweenPhases,
+      shutdownTime,
+      grafanaDomain,
+      grafanaDashboard
+    } = parseArguments()
 
-    if (version === '') version = '23.1.26'
-    if (version === 'newest') {
-      core.info('Get YDB docker versions')
-      const ydbVersions = getYdbVersions()
-      version = ydbVersions[ydbVersions.length - 1]
-      core.info(`Use YDB docker version = '${version}'`)
-    }
+    core.debug(`Setting up OctoKit`)
+    const octokit = github.getOctokit(githubToken)
 
-    prepareK8S(base64kubeconfig)
+    prepareK8S(kubeconfig)
+    prepareAWS(awsCredentials, awsConfig)
 
-    await dockerLogin(dockerRepo, dockerUser, dockerPass)
+    await dockerLogin(dockerRepo, dockerUsername, dockerPassword)
 
     // check if all parts working: prometheus, prometheus-pushgateway, grafana, grafana-renderer
     const servicesPods = await getInfrastractureEndpoints()
@@ -72,7 +82,7 @@ async function main(): Promise<void> {
     core.info('Create cluster and build all workloads')
     const builded = workloads.map(() => false)
     const clusterWorkloadRes = await Promise.allSettled([
-      createCluster(version, 15),
+      createCluster(ydbVersion, 15),
       // TODO: create placeholder pods for databases
       // TODO: catch build error and stop cluster creation
       ...workloads.map((wl, idx) =>
@@ -127,16 +137,19 @@ async function main(): Promise<void> {
       if (createResult.filter(r => r.status === 'fulfilled').length === 0) {
         throw new Error('No workloads performed `create` action, exit')
       } else {
+        // run in parrallel without retries
         const runResult = await Promise.allSettled([
-          ...workloads.map(async (wl, idx) =>
+          ...workloads.map((wl, idx) =>
             runWorkload('run', {
               id: wl.id,
               dockerPath: dockerPaths[idx],
-              timeoutMins: 6,
+              timeoutMins: Math.ceil(
+                ((5 + 4) * timeBetweenPhases + shutdownTime) / 60
+              ),
               args:
                 `--time ${
                   (5 + 2) * timeBetweenPhases
-                } --shutdown-time 30 --read-rps 1000 ` +
+                } --shutdown-time ${shutdownTime} --read-rps 1000 ` +
                 `--write-rps 100 --prom-pgw http://prometheus-pushgateway:9091`
             })
           ),
@@ -167,8 +180,11 @@ async function main(): Promise<void> {
 const isPostAction = !!core.getState('isPost')
 
 if (isPostAction) {
-  core.info('Cleanup should be placed here')
-  // TODO: cleanup
+  core.info('Cleanup')
+  core.debug('Remove .kube dir')
+  call('rm -rf ~/.kube')
+  core.debug('Remove .aws dir')
+  call('rm -rf ~/.aws')
 } else {
   main()
 }

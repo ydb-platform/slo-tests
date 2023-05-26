@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import {logGroup} from './utils/groupDecorator'
+import {getYdbVersions} from './cluster'
 
 export interface IWorkloadOptions {
   /** SDK language or language+variant for kuberetes, prometheus metrics, PR comments */
@@ -15,7 +16,7 @@ export interface IWorkloadOptions {
 }
 
 export function parseArguments() {
-  return logGroup('Prepare k8s', () => {
+  return logGroup('Parse arguments', () => {
     let workloads: IWorkloadOptions[] = []
     let i = -1,
       haveValue = true
@@ -30,8 +31,57 @@ export function parseArguments() {
       i++
     } while (haveValue)
 
+    const githubToken: string = core.getInput('GITHUB_TOKEN')
+    const kubeconfig = core.getInput('KUBECONFIG_B64')
+    const dockerRepo = core.getInput('DOCKER_REPO')
+    const dockerFolder = core.getInput('DOCKER_FOLDER')
+    const dockerUsername = core.getInput('DOCKER_USERNAME')
+    const dockerPassword = core.getInput('DOCKER_PASSWORD')
+    const awsCredentials = core.getInput('AWS_CREDENTIALS')
+    const awsConfig = core.getInput('AWS_CONFIG')
+    const s3Endpoint = core.getInput('S3_ENDPOINT')
+    const s3Folder = core.getInput('S3_IMAGES_FOLDER')
+    const grafanaDomain = core.getInput('GRAFANA_DOMAIN')
+    const grafanaDashboard = core.getInput('GRAFANA_DASHBOARD')
+
+    let ydbVersion = core.getInput('ydb_version')
+
+    const timeBetweenPhases = Number(
+      core.getInput('time_between_phases') || '20'
+    )
+    const shutdownTime = Number(core.getInput('shutdown_time') || '30')
+
+    if (isNaN(timeBetweenPhases))
+      throw new Error('time_between_phases is not a number')
+    if (isNaN(shutdownTime)) throw new Error('shutdown_time is not a number')
+
+    if (ydbVersion === '') ydbVersion = '23.1.26'
+    if (ydbVersion === 'newest') {
+      core.info('Get YDB docker versions')
+      const ydbVersions = getYdbVersions()
+      ydbVersion = ydbVersions[ydbVersions.length - 1]
+      core.info(`Use YDB docker version = '${ydbVersion}'`)
+    }
+
     // TODO: add other args
-    return workloads
+    return {
+      workloads,
+      githubToken,
+      kubeconfig,
+      awsCredentials,
+      awsConfig,
+      s3Endpoint,
+      s3Folder,
+      dockerRepo,
+      dockerFolder,
+      dockerUsername,
+      dockerPassword,
+      ydbVersion,
+      timeBetweenPhases,
+      shutdownTime,
+      grafanaDomain,
+      grafanaDashboard
+    }
   })
 }
 

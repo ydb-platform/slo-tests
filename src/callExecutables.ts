@@ -37,10 +37,7 @@ export function prepareK8S(base64kubeconfig: string) {
   })
 }
 
-export async function prepareAWS(
-  awsCredentialsB64: string,
-  awsConfigB64: string
-) {
+export function prepareAWS(awsCredentialsB64: string, awsConfigB64: string) {
   // create ~/.aws folder
   const kubePath = path.join(homedir(), '.aws')
   core.info(`mkdir ${kubePath}`)
