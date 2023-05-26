@@ -1,11 +1,49 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'SLO test over YDB'
+description: 'YDB SLO test for SDKs. Uses kubernetes cluster to run tests over. Creates possible errors in cluster to check how SDK handles them.'
 inputs:
-  milliseconds: # change this
+  KUBECONFIG_B64:
+    description: '.kube/config base64'
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  AWS_CREDENTIALS_B64:
+    description: '.aws/credentials base64'
+    required: true
+  AWS_CONFIG_B64:
+    description: '.aws/config base64'
+    required: true
+  DOCKER_USERNAME:
+    description: 'Docker username'
+    required: true
+  DOCKER_PASSWORD:
+    description: 'Docker password'
+    required: true
+  DOCKER_REPO:
+    description: 'Docker repository'
+    required: true
+  DOCKER_FOLDER:
+    description: 'Docker folder'
+    required: true
+  s3_endpoint:
+    description: 'AWS S3-compatible service endpoint'
+    required: true
+  s3_images_folder:
+    description: 'S3 folder'
+    required: true
+  grafana_domain:
+    description: 'Grafana service domain'
+    required: true
+  grafana_dashboard:
+    description: 'Grafana service dashboard'
+    required: true
+  ydb_version:
+    description: 'YDB version to run SLO over: use docker tag or `newest`'
+    required: true
+  timeBetweenPhases:
+    description: 'Time between errors phases of SLO test'
+    required: true
+  shutdownTime:
+    description: 'SLO workload shutdown timeout'
+    required: true
 runs:
   using: 'node16'
   main: 'dist/index.js'
+  post: 'dist/index.js'

@@ -37,12 +37,12 @@ export function parseArguments() {
     const dockerFolder = core.getInput('DOCKER_FOLDER')
     const dockerUsername = core.getInput('DOCKER_USERNAME')
     const dockerPassword = core.getInput('DOCKER_PASSWORD')
-    const awsCredentials = core.getInput('AWS_CREDENTIALS')
-    const awsConfig = core.getInput('AWS_CONFIG')
-    const s3Endpoint = core.getInput('S3_ENDPOINT')
-    const s3Folder = core.getInput('S3_IMAGES_FOLDER')
-    const grafanaDomain = core.getInput('GRAFANA_DOMAIN')
-    const grafanaDashboard = core.getInput('GRAFANA_DASHBOARD')
+    const awsCredentials = core.getInput('AWS_CREDENTIALS_B64')
+    const awsConfig = core.getInput('AWS_CONFIG_B64')
+    const s3Endpoint = core.getInput('s3_endpoint')
+    const s3Folder = core.getInput('s3_images_folder')
+    const grafanaDomain = core.getInput('grafana_domain')
+    const grafanaDashboard = core.getInput('grafana_dashboard') || '7CzMl5t4k'
 
     let ydbVersion = core.getInput('ydb_version')
 

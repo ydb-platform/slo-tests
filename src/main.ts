@@ -209,7 +209,8 @@ async function main(): Promise<void> {
                       s3Folder,
                       workloads[i].id,
                       timings.startTime,
-                      timings.endTime
+                      timings.endTime,
+                      grafanaDashboard
                     )
                     const comment = `
                       :volcano: Here are results of SLO test for **${
