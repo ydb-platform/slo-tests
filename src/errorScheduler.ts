@@ -31,6 +31,10 @@ export async function errorScheduler(
   //       return false
   //   })
 
+  await new Promise(resolve => {
+    setTimeout(resolve, timeBetweenS * 1000)
+  })
+
   const freezeCmd = (freeze: '1' | '0') =>
     `run -it --image=busybox --rm tablet-${
       freeze === '0' ? 'un' : ''
@@ -53,15 +57,15 @@ export async function errorScheduler(
 
   // force delete pod
   await createError(
-    'Delete database pod',
+    'Force delete database pod',
     `delete pod database-sample-1 --force=true --grace-period=0`,
     timeBetweenS
   )
 
   // kill from inside
   await createError(
-    'Delete database pod',
-    `exec -it database-sample-0 -- /bin/bash -c "kill -2 1 && echo 'process killed'`,
+    'Kill database from inside',
+    `exec -it database-sample-0 -- /bin/bash -c "kill -2 1 && echo 'process killed'"`,
     timeBetweenS
   )
   // TODO: add process sleep
@@ -72,7 +76,7 @@ async function createError(
   kubeCommand: string,
   timeBetweenS: number
 ): Promise<void> {
-  return Promise.allSettled([
+  return await Promise.allSettled([
     // run command
     callKubernetesAsync(kubeCommand),
     // annotate
