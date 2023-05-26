@@ -1,6 +1,5 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import {GitHub} from '@actions/github/lib/utils'
 import {parseArguments} from './parseArguments'
 import {call, prepareAWS, prepareK8S} from './callExecutables'
 import {obtainMutex, releaseMutex} from './mutex'
@@ -261,5 +260,6 @@ if (isPostAction) {
   core.debug('Remove .aws dir')
   call('rm -rf ~/.aws')
 } else {
+  core.info('Main SLO action')
   main()
 }

@@ -1,6 +1,9 @@
 name: 'SLO test over YDB'
 description: 'YDB SLO test for SDKs. Uses kubernetes cluster to run tests over. Creates possible errors in cluster to check how SDK handles them.'
 inputs:
+  GITHUB_TOKEN:
+    description: 'Github token'
+    required: true
   KUBECONFIG_B64:
     description: '.kube/config base64'
     required: true

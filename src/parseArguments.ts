@@ -63,7 +63,6 @@ export function parseArguments() {
       core.info(`Use YDB docker version = '${ydbVersion}'`)
     }
 
-    // TODO: add other args
     return {
       workloads,
       githubToken,

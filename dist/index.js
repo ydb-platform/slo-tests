@@ -976,6 +976,7 @@ if (isPostAction) {
     (0, callExecutables_1.call)('rm -rf ~/.aws');
 }
 else {
+    core.info('Main SLO action');
     main();
 }
 
@@ -1158,7 +1159,6 @@ function parseArguments() {
             ydbVersion = ydbVersions[ydbVersions.length - 1];
             core.info(`Use YDB docker version = '${ydbVersion}'`);
         }
-        // TODO: add other args
         return {
             workloads,
             githubToken,
