@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {parseArguments} from './parseArguments'
-import {call, prepareAWS, prepareK8S} from './callExecutables'
+import {prepareAWS, prepareK8S} from './callExecutables'
 import {obtainMutex, releaseMutex} from './mutex'
 import {createCluster, deleteCluster} from './cluster'
 import {
@@ -251,15 +251,5 @@ async function main(): Promise<void> {
   }
 }
 
-const isPostAction = !!core.getState('isPost')
-
-if (isPostAction) {
-  core.info('Cleanup')
-  core.debug('Remove .kube dir')
-  call('rm -rf ~/.kube')
-  core.debug('Remove .aws dir')
-  call('rm -rf ~/.aws')
-} else {
-  core.info('Main SLO action')
-  main()
-}
+core.info('Main SLO action')
+main()

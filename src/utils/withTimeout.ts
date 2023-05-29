@@ -29,11 +29,12 @@ export async function withTimeout(
   )
 }
 
-export async function withTimeoutSimple<T>(timeoutS: number, func: Promise<T>) {
-  return Promise.race([
-    func,
-    new Promise((_, reject) =>
-      setTimeout(reject, timeoutS * 1000)
-    ) as Promise<never>
-  ])
+export async function withTimeoutSimple<T>(
+  timeoutS: number,
+  func: Promise<T>
+): Promise<T> {
+  const timer: Promise<never> = new Promise((_, reject) =>
+    setTimeout(reject, timeoutS * 1000)
+  )
+  return Promise.race([func, timer])
 }
