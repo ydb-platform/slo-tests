@@ -60,7 +60,7 @@ export async function createCluster(
       }
       if (storageStatus !== lastStorageStatus) {
         core.info(
-          `Storage become '${databaseStatus}', database is '${storageStatus}'`
+          `Storage become '${storageStatus}', database is '${databaseStatus}'`
         )
         lastStorageStatus = storageStatus
       }
