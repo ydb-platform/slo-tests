@@ -84,7 +84,7 @@ export function callAsync(
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const id = ++callId
-    !secret && core.info(`Call #${id} command: '${command}'`)
+    !secret && core.info(`Call #${id} command: '${command}' with cwd '${cwd}'`)
     const proc = exec(command, {encoding: 'utf8', cwd})
     if (!proc.stdio || !proc.stdout || !proc.stderr) {
       core.info(`Error in callAsync #${id}: can't spawn process`)
