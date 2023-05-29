@@ -3,6 +3,7 @@ import * as core from '@actions/core'
 import {context} from '@actions/github'
 import {GitHub} from '@actions/github/lib/utils'
 import {callAsync, callKubernetesAsync} from './callExecutables'
+import {writeFile} from 'fs/promises'
 
 export async function grafanaScreenshot(
   s3Endpoint: string,
@@ -30,8 +31,9 @@ export async function grafanaScreenshot(
       '...TRUNCATED...' +
       imageb64.slice(-100)
   )
+  core.debug('Write picture to FS')
   // write image to fs
-  await callAsync(`echo "${imageb64}" | base64 --decode > pic.png`)
+  await writeFile('pic.png', Buffer.from(imageb64, 'base64'))
 
   const pictureName = `${workloadId}-${new Date().valueOf()}.png`
   // upload

@@ -232,6 +232,7 @@ export async function checkResults(
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       name: `slo_check_${checks[i][0]}`,
+      head_sha: github.context.sha,
       status: 'completed',
       conclusion: conclusion,
       output: {
