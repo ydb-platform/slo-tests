@@ -149,24 +149,41 @@ export function checkGraphValues(
   for (const queryName of Object.keys(desiredResults)) {
     const result = realResults[queryName]
     const desired = desiredResults[queryName]
+    core.debug(
+      `Check query '${queryName}': result: ${JSON.stringify(
+        result
+      )}; desired result:${JSON.stringify(desired)}`
+    )
 
     for (const desiredRes of desired) {
       const filter = {job: `workload-${workloadId}`, ...desiredRes.filter}
       let inspected = (result || []).filter(filterGraphData(filter))
+      core.debug(
+        `Apply filter '${JSON.stringify(filter)}': ${JSON.stringify(inspected)}`
+      )
       const checkName = `${queryName}${JSON.stringify(filter)}`
       if (inspected.length === 0) {
+        core.debug(`Not found results by filter to inspect`)
         checks.push([
           checkName,
           'notfound',
           `Not found results by filter to inspect`
         ])
       } else {
+        core.debug(
+          `Found results by filter to inspect: ${JSON.stringify(
+            Object.entries(inspected)
+          )}`
+        )
         for (const [i, inspectedRes] of Object.entries(inspected)) {
           const decision =
             desiredRes.value[0] === '>'
               ? inspectedRes.value > desiredRes.value[1]
               : inspectedRes.value < desiredRes.value[1]
 
+          core.debug(
+            `Inspection '${checkName}[${i}]' (${inspectedRes.value} ${desiredRes.value[0]} ${desiredRes.value[1]}) result: ${decision}`
+          )
           checks.push([
             `${checkName}[${i}]`,
             decision ? 'ok' : 'error',
@@ -220,6 +237,7 @@ export async function checkResults(
 
   core.debug('parsed: ' + JSON.stringify(parsed))
   const checks = checkGraphValues(workloadId, parsed, desiredResults)
+  core.debug('checks: ' + JSON.stringify(checks))
 
   for (let i = 0; i < checks.length; i++) {
     const conclusion =
@@ -242,6 +260,7 @@ export async function checkResults(
       }
     }
 
+    core.debug('create check: ' + JSON.stringify(checkParams))
     await octokit.rest.checks.create(checkParams)
   }
   return checks.filter(ch => ch[1] == 'error').length > 0
