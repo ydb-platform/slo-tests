@@ -223,9 +223,9 @@ async function main(): Promise<void> {
                     await postComment(
                       octokit,
                       createHash('sha1')
-                        .update('nodejs-1')
+                        .update(workloads[i].id)
                         .digest()
-                        .readUint32BE(),
+                        .readUint16BE(),
                       comment
                     )
                   })()

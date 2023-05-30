@@ -66,8 +66,12 @@ export async function postComment(
     body: message
   }
   try {
-    await octokit.rest.issues.createComment(data)
+    core.debug('Create comment with data:' + JSON.stringify(data))
+    const res = await octokit.rest.issues.createComment(data)
+    core.debug('Create comment result:' + JSON.stringify(res))
   } catch (error) {
-    await octokit.rest.issues.updateComment(data)
+    core.debug('Update comment with data:' + JSON.stringify(data))
+    const res = await octokit.rest.issues.updateComment(data)
+    core.debug('Update comment result:' + JSON.stringify(res))
   }
 }
