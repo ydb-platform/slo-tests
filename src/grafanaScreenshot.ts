@@ -59,18 +59,32 @@ export async function postComment(
   message: string
 ) {
   if (!context.payload.pull_request) return
-  const data = {
-    ...context.repo,
+  const commentTag = `<!-- slo-test-action "${id}" -->`
+
+  const commentsList = await octokit.rest.issues.listComments({
     issue_number: context.payload.pull_request.number,
-    comment_id: id,
-    body: message
-  }
-  try {
+    ...context.repo
+  })
+  const oldComment = commentsList.data.filter(comment =>
+    comment.body?.includes(commentTag)
+  )
+
+  if (oldComment.length === 0) {
+    const data = {
+      ...context.repo,
+      issue_number: context.payload.pull_request.number,
+      comment_id: id,
+      body: message + `\n${commentTag}`
+    }
     core.debug('Create comment with data:' + JSON.stringify(data))
     const res = await octokit.rest.issues.createComment(data)
     core.debug('Create comment result:' + JSON.stringify(res))
-  } catch (error) {
-    core.debug('Сreate comment failed:' + JSON.stringify(error))
+  } else {
+    const data = {
+      ...context.repo,
+      comment_id: oldComment[0].id,
+      body: message + `\n${commentTag}`
+    }
     core.debug('Update comment with data:' + JSON.stringify(data))
     const res = await octokit.rest.issues.updateComment(data)
     core.debug('Update comment result:' + JSON.stringify(res))
