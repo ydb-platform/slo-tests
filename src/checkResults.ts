@@ -253,6 +253,7 @@ export async function checkResults(
       head_sha: github.context.sha,
       status: 'completed',
       conclusion: conclusion,
+      started_at: fromDate.toISOString(),
       output: {
         title: `SLO results check #${0}`,
         summary: checks[i][2],
