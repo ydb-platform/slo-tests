@@ -19,6 +19,9 @@ import {createHash} from 'crypto'
 
 const isPullRequest = !!github.context.payload.pull_request
 
+let mutexObtained = false
+let clusterCreated = false
+
 async function main(): Promise<void> {
   try {
     let {
@@ -76,6 +79,7 @@ async function main(): Promise<void> {
 
     await obtainMutex(mutexId, 30)
     core.info('Mutex obtained!')
+    mutexObtained = true
 
     const dockerPaths = workloads.map(w =>
       generateDockerPath(dockerRepo, dockerFolder, w.id)
@@ -105,6 +109,10 @@ async function main(): Promise<void> {
       clusterWorkloadRes[0].status === 'fulfilled' &&
       builded.filter(v => v).length > 0
     core.debug(`builded: [${builded.toString()}], continueRun: ${continueRun}`)
+
+    if (clusterWorkloadRes[0].status === 'fulfilled') {
+      clusterCreated = true
+    }
 
     if (builded.every(v => v)) {
       core.info('All workloads builded successfully')
@@ -248,6 +256,20 @@ async function main(): Promise<void> {
     releaseMutex()
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
+    if (clusterCreated) {
+      try {
+        deleteCluster()
+      } catch (error) {
+        core.info('Failed to delete cluster:' + JSON.stringify(error))
+      }
+    }
+    if (mutexObtained) {
+      try {
+        releaseMutex()
+      } catch (error) {
+        core.info('Failed to release mutex:' + JSON.stringify(error))
+      }
+    }
   }
 }
 

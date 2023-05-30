@@ -4,7 +4,7 @@ import {logGroup} from './utils/groupDecorator'
 import {withTimeout} from './utils/withTimeout'
 
 /** Is mutex busy (configmap has field busy) */
-function isBusy(name: string): false | string {
+export function isBusy(name: string): false | string {
   core.debug(`isBusy(${name})`)
   const res = callKubernetes(`get configmaps ${name} -ojson`)
   core.debug('isBusy result: ' + res)
@@ -19,7 +19,7 @@ function isBusy(name: string): false | string {
   return false
 }
 
-function setBusy(lockedBy: string) {
+export function setBusy(lockedBy: string) {
   core.debug(`setBusy(${lockedBy})`)
 
   callKubernetesPath(
