@@ -144,6 +144,7 @@ export function checkGraphValues(
   let checks: [
     key: string,
     decision: 'ok' | 'error' | 'notfound',
+    title: string,
     text: string
   ][] = []
   for (const queryName of Object.keys(desiredResults)) {
@@ -162,11 +163,14 @@ export function checkGraphValues(
         `Apply filter '${JSON.stringify(filter)}': ${JSON.stringify(inspected)}`
       )
       const checkName = `${queryName}${JSON.stringify(filter)}`
+      const checkId = `slo-${checkName.replace(/[{":}\[\]]/g, '-')}`
+
       if (inspected.length === 0) {
         core.debug(`Not found results by filter to inspect`)
         checks.push([
           checkName,
           'notfound',
+          checkId,
           `Not found results by filter to inspect`
         ])
       } else {
@@ -185,8 +189,9 @@ export function checkGraphValues(
             `Inspection '${checkName}[${i}]' (${inspectedRes.value} ${desiredRes.value[0]} ${desiredRes.value[1]}) result: ${decision}`
           )
           checks.push([
-            `${checkName}[${i}]`,
+            `${checkId}-${i}`,
             decision ? 'ok' : 'error',
+            checkId,
             `${inspectedRes.value} ${decision ? '' : '!'}${
               desiredRes.value[0]
             } ${desiredRes.value[1]}`
@@ -255,9 +260,9 @@ export async function checkResults(
       conclusion: conclusion,
       started_at: fromDate.toISOString(),
       output: {
-        title: `SLO results check #${0}`,
-        summary: checks[i][2],
-        text: checks[i][2]
+        title: `SLO check ${checks[i][2]}`,
+        summary: checks[i][3],
+        text: checks[i][3]
       }
     }
 
