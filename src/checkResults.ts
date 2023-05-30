@@ -168,9 +168,9 @@ export function checkGraphValues(
       if (inspected.length === 0) {
         core.debug(`Not found results by filter to inspect`)
         checks.push([
-          checkName,
-          'notfound',
           checkId,
+          'notfound',
+          checkName,
           `Not found results by filter to inspect`
         ])
       } else {
@@ -191,7 +191,7 @@ export function checkGraphValues(
           checks.push([
             `${checkId}-${i}`,
             decision ? 'ok' : 'error',
-            checkId,
+            checkName,
             `${inspectedRes.value} ${decision ? '' : '!'}${
               desiredRes.value[0]
             } ${desiredRes.value[1]}`
@@ -245,38 +245,43 @@ export async function checkResults(
   core.info('checks: ' + JSON.stringify(checks))
 
   let failed = false
-  let failedMsg = 'SLO check failed:\n'
+  let failedMsg = 'SLO check failed: '
   for (let i = 0; i < checks.length; i++) {
     if (checks[i][1] === 'error') {
       failed = true
       failedMsg += `${checks[i][2]}: ${checks[i][3]}`
     }
-    // const conclusion =
-    //   checks[i][1] === 'error'
-    //     ? 'failure'
-    //     : checks[i][1] === 'notfound'
-    //     ? 'neutral'
-    //     : 'success'
-    // const checkParams = {
-    //   owner: github.context.repo.owner,
-    //   repo: github.context.repo.repo,
-    //   name: `slo_check_${checks[i][0]}`,
-    //   head_sha: github.context.sha,
-    //   status: 'completed',
-    //   conclusion: conclusion,
-    //   started_at: fromDate.toISOString(),
-    //   output: {
-    //     title: `SLO check ${checks[i][2]}`,
-    //     summary: checks[i][3],
-    //     text: checks[i][3]
-    //   }
-    // }
+    try {
+      // try to add to checks
+      const conclusion =
+        checks[i][1] === 'error'
+          ? 'failure'
+          : checks[i][1] === 'notfound'
+          ? 'neutral'
+          : 'success'
+      const checkParams = {
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        name: `slo-check-${i}`,
+        head_sha: github.context.sha,
+        status: 'completed',
+        conclusion: conclusion,
+        started_at: fromDate.toISOString(),
+        output: {
+          title: `SLO check ${i}`,
+          summary: checks[i][3],
+          text: checks[i][3]
+        }
+      }
 
-    // core.debug('create check: ' + JSON.stringify(checkParams))
-    // core.debug(
-    //   'Create check response: ' +
-    //     JSON.stringify(await octokit.rest.checks.create(checkParams))
-    // )
+      core.info('create check: ' + JSON.stringify(checkParams))
+      core.info(
+        'Create check response: ' +
+          JSON.stringify(await octokit.rest.checks.create(checkParams))
+      )
+    } catch (error) {
+      core.info('Create check error: ' + JSON.stringify(error))
+    }
   }
   if (failed) {
     core.setFailed(failedMsg)
