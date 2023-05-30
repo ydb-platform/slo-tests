@@ -212,13 +212,13 @@ async function main(): Promise<void> {
                       grafanaDashboard
                     )
                     const comment = `
-                      :volcano: Here are results of SLO test for **${
-                        workloads[i].name ?? workloads[i].id
-                      }**:
-                      
-                      [Grafana Dashboard](${grafanaDomain}/d/${grafanaDashboard}?orgId=1&from=${timings.startTime.valueOf()}&to=${timings.endTime.valueOf()})
-                      
-                      ![SLO-${workloads[i].id}](${pictureUri})`
+:volcano: Here are results of SLO test for **${
+                      workloads[i].name ?? workloads[i].id
+                    }**:
+
+[Grafana Dashboard](${grafanaDomain}/d/${grafanaDashboard}?orgId=1&from=${timings.startTime.valueOf()}&to=${timings.endTime.valueOf()})
+
+![SLO-${workloads[i].id}](${pictureUri})\n`
 
                     await postComment(
                       octokit,
