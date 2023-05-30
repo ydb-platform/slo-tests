@@ -261,7 +261,10 @@ export async function checkResults(
     }
 
     core.debug('create check: ' + JSON.stringify(checkParams))
-    await octokit.rest.checks.create(checkParams)
+    core.debug(
+      'Create check response: ' +
+        JSON.stringify(await octokit.rest.checks.create(checkParams))
+    )
   }
   return checks.filter(ch => ch[1] == 'error').length > 0
 }
