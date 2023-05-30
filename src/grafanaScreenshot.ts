@@ -47,7 +47,8 @@ export async function grafanaScreenshot(
   // delete
   await callAsync(`rm pic.png`)
   // return name
-  const fullPictureUri = path.join(s3Endpoint, s3Folder, pictureName)
+  const fullPictureUri =
+    'https://' + path.join(s3Endpoint.split('//')[1], s3Folder, pictureName)
   core.debug('fullPictureUri: ' + fullPictureUri)
   return `${fullPictureUri}`
 }
