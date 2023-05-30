@@ -242,35 +242,44 @@ export async function checkResults(
 
   core.debug('parsed: ' + JSON.stringify(parsed))
   const checks = checkGraphValues(workloadId, parsed, desiredResults)
-  core.debug('checks: ' + JSON.stringify(checks))
+  core.info('checks: ' + JSON.stringify(checks))
 
+  let failed = false
+  let failedMsg = 'SLO check failed:\n'
   for (let i = 0; i < checks.length; i++) {
-    const conclusion =
-      checks[i][1] === 'error'
-        ? 'failure'
-        : checks[i][1] === 'notfound'
-        ? 'neutral'
-        : 'success'
-    const checkParams = {
-      owner: github.context.repo.owner,
-      repo: github.context.repo.repo,
-      name: `slo_check_${checks[i][0]}`,
-      head_sha: github.context.sha,
-      status: 'completed',
-      conclusion: conclusion,
-      started_at: fromDate.toISOString(),
-      output: {
-        title: `SLO check ${checks[i][2]}`,
-        summary: checks[i][3],
-        text: checks[i][3]
-      }
+    if (checks[i][1] === 'error') {
+      failed = true
+      failedMsg += `${checks[i][2]}: ${checks[i][3]}`
     }
+    // const conclusion =
+    //   checks[i][1] === 'error'
+    //     ? 'failure'
+    //     : checks[i][1] === 'notfound'
+    //     ? 'neutral'
+    //     : 'success'
+    // const checkParams = {
+    //   owner: github.context.repo.owner,
+    //   repo: github.context.repo.repo,
+    //   name: `slo_check_${checks[i][0]}`,
+    //   head_sha: github.context.sha,
+    //   status: 'completed',
+    //   conclusion: conclusion,
+    //   started_at: fromDate.toISOString(),
+    //   output: {
+    //     title: `SLO check ${checks[i][2]}`,
+    //     summary: checks[i][3],
+    //     text: checks[i][3]
+    //   }
+    // }
 
-    core.debug('create check: ' + JSON.stringify(checkParams))
-    core.debug(
-      'Create check response: ' +
-        JSON.stringify(await octokit.rest.checks.create(checkParams))
-    )
+    // core.debug('create check: ' + JSON.stringify(checkParams))
+    // core.debug(
+    //   'Create check response: ' +
+    //     JSON.stringify(await octokit.rest.checks.create(checkParams))
+    // )
+  }
+  if (failed) {
+    core.setFailed(failedMsg)
   }
   return checks.filter(ch => ch[1] == 'error').length > 0
 }
