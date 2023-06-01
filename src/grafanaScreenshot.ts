@@ -22,8 +22,10 @@ export async function grafanaScreenshot(
     dashboard.split('/')[0]
   }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv`
   core.debug('grafana query: ' + query)
-  const imageb64 = await callKubernetesAsync(
-    `run -q -i --image=busybox --rm grafana-screenshoter --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`
+  const imageb64 = await core.group('Get base64 image', () =>
+    callKubernetesAsync(
+      `run -q -i --image=busybox --rm grafana-screenshoter --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`
+    )
   )
   core.debug(
     'grafana imageb64: ' +
