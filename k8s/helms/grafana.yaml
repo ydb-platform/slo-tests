@@ -97,17 +97,6 @@ dashboards:
           "liveNow": false,
           "panels": [
             {
-              "gridPos": {
-                "h": 1,
-                "w": 24,
-                "x": 0,
-                "y": 0
-              },
-              "id": 9,
-              "title": "Row title",
-              "type": "row"
-            },
-            {
               "datasource": {
                 "type": "prometheus",
                 "uid": "prometheus"
@@ -168,14 +157,14 @@ dashboards:
                 "h": 9,
                 "w": 12,
                 "x": 0,
-                "y": 1
+                "y": 0
               },
-              "id": 2,
+              "id": 12,
               "options": {
                 "legend": {
                   "calcs": [],
-                  "displayMode": "table",
-                  "placement": "right",
+                  "displayMode": "list",
+                  "placement": "bottom",
                   "showLegend": true
                 },
                 "tooltip": {
@@ -190,7 +179,7 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "inflight > 0",
+                  "expr": "rate(inflight[$__rate_interval]) > 0",
                   "format": "time_series",
                   "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} In flight",
                   "range": true,
@@ -202,7 +191,7 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "oks > 0",
+                  "expr": "rate(oks[$__rate_interval]) > 0",
                   "hide": false,
                   "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} OK",
                   "range": true,
@@ -214,14 +203,14 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "not_oks > 0",
+                  "expr": "rate(not_oks[$__rate_interval]) > 0",
                   "hide": false,
                   "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} not OK",
                   "range": true,
                   "refId": "C"
                 }
               ],
-              "title": "SLO Requests",
+              "title": "SLO Requests RPS",
               "transformations": [],
               "type": "timeseries"
             },
@@ -240,6 +229,7 @@ dashboards:
                     "axisColorMode": "text",
                     "axisLabel": "",
                     "axisPlacement": "auto",
+                    "axisSoftMin": 0,
                     "barAlignment": 0,
                     "drawStyle": "line",
                     "fillOpacity": 0,
@@ -286,14 +276,14 @@ dashboards:
                 "h": 9,
                 "w": 12,
                 "x": 12,
-                "y": 1
+                "y": 0
               },
-              "id": 12,
+              "id": 14,
               "options": {
                 "legend": {
                   "calcs": [],
-                  "displayMode": "table",
-                  "placement": "right",
+                  "displayMode": "list",
+                  "placement": "bottom",
                   "showLegend": true
                 },
                 "tooltip": {
@@ -308,38 +298,14 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "delta(inflight[2s]) / 2 > 0",
-                  "format": "time_series",
-                  "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} In flight",
+                  "expr": "histogram_quantile(1, rate(attempts_bucket[$__rate_interval]))",
+                  "hide": false,
+                  "legendFormat": "{{sdk}}-{{sdkVersion}} {{jobName}}-{{status}}",
                   "range": true,
                   "refId": "A"
-                },
-                {
-                  "datasource": {
-                    "type": "prometheus",
-                    "uid": "prometheus"
-                  },
-                  "editorMode": "builder",
-                  "expr": "delta(oks[2s]) / 2 > 0",
-                  "hide": false,
-                  "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} OK",
-                  "range": true,
-                  "refId": "B"
-                },
-                {
-                  "datasource": {
-                    "type": "prometheus",
-                    "uid": "prometheus"
-                  },
-                  "editorMode": "builder",
-                  "expr": "changes(not_oks[2s]) > 0",
-                  "hide": false,
-                  "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} not OK",
-                  "range": true,
-                  "refId": "C"
                 }
               ],
-              "title": "SLO Requests RPS",
+              "title": "Attempts",
               "transformations": [],
               "type": "timeseries"
             },
@@ -349,7 +315,7 @@ dashboards:
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 10
+                "y": 9
               },
               "id": 7,
               "panels": [],
@@ -417,7 +383,7 @@ dashboards:
                 "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 11
+                "y": 10
               },
               "id": 4,
               "options": {
@@ -510,7 +476,7 @@ dashboards:
                 "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 11
+                "y": 10
               },
               "id": 5,
               "options": {
@@ -602,7 +568,7 @@ dashboards:
                 "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 19
+                "y": 18
               },
               "id": 10,
               "options": {
@@ -694,7 +660,7 @@ dashboards:
                 "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 19
+                "y": 18
               },
               "id": 11,
               "options": {
@@ -727,15 +693,16 @@ dashboards:
             }
           ],
           "refresh": false,
-          "schemaVersion": 37,
+          "revision": 1,
+          "schemaVersion": 38,
           "style": "dark",
           "tags": [],
           "templating": {
             "list": []
           },
           "time": {
-            "from": "2023-03-30T12:36:47.587Z",
-            "to": "2023-03-30T12:43:11.246Z"
+            "from": "now-15m",
+            "to": "now"
           },
           "timepicker": {},
           "timezone": "",

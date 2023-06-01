@@ -40,7 +40,4 @@ runs:
         echo '{\"dashboardUID\":\"${{ inputs.dashboard }}\", \"text\":\"${{ inputs.text }}\", \"tags\":${TAGS}}';
         wget -qS -O- --header 'Accept: application/json' --header 'Content-Type: application/json'
         --post-data '{\"dashboardUID\":\"${{ inputs.dashboard }}\", \"text\":\"${{ inputs.text }}\", \"tags\":${TAGS}}'
-        '${{ inputs.annotations-url }}';
-        wget -qS -O- --header 'Accept: application/json' --header 'Content-Type: application/json'
-        --post-data '{\"dashboardUID\":\"${{ inputs.dashboard1 }}\", \"text\":\"${{ inputs.text }}\", \"tags\":${TAGS}}'
         '${{ inputs.annotations-url }}'; "
