@@ -134,10 +134,10 @@ export function runWorkload(
     )
     const endTime = new Date()
     // print logs
-    core.info(
-      `Workload ${options.id} ${command} logs:\n` +
-        (await callKubernetesAsync(`logs job/${options.id}-wl-${command}`))
-    )
+    let logs = await callKubernetesAsync(`logs job/${options.id}-wl-${command}`)
+    core.startGroup(`Workload ${options.id} ${command} logs:`)
+    core.info(logs)
+    core.endGroup()
     return {startTime, endTime}
   })
 }
