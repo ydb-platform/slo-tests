@@ -51,7 +51,7 @@ export function buildWorkload(
   if (!options || options.length === 0) options = ''
   if (!context || context.length === 0) context = '.'
 
-  return logGroup(`Build workload ${id}`, async () => {
+  return core.group(`Build workload ${id}`, async () => {
     core.info('Build docker image')
     await callAsync(
       `docker buildx build --platform linux/amd64 ` +
@@ -80,7 +80,7 @@ export function runWorkload(
   command: 'create' | 'run',
   options: IWorkloadRunOptions
 ) {
-  return logGroup(`Workload ${options.id} - ${command}`, async () => {
+  return core.group(`Workload ${options.id} - ${command}`, async () => {
     const containerArgs = `grpc://database-sample-grpc:2135 /root/database-sample --table-name slo-${options.id} ${options.args}`
 
     const workloadManifest = workloadManifestTemplate

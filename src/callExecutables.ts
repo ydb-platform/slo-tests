@@ -99,7 +99,16 @@ export function callAsync(
     proc.on('close', code => {
       core.debug(`Call #${id} async code = ${code}`)
       if (code == 0) {
-        core.debug(`Call #${id} async output \n${out}`)
+        if (out.length > 3000)
+          core.debug(
+            `Call #${id} async TRUNCATED (full size is ${
+              out.length / 1024
+            }kb - showing 3000 symbols) output: \n${out.slice(
+              0,
+              1500
+            )}\n.........\n${out.slice(-1500)}`
+          )
+        else core.debug(`Call #${id} async output \n${out}`)
         resolve(out)
       } else {
         if (secret)
