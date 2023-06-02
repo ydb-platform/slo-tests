@@ -20,7 +20,7 @@ export async function grafanaScreenshot(
   )
   const query = `http://grafana/render/d/${
     dashboard.split('/')[0]
-  }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv`
+  }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
   core.debug('grafana query: ' + query)
   const imageb64 = await core.group('Get base64 image', () =>
     callKubernetesAsync(
