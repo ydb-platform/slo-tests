@@ -698,7 +698,20 @@ dashboards:
           "style": "dark",
           "tags": [],
           "templating": {
-            "list": []
+            "list": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                },
+                "filters": [ ],
+                "hide": 2,
+                "label": "",
+                "name": "filter",
+                "skipUrlSync": false,
+                "type": "adhoc"
+              }
+            ]
           },
           "time": {
             "from": "now-15m",
