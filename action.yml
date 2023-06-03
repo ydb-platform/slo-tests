@@ -92,6 +92,51 @@ inputs:
   workload_build_options2:
     description: 'SLO workload #2 docker build arguments'
     required: false
+  language_id3:
+    description: 'SLO workload #3 language ID'
+    required: false
+  workload_path3:
+    description: 'SLO workload #3 workload path'
+    required: false
+  language3:
+    description: 'SLO workload #3 language name'
+    required: false
+  workload_build_context3:
+    description: 'SLO workload #3 docker build context'
+    required: false
+  workload_build_options3:
+    description: 'SLO workload #3 docker build arguments'
+    required: false
+  language_id4:
+    description: 'SLO workload #4 language ID'
+    required: false
+  workload_path4:
+    description: 'SLO workload #4 workload path'
+    required: false
+  language4:
+    description: 'SLO workload #4 language name'
+    required: false
+  workload_build_context4:
+    description: 'SLO workload #4 docker build context'
+    required: false
+  workload_build_options4:
+    description: 'SLO workload #4 docker build arguments'
+    required: false
+  language_id5:
+    description: 'SLO workload #5 language ID'
+    required: false
+  workload_path5:
+    description: 'SLO workload #5 workload path'
+    required: false
+  language5:
+    description: 'SLO workload #5 language name'
+    required: false
+  workload_build_context5:
+    description: 'SLO workload #5 docker build context'
+    required: false
+  workload_build_options5:
+    description: 'SLO workload #5 docker build arguments'
+    required: false
 runs:
   using: 'node16'
   main: 'dist/main/index.js'
