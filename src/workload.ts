@@ -13,6 +13,8 @@ import {withTimeout} from './utils/withTimeout'
 
 const workloadManifestTemplate = manifests['k8s/ci/workload.yaml'].content
 
+const fs = require('fs');
+
 export function dockerLogin(repo: string, user: string, password: string) {
   return logGroup('Docker login', async () => {
     try {
@@ -84,9 +86,9 @@ export function runWorkload(
     const containerArgs = `grpc://database-sample-grpc:2135 /root/database-sample --table-name slo-${options.id} ${options.args}`
 
     const workloadManifest = workloadManifestTemplate
-      .replace(/\$\{\{LANGUAGE_ID\}\}/g, options.id)
-      .replace(/\$\{\{COMMAND\}\}/g, command)
-      .replace(/\$\{\{DOCKER_IMAGE\}\}/g, options.dockerPath)
+      .replace(/\$\{\{LANGUAGE_ID}}/g, options.id)
+      .replace(/\$\{\{COMMAND}}/g, command)
+      .replace(/\$\{\{DOCKER_IMAGE}}/g, options.dockerPath)
       .replace(
         '${{ARGS}}',
         containerArgs
@@ -119,25 +121,37 @@ export function runWorkload(
         if (status.failed) {
           const msg = `Workload ${options.id} ${command} failed`
           core.info(msg)
-          // print logs
-          core.info(
-            `Workload ${options.id} ${command} logs:\n` +
-              (await callKubernetesAsync(
-                `logs job/${options.id}-wl-${command}`
-              ))
-          )
+          await saveLogs(options.id, command)
           throw new Error(msg)
         }
-        if (status.complete || status.succeeded) return true
-        return false
+        return (status.complete || status.succeeded);
       }
     )
     const endTime = new Date()
     // print logs
-    let logs = await callKubernetesAsync(`logs job/${options.id}-wl-${command}`)
-    core.startGroup(`Workload ${options.id} ${command} logs:`)
-    core.info(logs)
-    core.endGroup()
+    await saveLogs(options.id, command)
     return {startTime, endTime}
   })
+}
+
+async function saveLogs(
+    id: string,
+    command: string
+) {
+  let logs = await callKubernetesAsync(`logs job/${id}-wl-${command}`)
+
+  // core.startGroup(`Workload ${id} ${command} logs:`)
+  // core.info(logs)
+  // core.endGroup()
+
+  try {
+    let dir = "./logs"
+    if (!fs.existsSync(dir)){
+      await fs.promises.mkdir(dir);
+    }
+
+    await fs.promises.writeFile(`${dir}/${id}-${command}.log`, logs);
+  } catch (e) {
+      core.info(`error write file for ${id}-${command}: ${(e as Error).message}`)
+  }
 }
