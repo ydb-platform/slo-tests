@@ -112,15 +112,15 @@ export function callAsync(
         resolve(out)
       } else {
         if (secret)
-          core.debug(`Call #${id} async with secrets failed - on close`)
-        else core.debug(`Call #${id} async failed - on close:\n${err}`)
+          core.info(`Call #${id} async with secrets failed - on close`)
+        else core.info(`Call #${id} async failed - on close:\nError: ${err}\nOutput: ${out}`)
 
         reject(new Error(err))
       }
     })
     proc.on('error', err => {
-      if (secret) core.debug(`Call #${id} async with secrets failed - on error`)
-      else core.debug(`Call #${id} async failed - on error:\n${err}`)
+      if (secret) core.info(`Call #${id} async with secrets failed - on error`)
+      else core.info(`Call #${id} async failed - on error:\nError: ${err}\nOutput: ${out}`)
 
       reject(err)
     })
