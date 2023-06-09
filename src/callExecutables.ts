@@ -72,7 +72,7 @@ export function prepareAWS(awsCredentialsB64: string, awsConfigB64: string) {
 export function call(command: string, secret = false) {
   const id = ++callId
   !secret && core.info(`Call #${id} command: '${command}'`)
-  const spawnResult = execSync(command, {encoding: 'utf8', stdio: 'pipe'})
+  const spawnResult = execSync(command, {encoding: 'utf8', maxBuffer: Infinity, stdio: 'pipe'})
   core.debug(`Call #${id} result ${spawnResult}`)
   return spawnResult
 }
@@ -85,7 +85,7 @@ export function callAsync(
   return new Promise((resolve, reject) => {
     const id = ++callId
     !secret && core.info(`Call #${id} command: '${command}' with cwd '${cwd}'`)
-    const proc = exec(command, {encoding: 'utf8', cwd})
+    const proc = exec(command, {encoding: 'utf8', maxBuffer: Infinity, cwd})
     if (!proc.stdio || !proc.stdout || !proc.stderr) {
       core.info(`Error in callAsync #${id}: can't spawn process`)
       throw new Error(`Error in callAsync #${id}: can't spawn process`)
