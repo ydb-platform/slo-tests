@@ -140,6 +140,7 @@ async function saveLogs(
 ) {
   let logs = await callKubernetesAsync(`logs job/${id}-wl-${command}`)
 
+  // TODO: print logs
   // core.startGroup(`Workload ${id} ${command} logs:`)
   // core.info(logs)
   // core.endGroup()

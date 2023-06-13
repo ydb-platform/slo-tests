@@ -13,7 +13,7 @@ export async function errorScheduler(
       `get pods database-sample-0 -o=jsonpath='{.status.podIP}'`
     )
   ).split('\n')[0]
-  core.info(`Error scheduler target: (database-sample-0) IP: ${targetIP}`)
+  core.info(`Target of the error scheduler (database-sample-0) IP: ${targetIP}`)
 
   // get grafana pod name
   grafanaPod = grafanaPodName
