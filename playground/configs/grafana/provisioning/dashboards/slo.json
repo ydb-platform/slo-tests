@@ -110,18 +110,6 @@
             "uid": "prometheus"
           },
           "editorMode": "builder",
-          "expr": "rate(inflight[$__rate_interval]) > 0",
-          "format": "time_series",
-          "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} In flight",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "builder",
           "expr": "rate(oks[$__rate_interval]) > 0",
           "hide": false,
           "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} OK",
@@ -624,7 +612,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": false,
+  "refresh": "",
   "revision": 1,
   "schemaVersion": 38,
   "style": "dark",
@@ -636,8 +624,8 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "filters": [ ],
-        "hide": 2,
+        "filters": [],
+        "hide": 0,
         "label": "",
         "name": "filter",
         "skipUrlSync": false,
