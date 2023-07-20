@@ -24,7 +24,7 @@ export async function grafanaScreenshot(
   core.debug('grafana query: ' + query)
   const imageb64 = await core.group('Get base64 image', () =>
     callKubernetesAsync(
-      `run -q -i --image=busybox --rm grafana-screenshoter --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`
+      `run -q -i --image=busybox --rm grafana-screenshoter-${workloadId} --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`
     )
   )
   core.debug(
