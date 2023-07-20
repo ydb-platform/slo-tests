@@ -24,7 +24,7 @@ export async function grafanaScreenshot(
   core.debug('grafana query: ' + query)
   const imageb64 = await core.group('Get base64 image', () =>
     callKubernetesAsync(
-      `run -q -i --image=busybox --rm grafana-screenshoter --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`
+      `run -q -i --image=busybox --rm grafana-screenshoter-${workloadId} --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`
     )
   )
   core.debug(
@@ -34,20 +34,23 @@ export async function grafanaScreenshot(
       imageb64.slice(-100)
   )
   core.debug('Write picture to FS')
-  // write image to fs
-  await writeFile('pic.png', Buffer.from(imageb64, 'base64'))
 
   const pictureName = `${workloadId}-${new Date().valueOf()}.png`
-  // upload
 
+  // write image to fs
+  await writeFile(`${pictureName}.png`, Buffer.from(imageb64, 'base64'))
+
+  // upload
   await callAsync(
-    `aws s3 --endpoint-url=${s3Endpoint} cp ./pic.png "s3://${path.join(
+    `aws s3 --endpoint-url=${s3Endpoint} cp ./${pictureName}.png "s3://${path.join(
       s3Folder,
       pictureName
     )}"`
   )
+
   // delete
-  await callAsync(`rm pic.png`)
+  await callAsync(`rm ${pictureName}.png`)
+
   // return name
   const fullPictureUri =
     'https://' + path.join(s3Endpoint.split('//')[1], s3Folder, pictureName)
