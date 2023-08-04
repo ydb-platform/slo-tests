@@ -106,31 +106,34 @@ export function runWorkload(
           kubectl => `${kubectl} apply -f - <<EOF\n${workloadManifest}\nEOF`
         ))
     )
-
-    await withTimeout(
-      options.timeoutMins,
-      15,
-      `Workload ${options.id} ${command}`,
-      async () => {
-        const status = JSON.parse(
-          await callKubernetesAsync(
-            `get job/${options.id}-wl-${command} -o=jsonpath={.status}`
+    
+    try {
+      await withTimeout(
+        options.timeoutMins,
+        15,
+        `Workload ${options.id} ${command}`,
+        async () => {
+          const status = JSON.parse(
+            await callKubernetesAsync(
+              `get job/${options.id}-wl-${command} -o=jsonpath={.status}`
+            )
           )
-        )
-        core.debug('Workload status check: ' + JSON.stringify(status))
-        if (status.failed) {
-          const msg = `Workload ${options.id} ${command} failed`
-          core.info(msg)
-          await saveLogs(options.id, command)
-          throw new Error(msg)
+          core.debug('Workload status check: ' + JSON.stringify(status))
+          if (status.failed) {
+            const msg = `Workload ${options.id} ${command} failed`
+            core.info(msg)
+            await saveLogs(options.id, command)
+            throw new Error(msg)
+          }
+          return (status.complete || status.succeeded);
         }
-        return (status.complete || status.succeeded);
-      }
-    )
-    const endTime = new Date()
-    // print logs
-    await saveLogs(options.id, command)
-    return {startTime, endTime}
+      )
+    } finally {
+      const endTime = new Date()
+      // print logs
+      await saveLogs(options.id, command)
+      return {startTime, endTime}
+    }
   })
 }
 
