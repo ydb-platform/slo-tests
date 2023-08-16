@@ -43,6 +43,12 @@ export function parseArguments() {
     const s3Folder = core.getInput('s3_images_folder')
     const grafanaDomain = core.getInput('grafana_domain')
     const grafanaDashboard = core.getInput('grafana_dashboard') || '7CzMl5t4k'
+    const grafanaDashboardWidth = Number(
+      core.getInput('grafana_dashboard_width') || '1500'
+    )
+    const grafanaDashboardHeight = Number(
+      core.getInput('grafana_dashboard_height') || '1700'
+    )
 
     let ydbVersion = core.getInput('ydb_version')
 
@@ -79,7 +85,9 @@ export function parseArguments() {
       timeBetweenPhases,
       shutdownTime,
       grafanaDomain,
-      grafanaDashboard
+      grafanaDashboard,
+      grafanaDashboardWidth,
+      grafanaDashboardHeight
     }
   })
 }

@@ -37,6 +37,12 @@ inputs:
   grafana_dashboard:
     description: 'Grafana service dashboard'
     required: true
+  grafana_dashboard_width:
+    description: 'Grafana service screenshot dashboard width'
+    required: false
+  grafana_dashboard_height:
+    description: 'Grafana service screenshot dashboard height'
+    required: false
   ydb_version:
     description: 'YDB version to run SLO over: use docker tag or `newest`'
     required: true
