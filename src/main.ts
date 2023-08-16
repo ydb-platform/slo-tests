@@ -40,7 +40,9 @@ async function main(): Promise<void> {
       timeBetweenPhases,
       shutdownTime,
       grafanaDomain,
-      grafanaDashboard
+      grafanaDashboard,
+      grafanaDashboardWidth,
+      grafanaDashboardHeight
     } = parseArguments()
 
     core.debug(`Setting up OctoKit`)
@@ -217,7 +219,9 @@ async function main(): Promise<void> {
                       workloads[i].id,
                       timings.startTime,
                       timings.endTime,
-                      grafanaDashboard
+                      grafanaDashboard,
+                      grafanaDashboardWidth,
+                      grafanaDashboardHeight
                     )
                     const comment = `
 :volcano: Here are results of SLO test for **${
