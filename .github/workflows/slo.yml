@@ -42,6 +42,18 @@ on:
         required: true
 
 jobs:
+  emergency-release-mutex:
+    needs: [delete-cluster, obtain-mutex]
+    if: always() && needs.obtain-mutex.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: release-mutex
+        uses: ydb-platform/slo-tests/.github/actions/mutex@main
+        with:
+          KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
+          command: release
+          language_id: "${{ inputs.language_id }}"
+
   obtain-mutex:
     runs-on: ubuntu-latest
     steps:
