@@ -26,7 +26,6 @@ runs:
     - name: Check if locked
       if: inputs.command == 'obtain'
       run: |
-        kubectl get configmaps slo-mutex -o=jsonpath={.data.busy}
         if test -n "`kubectl get configmaps slo-mutex -o=jsonpath={.data.busy}`"; then
           echo "Locked by `kubectl get configmaps slo-mutex -o=jsonpath={.data.lockedBy}`, wait";
         fi
