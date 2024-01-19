@@ -43,8 +43,6 @@ on:
 
 jobs:
   emergency-release-mutex:
-    needs: [delete-cluster, obtain-mutex]
-    if: always() && needs.obtain-mutex.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: release-mutex
