@@ -42,15 +42,15 @@ on:
         required: true
 
 jobs:
-  emergency-release-mutex:
-    runs-on: ubuntu-latest
-    steps:
-      - name: release-mutex
-        uses: ydb-platform/slo-tests/.github/actions/mutex@main
-        with:
-          KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
-          command: release
-          language_id: "${{ inputs.language_id }}"
+#  emergency-release-mutex:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: release-mutex
+#        uses: ydb-platform/slo-tests/.github/actions/mutex@main
+#        with:
+#          KUBE_CONFIG: ${{ secrets.SLO_KUBE_CONFIG }}
+#          command: release
+#          language_id: "${{ inputs.language_id }}"
 
   obtain-mutex:
     runs-on: ubuntu-latest
