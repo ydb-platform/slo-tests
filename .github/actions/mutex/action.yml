@@ -36,6 +36,7 @@ runs:
       # check every 30s for 60 times = 30 minutes
       run: |
         for run in {1..60}; do
+          kubectl get configmaps slo-mutex -o=jsonpath={.data.busy}
           if test -z "`kubectl get configmaps slo-mutex -o=jsonpath={.data.busy}`"; then
             echo "Mutex unlocked!"; break;
           elif test $run == 60; then
