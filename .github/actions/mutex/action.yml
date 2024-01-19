@@ -26,6 +26,8 @@ runs:
     - name: Check if locked
       if: inputs.command == 'obtain'
       run: |
+        echo "Check if locked"
+        kubectl get configmaps slo-mutex -o=jsonpath={.data.busy}
         if test -n "`kubectl get configmaps slo-mutex -o=jsonpath={.data.busy}`"; then
           echo "Locked by `kubectl get configmaps slo-mutex -o=jsonpath={.data.lockedBy}`, wait";
         fi
@@ -36,6 +38,7 @@ runs:
       # check every 30s for 60 times = 30 minutes
       run: |
         for run in {1..60}; do
+          echo "Wait until unlocked"
           kubectl get configmaps slo-mutex -o=jsonpath={.data.busy}
           if test -z "`kubectl get configmaps slo-mutex -o=jsonpath={.data.busy}`"; then
             echo "Mutex unlocked!"; break;
