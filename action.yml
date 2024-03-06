@@ -138,6 +138,6 @@ inputs:
     description: 'SLO workload #5 docker build arguments'
     required: false
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/main/index.js'
   post: 'dist/post/index.js'

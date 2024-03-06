@@ -72,7 +72,11 @@ export function prepareAWS(awsCredentialsB64: string, awsConfigB64: string) {
 export function call(command: string, secret = false) {
   const id = ++callId
   !secret && core.info(`Call #${id} command: '${command}'`)
-  const spawnResult = execSync(command, {encoding: 'utf8', maxBuffer: Infinity, stdio: 'pipe'})
+  const spawnResult = execSync(command, {
+    encoding: 'utf8',
+    maxBuffer: Infinity,
+    stdio: 'pipe'
+  })
   core.debug(`Call #${id} result ${spawnResult}`)
   return spawnResult
 }
@@ -113,14 +117,20 @@ export function callAsync(
       } else {
         if (secret)
           core.info(`Call #${id} async with secrets failed - on close`)
-        else core.info(`Call #${id} async failed - on close:\nError: ${err}\nOutput: ${out}`)
+        else
+          core.info(
+            `Call #${id} async failed - on close:\nError: ${err}\nOutput: ${out}`
+          )
 
         reject(new Error(err))
       }
     })
     proc.on('error', err => {
       if (secret) core.info(`Call #${id} async with secrets failed - on error`)
-      else core.info(`Call #${id} async failed - on error:\nError: ${err}\nOutput: ${out}`)
+      else
+        core.info(
+          `Call #${id} async failed - on error:\nError: ${err}\nOutput: ${out}`
+        )
 
       reject(err)
     })
