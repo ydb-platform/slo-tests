@@ -20,7 +20,7 @@ spec:
                   - slo-storage
           topologyKey: "kubernetes.io/hostname"
   image:
-    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:23.1.19
+    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:23.3.17
   nodes: 6
   resources:
     containerResources:
