@@ -137,10 +137,6 @@ export function runWorkload(
 async function saveLogs(id: string, command: string) {
   let logs = await callKubernetesAsync(`logs job/${id}-wl-${command}`)
 
-  core.group(`Workload ${id} ${command} logs`, async () => {
-    core.info(logs)
-  })
-
   try {
     let dir = './logs'
     if (!fs.existsSync(dir)) {
@@ -150,5 +146,8 @@ async function saveLogs(id: string, command: string) {
     await fs.promises.writeFile(`${dir}/${id}-${command}.log`, logs)
   } catch (e) {
     core.info(`error write file for ${id}-${command}: ${(e as Error).message}`)
+    core.group(`Workload ${id} ${command} logs`, async () => {
+      core.info(logs)
+    })
   }
 }
