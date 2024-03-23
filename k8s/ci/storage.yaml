@@ -18,7 +18,7 @@ spec:
                 operator: In
                 values:
                   - slo-storage
-          topologyKey: "kubernetes.io/hostname"
+          topologyKey: 'kubernetes.io/hostname'
   dataStore:
     - volumeMode: Block
       storageClassName: yc-network-ssd-nonreplicated
@@ -28,7 +28,7 @@ spec:
         requests:
           storage: 93Gi
   image:
-    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:23.1.19
+    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
   nodes: 9
   erasure: mirror-3-dc
   configuration: |-

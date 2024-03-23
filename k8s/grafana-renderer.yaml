@@ -24,6 +24,7 @@ spec:
     metadata:
       labels:
         app: grafana-renderer
+        app.kubernetes.io/name: grafana-renderer
     spec:
       containers:
         - name: grafana-renderer
