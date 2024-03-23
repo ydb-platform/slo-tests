@@ -137,10 +137,9 @@ export function runWorkload(
 async function saveLogs(id: string, command: string) {
   let logs = await callKubernetesAsync(`logs job/${id}-wl-${command}`)
 
-  // TODO: print logs
-  // core.startGroup(`Workload ${id} ${command} logs:`)
-  // core.info(logs)
-  // core.endGroup()
+  core.group(`Workload ${id} ${command} logs`, async () => {
+    core.info(logs)
+  })
 
   try {
     let dir = './logs'
