@@ -13,7 +13,7 @@ import {withTimeout} from './utils/withTimeout'
 
 const workloadManifestTemplate = manifests['k8s/ci/workload.yaml'].content
 
-const fs = require('fs');
+const fs = require('fs')
 
 export function dockerLogin(repo: string, user: string, password: string) {
   return logGroup('Docker login', async () => {
@@ -137,25 +137,20 @@ export function runWorkload(
   })
 }
 
-async function saveLogs(
-    id: string,
-    command: string
-) {
+async function saveLogs(id: string, command: string) {
   let logs = await callKubernetesAsync(`logs job/${id}-wl-${command}`)
 
-  // TODO: print logs
-  // core.startGroup(`Workload ${id} ${command} logs:`)
-  // core.info(logs)
-  // core.endGroup()
-
   try {
-    let dir = "./logs"
-    if (!fs.existsSync(dir)){
-      await fs.promises.mkdir(dir);
+    let dir = './logs'
+    if (!fs.existsSync(dir)) {
+      await fs.promises.mkdir(dir)
     }
 
-    await fs.promises.writeFile(`${dir}/${id}-${command}.log`, logs);
+    await fs.promises.writeFile(`${dir}/${id}-${command}.log`, logs)
   } catch (e) {
-      core.info(`error write file for ${id}-${command}: ${(e as Error).message}`)
+    core.info(`error write file for ${id}-${command}: ${(e as Error).message}`)
+    core.group(`Workload ${id} ${command} logs`, async () => {
+      core.info(logs)
+    })
   }
 }
