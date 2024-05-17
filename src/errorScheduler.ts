@@ -80,7 +80,7 @@ async function createError(
     // run command
     callKubernetesAsync(kubeCommand),
     // annotate
-    annotate(name),
+    annotate(name, core.getInput('grafana_dashboard') || '7CzMl5t4k'),
     // wait till next
     new Promise(resolve => {
       setTimeout(resolve, timeBetweenS * 1000)

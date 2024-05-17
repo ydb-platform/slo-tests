@@ -35,25 +35,25 @@ export async function grafanaScreenshot(
   )
   core.debug('Write picture to FS')
 
-  const pictureName = `${workloadId}-${new Date().valueOf()}.png`
+  const fileName = `${workloadId}-${new Date().valueOf()}.png`
 
   // write image to fs
-  await writeFile(`${pictureName}.png`, Buffer.from(imageb64, 'base64'))
+  await writeFile(fileName, Buffer.from(imageb64, 'base64'))
 
   // upload
   await callAsync(
-    `aws s3 --endpoint-url=${s3Endpoint} cp ./${pictureName}.png "s3://${path.join(
+    `aws s3 --endpoint-url=${s3Endpoint} cp ./${fileName} "s3://${path.join(
       s3Folder,
-      pictureName
+      fileName
     )}"`
   )
 
   // delete
-  await callAsync(`rm ${pictureName}.png`)
+  await callAsync(`rm ${fileName}`)
 
   // return name
   const fullPictureUri =
-    'https://' + path.join(s3Endpoint.split('//')[1], s3Folder, pictureName)
+    'https://' + path.join(s3Endpoint.split('//')[1], s3Folder, fileName)
   core.debug('fullPictureUri: ' + fullPictureUri)
   return `${fullPictureUri}`
 }
