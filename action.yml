@@ -1,0 +1,149 @@
+name: 'SLO test over YDB'
+description: 'YDB SLO test for SDKs. Uses kubernetes cluster to run tests over. Creates possible errors in cluster to check how SDK handles them.'
+inputs:
+  GITHUB_TOKEN:
+    description: 'Github token'
+    required: true
+  KUBECONFIG_B64:
+    description: '.kube/config base64'
+    required: true
+  AWS_CREDENTIALS_B64:
+    description: '.aws/credentials base64'
+    required: true
+  AWS_CONFIG_B64:
+    description: '.aws/config base64'
+    required: true
+  DOCKER_USERNAME:
+    description: 'Docker username'
+    required: true
+  DOCKER_PASSWORD:
+    description: 'Docker password'
+    required: true
+  DOCKER_REPO:
+    description: 'Docker repository'
+    required: true
+  DOCKER_FOLDER:
+    description: 'Docker folder'
+    required: true
+  s3_endpoint:
+    description: 'AWS S3-compatible service endpoint'
+    required: true
+  s3_images_folder:
+    description: 'S3 folder'
+    required: true
+  grafana_domain:
+    description: 'Grafana service domain'
+    required: true
+  grafana_dashboard:
+    description: 'Grafana service dashboard'
+    required: true
+  grafana_dashboard_width:
+    description: 'Grafana service screenshot dashboard width'
+    required: false
+  grafana_dashboard_height:
+    description: 'Grafana service screenshot dashboard height'
+    required: false
+  ydb_version:
+    description: 'YDB version to run SLO over: use docker tag or `newest`'
+    required: true
+  timeBetweenPhases:
+    description: 'Time between errors phases of SLO test'
+    required: true
+  shutdownTime:
+    description: 'SLO workload shutdown timeout'
+    required: true
+  # You need to use sequential ids for workloads to run
+  language_id0:
+    description: 'SLO workload #0 language ID'
+    required: false
+  workload_path0:
+    description: 'SLO workload #0 workload path'
+    required: false
+  language0:
+    description: 'SLO workload #0 language name'
+    required: false
+  workload_build_context0:
+    description: 'SLO workload #0 docker build context'
+    required: false
+  workload_build_options0:
+    description: 'SLO workload #0 docker build arguments'
+    required: false
+  language_id1:
+    description: 'SLO workload #1 language ID'
+    required: false
+  workload_path1:
+    description: 'SLO workload #1 workload path'
+    required: false
+  language1:
+    description: 'SLO workload #1 language name'
+    required: false
+  workload_build_context1:
+    description: 'SLO workload #1 docker build context'
+    required: false
+  workload_build_options1:
+    description: 'SLO workload #1 docker build arguments'
+    required: false
+  language_id2:
+    description: 'SLO workload #2 language ID'
+    required: false
+  workload_path2:
+    description: 'SLO workload #2 workload path'
+    required: false
+  language2:
+    description: 'SLO workload #2 language name'
+    required: false
+  workload_build_context2:
+    description: 'SLO workload #2 docker build context'
+    required: false
+  workload_build_options2:
+    description: 'SLO workload #2 docker build arguments'
+    required: false
+  language_id3:
+    description: 'SLO workload #3 language ID'
+    required: false
+  workload_path3:
+    description: 'SLO workload #3 workload path'
+    required: false
+  language3:
+    description: 'SLO workload #3 language name'
+    required: false
+  workload_build_context3:
+    description: 'SLO workload #3 docker build context'
+    required: false
+  workload_build_options3:
+    description: 'SLO workload #3 docker build arguments'
+    required: false
+  language_id4:
+    description: 'SLO workload #4 language ID'
+    required: false
+  workload_path4:
+    description: 'SLO workload #4 workload path'
+    required: false
+  language4:
+    description: 'SLO workload #4 language name'
+    required: false
+  workload_build_context4:
+    description: 'SLO workload #4 docker build context'
+    required: false
+  workload_build_options4:
+    description: 'SLO workload #4 docker build arguments'
+    required: false
+  language_id5:
+    description: 'SLO workload #5 language ID'
+    required: false
+  workload_path5:
+    description: 'SLO workload #5 workload path'
+    required: false
+  language5:
+    description: 'SLO workload #5 language name'
+    required: false
+  workload_build_context5:
+    description: 'SLO workload #5 docker build context'
+    required: false
+  workload_build_options5:
+    description: 'SLO workload #5 docker build arguments'
+    required: false
+runs:
+  using: 'node20'
+  main: 'dist/main/index.js'
+  post: 'dist/post/index.js'
