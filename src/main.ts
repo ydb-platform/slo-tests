@@ -79,7 +79,9 @@ async function main(): Promise<void> {
         ? workloads.map(v => v.id).join('__+__')
         : workloads[0].id
 
-    await obtainMutex(mutexId, 30)
+    await obtainMutex(mutexId, Math.ceil( // test timeout plus one minute
+      ((5 + 4) * timeBetweenPhases + shutdownTime) / 60
+    ) + 1, 30)
     core.info('Mutex obtained!')
     mutexObtained = true
 

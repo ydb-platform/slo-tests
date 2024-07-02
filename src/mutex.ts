@@ -12,19 +12,21 @@ export function isBusy(name: string): false | string {
   const configmap = JSON.parse(res)
   core.debug('configmap parsed: ' + JSON.stringify(configmap))
 
-  if (configmap?.data?.busy !== undefined) {
-    core.info(`Mutex locked by ${configmap?.data?.lockedBy}`)
+  if (configmap?.data?.busy !== undefined
+    && typeof configmap?.data?.lockedTill === 'string'
+    && parseInt(configmap.data.lockedTill) >= Date.now()) {
+    core.info(`Mutex locked by ${configmap?.data?.lockedBy} till ${new Date(parseInt(configmap?.data?.lockedTill))}`)
     return configmap?.data?.lockedBy
   }
   return false
 }
 
-export function setBusy(lockedBy: string) {
+export function setBusy(lockedBy: string, lockLimitMins: number) {
   core.debug(`setBusy(${lockedBy})`)
 
   callKubernetesPath(
     kubectl =>
-      `${kubectl} create configmap slo-mutex --from-literal=busy=true --from-literal=lockedBy=${lockedBy} -o=yaml --dry-run=client | ${kubectl} apply -f -`
+      `${kubectl} create configmap slo-mutex --from-literal=busy=true --from-literal=lockedBy=${lockedBy} --from-literal=lockedTill=${Date.now() + lockLimitMins * 60_000} -o=yaml --dry-run=client | ${kubectl} apply -f -`
   )
 }
 
@@ -36,6 +38,7 @@ export function setBusy(lockedBy: string) {
  */
 export function obtainMutex(
   workloadId: string,
+  lockLimitMins: number,
   timeout: number,
   checkPeriod: number = 20
 ) {
@@ -44,7 +47,7 @@ export function obtainMutex(
       const busy = isBusy('slo-mutex')
       if (typeof busy === 'boolean' && !busy) {
         core.debug('Set mutex')
-        setBusy(workloadId)
+        setBusy(workloadId, lockLimitMins)
         core.info('Mutex obtained')
         core.debug('Mutex sleep 5s')
         call('sleep 5')
