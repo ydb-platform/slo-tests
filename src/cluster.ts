@@ -73,7 +73,7 @@ export async function createCluster(
 export function getYdbVersions() {
   return logGroup('Get versions', () => {
     const versionsString = call(
-      'docker run --rm ghcr.io/regclient/regctl:v0.4.8 tag ls cr.yandex/crptqonuodf51kdj7a7d/ydb'
+      'docker run --rm ghcr.io/regclient/regctl:v0.4.8 tag ls ydbplatform/local-ydb'
     )
     const versions = versionsString.split('\n').filter(s => s.length > 0)
     versions.sort()
