@@ -20,7 +20,7 @@ spec:
                   - slo-storage
           topologyKey: 'kubernetes.io/hostname'
   image:
-    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
+    name: ydbplatform/local-ydb:${{VERSION}}
   nodes: 6
   resources:
     containerResources:

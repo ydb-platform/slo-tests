@@ -28,7 +28,7 @@ spec:
         requests:
           storage: 93Gi
   image:
-    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
+    name: ydbplatform/local-ydb:${{VERSION}}
   nodes: 9
   erasure: mirror-3-dc
   configuration: |-
