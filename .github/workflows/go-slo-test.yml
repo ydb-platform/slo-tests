@@ -1,9 +1,10 @@
 name: SLO
 on:
-  pull_request:
-    branches:
-      - test-k8s-local
   workflow_dispatch:
+    inputs:
+      BRANCH_OF_FORK:
+        description: 'branch name, on which this pipeline should run'
+        required: true
 jobs:
   test-slo:
     concurrency:
@@ -29,7 +30,6 @@ jobs:
         continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KUBECONFIG_B64: ${{ secrets.SLO_KUBE_CONFIG }}
           AWS_CREDENTIALS_B64: ${{ secrets.SLO_AWS_CREDENTIALS }}
           AWS_CONFIG_B64: ${{ secrets.SLO_AWS_CONFIG }}
           DOCKER_USERNAME: ${{ secrets.SLO_DOCKER_USERNAME }}
