@@ -25,8 +25,6 @@ async function main(): Promise<void> {
     
     deploy_minikube()
 
-    core.info('minikube was deployed')
-
     deploy_ydb_operator()
 
     await deploy_prometheus(5)
@@ -268,4 +266,5 @@ async function main(): Promise<void> {
 }
 
 core.info('Main SLO action')
+core.info('local SLO start')
 main()
