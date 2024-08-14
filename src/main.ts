@@ -1,9 +1,8 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {parseArguments} from './parseArguments'
-import {prepareAWS, prepareK8S} from './callExecutables'
-import {obtainMutex, releaseMutex} from './mutex'
-import {createCluster, deleteCluster} from './cluster'
+import {} from './callExecutables'
+import {createCluster, deleteCluster, deploy_minikube, deploy_ydb_operator, deploy_prometheus, deploy_grafana} from './cluster'
 import {
   buildWorkload,
   dockerLogin,
@@ -19,17 +18,22 @@ import {createHash} from 'crypto'
 
 const isPullRequest = !!github.context.payload.pull_request
 
-let mutexObtained = false
 let clusterCreated = false
 
 async function main(): Promise<void> {
   try {
+    
+    deploy_minikube()
+
+    deploy_ydb_operator()
+
+    await deploy_prometheus(5)
+
+    await deploy_grafana(5)
+
     let {
       workloads,
       githubToken,
-      kubeconfig,
-      awsCredentials,
-      awsConfig,
       s3Endpoint,
       s3Folder,
       dockerRepo,
@@ -47,9 +51,6 @@ async function main(): Promise<void> {
 
     core.debug(`Setting up OctoKit`)
     const octokit = github.getOctokit(githubToken)
-
-    prepareK8S(kubeconfig)
-    prepareAWS(awsCredentials, awsConfig)
 
     await dockerLogin(dockerRepo, dockerUsername, dockerPassword)
 
@@ -74,16 +75,6 @@ async function main(): Promise<void> {
           })
           .join('===')
     )
-    const mutexId =
-      workloads.length > 1
-        ? workloads.map(v => v.id).join('__+__')
-        : workloads[0].id
-
-    await obtainMutex(mutexId, Math.ceil( // test timeout plus one minute
-      ((5 + 4) * timeBetweenPhases + shutdownTime) / 60
-    ) + 1, 30)
-    core.info('Mutex obtained!')
-    mutexObtained = true
 
     const dockerPaths = workloads.map(w =>
       generateDockerPath(dockerRepo, dockerFolder, w.id)
@@ -258,8 +249,6 @@ async function main(): Promise<void> {
     }
 
     deleteCluster()
-
-    releaseMutex()
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
     if (clusterCreated) {
@@ -267,13 +256,6 @@ async function main(): Promise<void> {
         deleteCluster()
       } catch (error) {
         core.info('Failed to delete cluster:' + JSON.stringify(error))
-      }
-    }
-    if (mutexObtained) {
-      try {
-        releaseMutex()
-      } catch (error) {
-        core.info('Failed to release mutex:' + JSON.stringify(error))
       }
     }
   }
