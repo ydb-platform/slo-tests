@@ -36,6 +36,8 @@ export function parseArguments() {
     const dockerFolder = core.getInput('DOCKER_FOLDER')
     const dockerUsername = core.getInput('DOCKER_USERNAME')
     const dockerPassword = core.getInput('DOCKER_PASSWORD')
+    const awsCredentials = core.getInput('AWS_CREDENTIALS_B64')
+    const awsConfig = core.getInput('AWS_CONFIG_B64')
     const s3Endpoint = core.getInput('s3_endpoint')
     const s3Folder = core.getInput('s3_images_folder')
     const grafanaDomain = core.getInput('grafana_domain')
@@ -58,7 +60,7 @@ export function parseArguments() {
       throw new Error('time_between_phases is not a number')
     if (isNaN(shutdownTime)) throw new Error('shutdown_time is not a number')
 
-    if (ydbVersion === '') ydbVersion = '23.1.26'
+    if (ydbVersion === '') ydbVersion = '24.1'
     if (ydbVersion === 'newest') {
       core.info('Get YDB docker versions')
       const ydbVersions = getYdbVersions()
@@ -69,6 +71,8 @@ export function parseArguments() {
     return {
       workloads,
       githubToken,
+      awsCredentials,
+      awsConfig,
       s3Endpoint,
       s3Folder,
       dockerRepo,

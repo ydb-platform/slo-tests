@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {parseArguments} from './parseArguments'
-import {} from './callExecutables'
+import {prepareAWS} from './callExecutables'
 import {createCluster, deleteCluster, deploy_minikube, deploy_ydb_operator, deploy_prometheus, deploy_grafana} from './cluster'
 import {
   buildWorkload,
@@ -34,6 +34,8 @@ async function main(): Promise<void> {
     let {
       workloads,
       githubToken,
+      awsCredentials,
+      awsConfig,
       s3Endpoint,
       s3Folder,
       dockerRepo,
@@ -51,6 +53,8 @@ async function main(): Promise<void> {
 
     core.debug(`Setting up OctoKit`)
     const octokit = github.getOctokit(githubToken)
+
+    prepareAWS(awsCredentials, awsConfig)
 
     await dockerLogin(dockerRepo, dockerUsername, dockerPassword)
 
