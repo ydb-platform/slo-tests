@@ -61,7 +61,7 @@ export function parseArguments() {
       throw new Error('time_between_phases is not a number')
     if (isNaN(shutdownTime)) throw new Error('shutdown_time is not a number')
 
-    if (ydbVersion === '') ydbVersion = '23.1.26'
+    if (ydbVersion === '') ydbVersion = '24.1'
     if (ydbVersion === 'newest') {
       core.info('Get YDB docker versions')
       const ydbVersions = getYdbVersions()
