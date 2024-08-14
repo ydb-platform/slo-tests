@@ -25,6 +25,8 @@ async function main(): Promise<void> {
     
     deploy_minikube()
 
+    core.info('minikube was deployed')
+
     deploy_ydb_operator()
 
     await deploy_prometheus(5)
