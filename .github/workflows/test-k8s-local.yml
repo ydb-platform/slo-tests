@@ -1,15 +1,11 @@
-name: SLO
-on:
+name: test-local-SLO
+on: 
   workflow_dispatch:
-    inputs:
-      BRANCH_OF_FORK:
-        description: 'branch name, on which this pipeline should run'
-        required: true
+    
 jobs:
   test-slo:
     concurrency:
       group: slo-${{ github.ref }}
-    if: (!contains(github.event.pull_request.labels.*.name, 'no slo'))
 
     runs-on: ubuntu-latest
     name: SLO test
@@ -26,7 +22,7 @@ jobs:
           repository: ydb-platform/ydb-go-sdk
 
       - name: Run SLO
-        uses: ydb-platform/slo-tests@main
+        uses: ydb-platform/slo-tests@k8s-local
         continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
