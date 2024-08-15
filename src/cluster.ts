@@ -5,6 +5,7 @@ import {call, callKubernetes, callKubernetesPath, init_kubectlPath} from './call
 // npx fs-to-json --input "k8s/ci/*.yaml" --output src/manifests.json
 import manifests from './manifests.json'
 import {withTimeout} from './utils/withTimeout'
+import { describe } from 'node:test'
 
 let databaseManifest = manifests['k8s/ci/database.yaml'].content
 let storageManifest = manifests['k8s/ci/storage.yaml'].content
@@ -56,12 +57,14 @@ export async function createCluster(
         core.info(
           `Database become '${databaseStatus}', storage is '${storageStatus}'`
         )
+        core.info(callKubernetes('describe databases.ydb.tech database-sample'))
         lastDatabaseStatus = databaseStatus
       }
       if (storageStatus !== lastStorageStatus) {
         core.info(
           `Storage become '${storageStatus}', database is '${databaseStatus}'`
         )
+        core.info(callKubernetes('describe storages.ydb.tech storage-sample'))
         lastStorageStatus = storageStatus
       }
       if (databaseStatus === 'Ready' && storageStatus === 'Ready') return true
