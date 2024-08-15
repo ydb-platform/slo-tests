@@ -21,7 +21,7 @@ spec:
           topologyKey: 'kubernetes.io/hostname'
   image:
     name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
-  nodes: 6
+  nodes: 3
   resources:
     containerResources:
       limits:
