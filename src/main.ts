@@ -83,7 +83,7 @@ async function main(): Promise<void> {
     )
 
     const dockerPaths = workloads.map(w =>
-      generateDockerPath(dockerRepo, dockerFolder, w.id)
+      generateDockerPath(w.id)
     )
 
     core.info('Create cluster and build all workloads')
