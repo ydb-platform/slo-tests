@@ -64,7 +64,7 @@ export async function createCluster(
         core.info(
           `Storage become '${storageStatus}', database is '${databaseStatus}'`
         )
-        core.info(callKubernetes('describe storages.ydb.tech storage-sample'))
+        core.info(callKubernetes('describe databases.ydb.tech database-sample'))
         lastStorageStatus = storageStatus
       }
       if (databaseStatus === 'Ready' && storageStatus === 'Ready') return true
