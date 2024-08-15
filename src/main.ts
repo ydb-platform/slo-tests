@@ -56,7 +56,7 @@ async function main(): Promise<void> {
 
     prepareAWS(awsCredentials, awsConfig)
 
-    await dockerLogin(dockerRepo, dockerUsername, dockerPassword)
+    //await dockerLogin(dockerRepo, dockerUsername, dockerPassword)
 
     // check if all parts working: prometheus, prometheus-pushgateway, grafana, grafana-renderer
     const servicesPods = await getInfrastractureEndpoints()
