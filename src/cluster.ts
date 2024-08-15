@@ -74,7 +74,6 @@ export async function createCluster(
         core.info(
           `Database become '${databaseStatus}'`
         )
-        core.info(callKubernetes('describe databases.ydb.tech database-sample'))
         lastDatabaseStatus = databaseStatus
       }
       if (databaseStatus === 'Ready') return true
