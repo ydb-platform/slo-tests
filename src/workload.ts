@@ -55,12 +55,13 @@ export function buildWorkload(
 
   return core.group(`Build workload ${id}`, async () => {
     core.info('Build docker image')
+    core.info(dockerImage)
     await callAsync(
-      `docker buildx build --platform linux/amd64 ` +
-        `-t` + `${dockerImage}` + `:latest ` +
-        `-t` + dockerImage + `:gh-` + github.context.sha +
-        `${options} ` +
-        `${context}`,
+      'docker buildx build --platform linux/amd64 ' +
+        '-t ${dockerImage}:latest ' +
+        '-t ${dockerImage}:gh-${github.context.sha} ' +
+        '${options} ' +
+        '${context}',
       false,
       workingDir
     )
