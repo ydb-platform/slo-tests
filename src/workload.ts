@@ -64,10 +64,6 @@ export function buildWorkload(
       false,
       workingDir
     )
-    core.info('Push docker tag @latest')
-    await callAsync(`docker image push ${dockerImage}:latest`)
-    core.info(`Push docker tag '@gh-${github.context.sha}'`)
-    await callAsync(`docker image push ${dockerImage}:gh-${github.context.sha}`)
   })
 }
 
