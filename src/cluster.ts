@@ -34,6 +34,25 @@ export async function createCluster(
           kubectl => `${kubectl} apply -f - <<EOF\n${storageManifest}\nEOF`
         )
     )
+    let lastStorageStatus = getStatus('storage')
+    core.info('Check creation process')
+
+    await withTimeout(timeout, checkPeriod, 'YDB cluster create storage', async () => {
+      core.debug('check status of cluster')
+      const storageStatus = getStatus('storage')
+      core.debug(
+        `Current status of cluster: storage - ${storageStatus}`
+      )
+      if (storageStatus !== lastStorageStatus) {
+        core.info(
+          `Storage become '${storageStatus}'`
+        )
+        lastStorageStatus = storageStatus
+      }
+      if (storageStatus === 'Ready') return true
+      return false
+    })
+
     core.info(
       'database apply result:\n' +
         callKubernetesPath(
@@ -42,32 +61,23 @@ export async function createCluster(
     )
     // TODO: create placeholders in k8s for database to speed up the startup
 
-    core.info('Check creation process')
-
     let lastDatabaseStatus = getStatus('database')
-    let lastStorageStatus = getStatus('storage')
-    await withTimeout(timeout, checkPeriod, 'YDB cluster create', async () => {
+    core.info('Check creation process')
+    
+    await withTimeout(timeout, checkPeriod, 'YDB cluster create database', async () => {
       core.debug('check status of cluster')
       const databaseStatus = getStatus('database')
-      const storageStatus = getStatus('storage')
       core.debug(
-        `Current status of cluster: database - ${databaseStatus}, storage - ${storageStatus}`
+        `Current status of cluster: database - ${databaseStatus}`
       )
       if (databaseStatus !== lastDatabaseStatus) {
         core.info(
-          `Database become '${databaseStatus}', storage is '${storageStatus}'`
+          `Database become '${databaseStatus}'`
         )
         core.info(callKubernetes('describe databases.ydb.tech database-sample'))
         lastDatabaseStatus = databaseStatus
       }
-      if (storageStatus !== lastStorageStatus) {
-        core.info(
-          `Storage become '${storageStatus}', database is '${databaseStatus}'`
-        )
-        core.info(callKubernetes('describe databases.ydb.tech database-sample'))
-        lastStorageStatus = storageStatus
-      }
-      if (databaseStatus === 'Ready' && storageStatus === 'Ready') return true
+      if (databaseStatus === 'Ready') return true
       return false
     })
   })
