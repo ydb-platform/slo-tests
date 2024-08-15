@@ -8,6 +8,11 @@ import {logGroup} from './utils/groupDecorator'
 let kubectlPath: string | null = null
 let callId = 0
 
+export function init_kubectlPath(){
+  kubectlPath = call('which kubectl').split('\n')[0]
+  core.info(`kubectl path: ${kubectlPath}`)
+}
+
 export function prepareAWS(awsCredentialsB64: string, awsConfigB64: string) {
   // create ~/.aws folder
   const kubePath = path.join(homedir(), '.aws')

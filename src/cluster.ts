@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import {logGroup} from './utils/groupDecorator'
-import {call, callKubernetes, callKubernetesPath} from './callExecutables'
+import {call, callKubernetes, callKubernetesPath, init_kubectlPath} from './callExecutables'
 
 // npx fs-to-json --input "k8s/ci/*.yaml" --output src/manifests.json
 import manifests from './manifests.json'
@@ -104,7 +104,7 @@ export function deleteCluster() {
 
 function get_status(statusOf: 'prometheus' | 'grafana'){
   const res = callKubernetes(
-    `kubectl get pods -l app.kubernetes.io/instance=${statusOf} -ojsonpath={.items..status.containerStatuses..ready}`
+    `get pods -l app.kubernetes.io/instance=${statusOf} -ojsonpath={.items..status.containerStatuses..ready}`
   )
   let mylist: string[] = res.split(" ")
   return mylist
@@ -120,7 +120,7 @@ function install_prometheus(){
 function run_prometheus(){
   core.info('run prometheus')
 
-  call('kubectl expose service prometheus-server --type=NodePort --target-port=9091 --name=prometheus-server-np')
+  callKubernetes('expose service prometheus-server --type=NodePort --target-port=9091 --name=prometheus-server-np')
 }
 
 function install_ydb_operator(){
@@ -128,6 +128,8 @@ function install_ydb_operator(){
 
   call('git clone https://github.com/ydb-platform/ydb-kubernetes-operator')
   call('cd ydb-kubernetes-operator')
+  call('helm repo add ydb https://charts.ydb.tech/')
+  call('helm repo update')
   call('helm install ydb-operator ydb/ydb-operator')
   call('cd ..')
 }
@@ -175,7 +177,7 @@ function install_grafana(){
 function run_grafana(){
   core.info('run grafana')
 
-  call('kubectl expose service grafana --type=NodePort --target-port=3000 --name=grafana-np')
+  callKubernetes('expose service grafana --type=NodePort --target-port=3000 --name=grafana-np')
 }
 
 function install_docker(){
@@ -205,6 +207,8 @@ export function deploy_minikube() {
   install_minikube()
 
   run_minikube()
+
+  init_kubectlPath()
 }
 
 export function deploy_ydb_operator(){

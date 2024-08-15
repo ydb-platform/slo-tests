@@ -276,8 +276,8 @@ export async function checkResults(
 
       core.info('create check: ' + JSON.stringify(checkParams))
       core.info(
-        'Create check response: ' +
-          JSON.stringify(await octokit.rest.checks.create(checkParams))
+        'Create check response: '
+          //+ JSON.stringify(await octokit.rest.checks.create(checkParams))
       )
     } catch (error) {
       core.info('Create check error: ' + JSON.stringify(error))
