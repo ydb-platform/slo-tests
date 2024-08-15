@@ -86,7 +86,7 @@ async function main(): Promise<void> {
       generateDockerPath(w.id)
     )
     
-    call('docker images')
+    core.info(call('docker images'))
 
     core.info('Create cluster and build all workloads')
     const builded = workloads.map(() => false)
