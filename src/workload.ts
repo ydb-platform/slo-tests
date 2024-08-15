@@ -57,8 +57,8 @@ export function buildWorkload(
     core.info('Build docker image')
     await callAsync(
       `docker buildx build --platform linux/amd64 ` +
-        `--tag ggwp:latest ` +
-        `--tag ${dockerImage}:gh-${github.context.sha} ` +
+        `-t` + `${dockerImage}` + `:latest ` +
+        `-t` + dockerImage + `:gh-` + github.context.sha +
         `${options} ` +
         `${context}`,
       false,
