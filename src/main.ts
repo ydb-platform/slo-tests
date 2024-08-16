@@ -85,8 +85,6 @@ async function main(): Promise<void> {
     const dockerPaths = workloads.map(w =>
       generateDockerPath(w.id)
     )
-    
-    core.info(call('docker images'))
 
     core.info('Create cluster and build all workloads')
     const builded = workloads.map(() => false)
@@ -106,6 +104,8 @@ async function main(): Promise<void> {
         })
       )
     ])
+
+    core.info(call('docker images'))
 
     /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
     const continueRun =
