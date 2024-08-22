@@ -120,7 +120,6 @@ function get_status_monitoring(){
   const res = callKubernetes(
     `get pods -ojsonpath={.items..status..status}`
   )
-  core.info(JSON.stringify(callKubernetes(`get pods -ojsonpath={.items..status..status}`)))
   let mylist: string[] = res.split(" ")
   return mylist
 }
@@ -235,13 +234,11 @@ export async function deploy_monitoring(
       core.debug('check status of monitoring')
       const monitoringStatus = get_status_monitoring()
       let allTrue = true
-      core.info(JSON.stringify(monitoringStatus))
       monitoringStatus.forEach((status) => {
-        if (status != 'true'){
+        if (status != 'True'){
           allTrue = false
         } 
       });
-      core.info(JSON.stringify(allTrue))
       if (allTrue === true) return true
       return false
     })
