@@ -27,7 +27,7 @@ export async function createCluster(
   return logGroup('Create cluster', async () => {
     databaseManifest = databaseManifest.replace('${{VERSION}}', version)
     storageManifest = storageManifest.replace('${{VERSION}}', version)
-    core.info(call('kubectl describe pod ydb-operator'))
+    core.info(JSON.stringify(call('kubectl describe pod ydb-operator')))
     core.debug('database manifest:\n\n' + databaseManifest)
     core.debug('storage manifest:\n\n' + storageManifest)
     core.info('Apply database and storage manifests')
