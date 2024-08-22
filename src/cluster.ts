@@ -227,18 +227,18 @@ export async function deploy_monitoring(
 
     add_slo_monitoring()
 
-    await withTimeout(timeout, checkPeriod, 'monitoring create', async () => {
-      core.debug('check status of monitoring')
-      const monitoringStatus = get_status_monitoring()
-      let allTrue = true
-      monitoringStatus.forEach((status) => {
-        if (status != 'true'){
-          allTrue = false
-        } 
-      });
-      if (allTrue === true) return true
-      return false
-    })
+    // await withTimeout(timeout, checkPeriod, 'monitoring create', async () => {
+    //   core.debug('check status of monitoring')
+    //   const monitoringStatus = get_status_monitoring()
+    //   let allTrue = true
+    //   monitoringStatus.forEach((status) => {
+    //     if (status != 'true'){
+    //       allTrue = false
+    //     } 
+    //   });
+    //   if (allTrue === true) return true
+    //   return false
+    // })
   })
 }
 
