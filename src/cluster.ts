@@ -9,10 +9,8 @@ import { describe } from 'node:test'
 
 let databaseManifest = manifests['k8s/ci/database.yaml'].content
 let storageManifest = manifests['k8s/ci/storage.yaml'].content
-let monitoringManifest = manifests['k8s/ci/monitoring.yaml'].content
 let sloConfigMap = manifests['k8s/ci/slo-monitoring.yaml'].content
 let valuesForYDBOperator = manifests['k8s/ci/valuesForYDBOperator.yaml'].content
-let valuesForGrafana = manifests['k8s/ci/valuesForGrafana.yaml'].content
 
 /**
  * Create cluster with selected version
