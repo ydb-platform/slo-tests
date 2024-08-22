@@ -11,6 +11,7 @@ let databaseManifest = manifests['k8s/ci/database.yaml'].content
 let storageManifest = manifests['k8s/ci/storage.yaml'].content
 let sloConfigMap = manifests['k8s/ci/slo-monitoring.yaml'].content
 let valuesForYDBOperator = manifests['k8s/ci/valuesForYDBOperator.yaml'].content
+let valuesForPrometheusPushGateway = manifests['k8s/ci/valuesForPrometheusPushGateway.yaml'].content
 
 /**
  * Create cluster with selected version
@@ -174,6 +175,7 @@ function install_monitoring(){
 
   call('helm repo add prometheus-community https://prometheus-community.github.io/helm-charts')
   call('helm install prometheus prometheus-community/kube-prometheus-stack')
+  call(`helm install prometheus-pushgateway-test prometheus-community/prometheus-pushgateway -f - << EOF\n${valuesForPrometheusPushGateway}\nEOF`)
 }
 
 function add_slo_monitoring(){

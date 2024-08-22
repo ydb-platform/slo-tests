@@ -6,7 +6,7 @@ export async function getInfrastractureEndpoints() {
   const services = [
     //'prometheus-operator',
     'prometheus',
-    //'prometheus-pushgateway',
+    'prometheus-pushgateway',
     'grafana',
     //'grafana-renderer',
     'ydb-operator'
