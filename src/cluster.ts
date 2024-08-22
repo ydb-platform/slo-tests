@@ -180,9 +180,9 @@ function add_slo_monitoring(){
   core.info(JSON.stringify(call("pwd")))
   core.info(JSON.stringify(call("ls")))
   
-  core.info(JSON.stringify(callKubernetesPath(
+  callKubernetesPath(
     kubectl => `${kubectl} apply -f - << EOF-\n${sloConfigMap}\nEOF`
-  )))
+  )
 }
 
 function install_docker(){
