@@ -120,6 +120,7 @@ function get_status_monitoring(){
   const res = callKubernetes(
     `get pods -ojsonpath={.items..status..status}`
   )
+  core.info(JSON.stringify(callKubernetes(`get pods -ojsonpath={.items..status..status}`)))
   let mylist: string[] = res.split(" ")
   return mylist
 }
