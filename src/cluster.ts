@@ -179,7 +179,7 @@ function add_slo_monitoring(){
   core.info('add monitoring table')
   
   callKubernetesPath(
-    kubectl => `${kubectl} -f - <<EOF\n${sloConfigMap}\nEOF apply`
+    kubectl => `${kubectl} -f <<EOF\n${sloConfigMap}\nEOF apply`
   )
 }
 
