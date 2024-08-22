@@ -241,6 +241,7 @@ export async function deploy_monitoring(
           allTrue = false
         } 
       });
+      core.info(JSON.stringify(allTrue))
       if (allTrue === true) return true
       return false
     })
