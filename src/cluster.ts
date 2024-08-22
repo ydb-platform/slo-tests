@@ -118,7 +118,7 @@ export function deleteCluster() {
 
 function get_status_monitoring(){
   const res = callKubernetes(
-    `get pods -n monitoring -ojsonpath={.items..status..status}`
+    `get pods -ojsonpath={.items..status..status}`
   )
   let mylist: string[] = res.split(" ")
   return mylist
@@ -172,7 +172,7 @@ function install_monitoring(){
   core.info('install monitoring')
 
   call('helm repo add prometheus-community https://prometheus-community.github.io/helm-charts')
-  call('helm install prometheus prometheus-community/kube-prometheus-stack --namespace=monitoring --create-namespace')
+  call('helm install prometheus prometheus-community/kube-prometheus-stack')
 }
 
 function add_slo_monitoring(){
@@ -227,18 +227,18 @@ export async function deploy_monitoring(
 
     add_slo_monitoring()
 
-    // await withTimeout(timeout, checkPeriod, 'monitoring create', async () => {
-    //   core.debug('check status of monitoring')
-    //   const monitoringStatus = get_status_monitoring()
-    //   let allTrue = true
-    //   monitoringStatus.forEach((status) => {
-    //     if (status != 'true'){
-    //       allTrue = false
-    //     } 
-    //   });
-    //   if (allTrue === true) return true
-    //   return false
-    // })
+    await withTimeout(timeout, checkPeriod, 'monitoring create', async () => {
+      core.debug('check status of monitoring')
+      const monitoringStatus = get_status_monitoring()
+      let allTrue = true
+      monitoringStatus.forEach((status) => {
+        if (status != 'true'){
+          allTrue = false
+        } 
+      });
+      if (allTrue === true) return true
+      return false
+    })
   })
 }
 

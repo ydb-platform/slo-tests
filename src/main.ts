@@ -28,8 +28,6 @@ async function main(): Promise<void> {
     await deploy_monitoring(10)
 
     deploy_ydb_operator()
-    
-    core.info(JSON.stringify(call('kubectl get pods')))
 
     let {
       workloads,
