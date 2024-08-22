@@ -112,7 +112,7 @@ async function main(): Promise<void> {
     if (clusterWorkloadRes[0].status === 'fulfilled') {
       clusterCreated = true
     }
-
+    core.info(JSON.stringify(continueRun))
     if (builded.every(v => v)) {
       core.info('All workloads builded successfully')
     } else {
