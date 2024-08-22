@@ -81,8 +81,8 @@ async function main(): Promise<void> {
     const dockerPaths = workloads.map(w =>
       generateDockerPath(w.id)
     )
-    await createCluster(ydbVersion, 15),
-    
+    await createCluster(ydbVersion, 15)
+
     core.info('Create cluster and build all workloads')
     const builded = workloads.map(() => false)
     const clusterWorkloadRes = await Promise.allSettled([
