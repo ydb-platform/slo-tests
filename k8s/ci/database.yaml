@@ -3,9 +3,9 @@ kind: Database
 metadata:
   name: database-sample
 spec:
-#  monitoring:
-#    enabled: true
-#    interval: 3s
+  monitoring:
+    enabled: true
+    interval: 3s
   image:
     name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
   nodes: 3
