@@ -102,7 +102,7 @@ async function main(): Promise<void> {
     ])
 
     core.info(call('docker images'))
-
+    core.info(JSON.stringify(builded))
     /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
     const continueRun =
       clusterWorkloadRes[0].status === 'fulfilled' &&
