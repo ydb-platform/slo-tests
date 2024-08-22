@@ -81,11 +81,12 @@ async function main(): Promise<void> {
     const dockerPaths = workloads.map(w =>
       generateDockerPath(w.id)
     )
-
+    await createCluster(ydbVersion, 15),
+    
     core.info('Create cluster and build all workloads')
     const builded = workloads.map(() => false)
     const clusterWorkloadRes = await Promise.allSettled([
-      createCluster(ydbVersion, 15),
+      // createCluster(ydbVersion, 15),
       // TODO: create placeholder pods for databases
       // TODO: catch build error and stop cluster creation
       ...workloads.map((wl, idx) =>
