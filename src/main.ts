@@ -23,11 +23,11 @@ let clusterCreated = false
 async function main(): Promise<void> {
   try {
     
-    deploy_minikube()
+    await deploy_minikube()
 
     await deploy_monitoring(10)
 
-    deploy_ydb_operator()
+    await deploy_ydb_operator()
 
     let {
       workloads,

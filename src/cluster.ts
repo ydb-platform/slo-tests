@@ -96,6 +96,7 @@ export function getYdbVersions() {
 }
 
 function getStatus(statusOf: 'database' | 'storage') {
+  core.info(statusOf)
   const res = callKubernetes(
     `get ${statusOf}s.ydb.tech ${statusOf}-sample -ojsonpath={.status}`
   )
@@ -199,26 +200,30 @@ function install_docker(){
   call('sudo usermod -aG docker $(whoami)')
 }
 
-export function deploy_minikube() {
-  if (!call('which kubectl')){
-    install_kubectl()
-  }
-  if (!call('which helm')){
-    install_helm()
-  }  
-  if (!call('which docker')){
-    install_docker()
-  }
-
-  install_minikube()
-
-  run_minikube()
-
-  init_kubectlPath()
+export async function deploy_minikube() {
+  return logGroup('Deploy YDB operator', async () => {  
+    if (!call('which kubectl')){
+      install_kubectl()
+    }
+    if (!call('which helm')){
+      install_helm()
+    }  
+    if (!call('which docker')){
+      install_docker()
+    }
+  
+    install_minikube()
+  
+    run_minikube()
+  
+    init_kubectlPath()
+  })
 }
 
-export function deploy_ydb_operator(){
+export async function deploy_ydb_operator(){
+  return logGroup('Deploy YDB operator', async () => {  
     install_ydb_operator()
+  })
 }
 
 export async function deploy_monitoring(
