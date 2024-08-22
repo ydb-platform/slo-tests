@@ -177,6 +177,8 @@ function install_monitoring(){
 
 function add_slo_monitoring(){
   core.info('add monitoring table')
+  core.info(JSON.stringify(call("pwd")))
+  core.info(JSON.stringify(call("ls")))
   
   callKubernetesPath(
     kubectl => `${kubectl} apply -f - <<EOF\n${sloConfigMap}\nEOF`
