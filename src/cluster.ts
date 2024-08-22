@@ -32,7 +32,7 @@ export async function createCluster(
     core.debug('storage manifest:\n\n' + storageManifest)
     core.info('Apply database and storage manifests')
     core.info('storage apply result:')
-    callKubernetes(`apply -f - <<EOF\n${storageManifest}\nEOF`)
+    callKubernetes(`apply -f - <<EOF-\n${storageManifest}\nEOF`)
     core.info('storage apply ok')
     let lastStorageStatus = getStatus('storage')
     core.info('Check creation process')
@@ -56,7 +56,7 @@ export async function createCluster(
     core.info(
       'database apply result:\n' +
         callKubernetesPath(
-          kubectl => `${kubectl} apply -f - <<EOF\n${databaseManifest}\nEOF`
+          kubectl => `${kubectl} apply -f - <<EOF-\n${databaseManifest}\nEOF`
         )
     )
     // TODO: create placeholders in k8s for database to speed up the startup
