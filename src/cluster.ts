@@ -27,13 +27,16 @@ export async function createCluster(
   return logGroup('Create cluster', async () => {
     databaseManifest = databaseManifest.replace('${{VERSION}}', version)
     storageManifest = storageManifest.replace('${{VERSION}}', version)
-    core.info(JSON.stringify(call('kubectl describe pod ydb-operator')))
+
     core.debug('database manifest:\n\n' + databaseManifest)
     core.debug('storage manifest:\n\n' + storageManifest)
     core.info('Apply database and storage manifests')
-    core.info('storage apply result:')
-    callKubernetes(`apply -f - <<EOF\n${storageManifest}\nEOF`)
-    core.info('storage apply ok')
+    core.info(
+      'storage apply result:\n' +
+        callKubernetesPath(
+          kubectl => `${kubectl} apply -f - <<EOF\n${storageManifest}\nEOF`
+        )
+    )
     let lastStorageStatus = getStatus('storage')
     core.info('Check creation process')
 
@@ -56,7 +59,7 @@ export async function createCluster(
     core.info(
       'database apply result:\n' +
         callKubernetesPath(
-          kubectl => `${kubectl} apply -f - <<EOF-\n${databaseManifest}\nEOF`
+          kubectl => `${kubectl} apply -f - <<EOF\n${databaseManifest}\nEOF`
         )
     )
     // TODO: create placeholders in k8s for database to speed up the startup
@@ -126,12 +129,9 @@ function get_status_monitoring(){
 function install_ydb_operator(){
   core.info('install ydb operator')
 
-  call('git clone https://github.com/ydb-platform/ydb-kubernetes-operator')
-  call('cd ydb-kubernetes-operator')
   call('helm repo add ydb https://charts.ydb.tech/')
   call('helm repo update')
   call(`helm install ydb-operator ydb/ydb-operator -f - <<EOF\n${valuesForYDBOperator}\nEOF`)
-  call('cd ..')
 }
 
 function install_kubectl(){
@@ -219,9 +219,25 @@ export async function deploy_minikube() {
   })
 }
 
-export async function deploy_ydb_operator(){
+export async function deploy_ydb_operator(
+  timeout: number,
+  checkPeriod: number = 10
+){
   return logGroup('Deploy YDB operator', async () => {  
     install_ydb_operator()
+
+    await withTimeout(timeout, checkPeriod, 'monitoring create', async () => {
+      core.debug('check status of monitoring')
+      const monitoringStatus = get_status_monitoring()
+      let allTrue = true
+      monitoringStatus.forEach((status) => {
+        if (status != 'True'){
+          allTrue = false
+        } 
+      });
+      if (allTrue === true) return true
+      return false
+    })
   })
 }
 
