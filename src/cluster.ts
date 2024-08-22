@@ -235,6 +235,7 @@ export async function deploy_monitoring(
       core.debug('check status of monitoring')
       const monitoringStatus = get_status_monitoring()
       let allTrue = true
+      core.info(JSON.stringify(monitoringStatus))
       monitoringStatus.forEach((status) => {
         if (status != 'true'){
           allTrue = false
