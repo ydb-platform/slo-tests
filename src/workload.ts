@@ -64,7 +64,6 @@ export function buildWorkload(
       false,
       workingDir
     )
-    core.info(`Build docker image ${dockerImage} successfully`)
   })
 }
 
