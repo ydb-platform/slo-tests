@@ -175,7 +175,7 @@ function install_monitoring(){
 
   call('helm repo add prometheus-community https://prometheus-community.github.io/helm-charts')
   call('helm install prometheus prometheus-community/kube-prometheus-stack')
-  call(`helm install prometheus-pushgateway-test prometheus-community/prometheus-pushgateway -f - << EOF\n${valuesForPrometheusPushGateway}\nEOF`)
+  call(`helm install prometheus-pushgateway prometheus-community/prometheus-pushgateway -f - << EOF\n${valuesForPrometheusPushGateway}\nEOF`)
 }
 
 function add_slo_monitoring(){

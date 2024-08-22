@@ -1,4 +1,5 @@
 serviceMonitor:
   enabled: true
+  namespace: default
   additionalLabels:
     release: prometheus
