@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {parseArguments} from './parseArguments'
 import {prepareAWS, call} from './callExecutables'
-import {createCluster, deleteCluster, deploy_minikube, deploy_ydb_operator, deploy_prometheus, deploy_grafana} from './cluster'
+import {createCluster, deleteCluster, deploy_minikube, deploy_ydb_operator, deploy_monitoring} from './cluster'
 import {
   buildWorkload,
   dockerLogin,
@@ -25,12 +25,10 @@ async function main(): Promise<void> {
     
     deploy_minikube()
 
+    await deploy_monitoring(10)
+
     deploy_ydb_operator()
-
-    await deploy_prometheus(5)
-
-    await deploy_grafana(5)
-
+    
     core.info(JSON.stringify(call('kubectl get pods')))
 
     let {

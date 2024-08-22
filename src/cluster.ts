@@ -9,6 +9,10 @@ import { describe } from 'node:test'
 
 let databaseManifest = manifests['k8s/ci/database.yaml'].content
 let storageManifest = manifests['k8s/ci/storage.yaml'].content
+let monitoringManifest = manifests['k8s/ci/monitoring.yaml'].content
+let sloConfigMap = manifests['k8s/ci/slo-monitoring.yaml'].content
+let valuesForYDBOperator = manifests['k8s/ci/valuesForYDBOperator.yaml'].content
+let valuesForGrafana = manifests['k8s/ci/valuesForGrafana.yaml'].content
 
 /**
  * Create cluster with selected version
@@ -114,25 +118,12 @@ export function deleteCluster() {
   })
 }
 
-function get_status(statusOf: 'prometheus' | 'grafana'){
+function get_status_monitoring(){
   const res = callKubernetes(
-    `get pods -l app.kubernetes.io/instance=${statusOf} -ojsonpath={.items..status.containerStatuses..ready}`
+    `get pods -n monitoring -ojsonpath={.items..status..status}`
   )
   let mylist: string[] = res.split(" ")
   return mylist
-}
-
-function install_prometheus(){
-  core.info('install prometheus')
-
-  call('helm repo add prometheus-community https://prometheus-community.github.io/helm-charts')
-  call('helm install prometheus prometheus-community/prometheus')
-}
-
-function run_prometheus(){
-  core.info('run prometheus')
-
-  callKubernetes('expose service prometheus-server --type=NodePort --target-port=9091 --name=prometheus-server-np')
 }
 
 function install_ydb_operator(){
@@ -142,7 +133,7 @@ function install_ydb_operator(){
   call('cd ydb-kubernetes-operator')
   call('helm repo add ydb https://charts.ydb.tech/')
   call('helm repo update')
-  call('helm install ydb-operator ydb/ydb-operator')
+  call(`helm install ydb-operator ydb/ydb-operator -f - <<EOF\n${valuesForYDBOperator}\nEOF`)
   call('cd ..')
 }
 
@@ -179,17 +170,19 @@ function run_minikube(){
   call('minikube start --memory=max --cpus=max')
 }
 
-function install_grafana(){
-  core.info('install grafana')
-  
-  call('helm repo add grafana https://grafana.github.io/helm-charts')
-  call('helm install grafana grafana/grafana')
+function install_monitoring(){
+  core.info('install monitoring')
+
+  call('helm repo add prometheus-community https://prometheus-community.github.io/helm-charts')
+  call('helm install prometheus prometheus-community/kube-prometheus-stack --namespace=monitoring --create-namespace')
 }
 
-function run_grafana(){
-  core.info('run grafana')
-
-  callKubernetes('expose service grafana --type=NodePort --target-port=3000 --name=grafana-np')
+function add_slo_monitoring(){
+  core.info('add monitoring table')
+  
+  callKubernetesPath(
+    kubectl => `${kubectl} -f - <<EOF\n${sloConfigMap}\nEOF apply`
+  )
 }
 
 function install_docker(){
@@ -227,45 +220,20 @@ export function deploy_ydb_operator(){
     install_ydb_operator()
 }
 
-export async function deploy_prometheus(
+export async function deploy_monitoring(
   timeout: number,
   checkPeriod: number = 10
 ){
-  return logGroup('Deploy prometheus', async () => {
-    install_prometheus()
+  return logGroup('Deploy monitoring', async () => {
+    install_monitoring()
 
-    run_prometheus()
+    add_slo_monitoring()
 
-    await withTimeout(timeout, checkPeriod, 'Prometheus create', async () => {
-      core.debug('check status of prometheus')
-      const prometheusStatus = get_status('prometheus')
+    await withTimeout(timeout, checkPeriod, 'monitoring create', async () => {
+      core.debug('check status of monitoring')
+      const monitoringStatus = get_status_monitoring()
       let allTrue = true
-      prometheusStatus.forEach((status) => {
-        if (status != 'true'){
-          allTrue = false
-        } 
-      });
-      if (allTrue === true) return true
-      return false
-    })
-
-  })
-}
-
-export async function deploy_grafana(
-  timeout: number,
-  checkPeriod: number = 10
-){
-  return logGroup('Deploy grafana', async () => {
-    install_grafana()
-
-    run_grafana()
-
-    await withTimeout(timeout, checkPeriod, 'Grafana create', async () => {
-      core.debug('check status of grafana')
-      const prometheusStatus = get_status('grafana')
-      let allTrue = true
-      prometheusStatus.forEach((status) => {
+      monitoringStatus.forEach((status) => {
         if (status != 'true'){
           allTrue = false
         } 
@@ -275,3 +243,4 @@ export async function deploy_grafana(
     })
   })
 }
+
