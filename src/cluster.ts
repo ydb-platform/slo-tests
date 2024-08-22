@@ -96,7 +96,7 @@ export function getYdbVersions() {
 }
 
 function getStatus(statusOf: 'database' | 'storage') {
-  core.info(statusOf)
+  core.info("get status - " + statusOf)
   const res = callKubernetes(
     `get ${statusOf}s.ydb.tech ${statusOf}-sample -ojsonpath={.status}`
   )

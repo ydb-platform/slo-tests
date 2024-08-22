@@ -266,5 +266,4 @@ async function main(): Promise<void> {
 }
 
 core.info('Main SLO action')
-core.info('local SLO start')
 main()
