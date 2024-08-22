@@ -33,6 +33,7 @@ export async function createCluster(
     core.info('Apply database and storage manifests')
     core.info('storage apply result:')
     callKubernetes(`apply -f - <<EOF\n${storageManifest}\nEOF`)
+    core.info('storage apply ok')
     let lastStorageStatus = getStatus('storage')
     core.info('Check creation process')
 
