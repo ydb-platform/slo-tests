@@ -58,7 +58,7 @@ export function buildWorkload(
     core.info('Build docker image')
     await callAsync(
       `docker buildx build --platform linux/amd64 ` +
-        `-t ${dockerImage}:latest ` +
+        `-t ${dockerImage}:1.0.0 ` +
         `${options} ` +
         `${context}`,
       false,
