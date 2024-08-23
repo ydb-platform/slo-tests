@@ -83,6 +83,7 @@ async function main(): Promise<void> {
     )
 
     core.info('Create cluster and build all workloads')
+    call('eval $(minikube docker-env)')
     const builded = workloads.map(() => false)
     const clusterWorkloadRes = await Promise.allSettled([
       createCluster(ydbVersion, 15),
@@ -111,9 +112,7 @@ async function main(): Promise<void> {
     if (clusterWorkloadRes[0].status === 'fulfilled') {
       clusterCreated = true
     }
-    core.info(JSON.stringify(continueRun))
-    core.info(JSON.stringify(clusterWorkloadRes[0].status))
-    core.info(JSON.stringify(builded.filter(v => v).length))
+
     if (builded.every(v => v)) {
       core.info('All workloads builded successfully')
     } else {
@@ -128,7 +127,6 @@ async function main(): Promise<void> {
     }
 
     if (continueRun) {
-      call('eval $(minikube docker-env)')
       // retry create operation one time in case of error
       const createResult = await Promise.allSettled(
         workloads.map(async (wl, idx) =>
