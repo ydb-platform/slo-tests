@@ -128,6 +128,7 @@ async function main(): Promise<void> {
     }
 
     if (continueRun) {
+      call('eval $(minikube docker-env)')
       // retry create operation one time in case of error
       const createResult = await Promise.allSettled(
         workloads.map(async (wl, idx) =>
