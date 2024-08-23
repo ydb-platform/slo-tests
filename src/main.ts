@@ -7,7 +7,8 @@ import {
   buildWorkload,
   dockerLogin,
   generateDockerPath,
-  runWorkload
+  runWorkload,
+  deployDockerRegisrty
 } from './workload'
 import {getInfrastractureEndpoints} from './getInfrastractureEndpoints'
 import {errorScheduler} from './errorScheduler'
@@ -54,7 +55,7 @@ async function main(): Promise<void> {
 
     prepareAWS(awsCredentials, awsConfig)
 
-    //await dockerLogin(dockerRepo, dockerUsername, dockerPassword)
+    await deployDockerRegisrty('5000')
 
     // check if all parts working: prometheus, prometheus-pushgateway, grafana, grafana-renderer
     const servicesPods = await getInfrastractureEndpoints()
@@ -79,11 +80,10 @@ async function main(): Promise<void> {
     )
 
     const dockerPaths = workloads.map(w =>
-      generateDockerPath(w.id)
+      generateDockerPath(w.id, '5000')
     )
 
     core.info('Create cluster and build all workloads')
-    call('eval $(minikube docker-env)')
     const builded = workloads.map(() => false)
     const clusterWorkloadRes = await Promise.allSettled([
       createCluster(ydbVersion, 15),

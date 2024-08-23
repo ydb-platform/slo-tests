@@ -40,8 +40,14 @@ export function dockerLogin(repo: string, user: string, password: string) {
   })
 }
 
-export function generateDockerPath(id: string) {
-  return `${id}`
+export function deployDockerRegisrty(port: string) {
+  return logGroup('Deploy docker regisrty', async () => {
+    call(`docker run -d -p ${port}:${port} --name registry registry:2`)
+  })
+}
+
+export function generateDockerPath(id: string, port: string) {
+  return `localhost:${port}/${id}`
 }
 
 export function buildWorkload(
@@ -58,12 +64,14 @@ export function buildWorkload(
     core.info('Build docker image')
     await callAsync(
       `docker buildx build --platform linux/amd64 ` +
-        `-t ${dockerImage}:1.0.0 ` +
+        `-t ${dockerImage}:latest ` +
         `${options} ` +
         `${context}`,
       false,
       workingDir
     )
+    core.info('Push docker tag @latest')
+    await callAsync(`docker image push ${dockerImage}:latest`)
   })
 }
 
