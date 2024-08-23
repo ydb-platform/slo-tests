@@ -43,6 +43,7 @@ export function dockerLogin(repo: string, user: string, password: string) {
 export function deployDockerRegisrty(port: string) {
   return logGroup('Deploy docker regisrty', async () => {
     call(`docker run -d -p ${port}:${port} --name registry registry:2`)
+    core.info(call(`ss -tunlp | grep :${port}`))
   })
 }
 
