@@ -71,7 +71,7 @@ export function buildWorkload(
       workingDir
     )
     core.info('Push docker tag @latest')
-    await callAsync(`docker image push ${dockerImage}:latest`)
+    await callAsync(`docker push ${dockerImage}`)
   })
 }
 
