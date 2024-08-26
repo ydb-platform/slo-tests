@@ -4,7 +4,7 @@ import {withTimeoutSimple} from './utils/withTimeout'
 
 export async function getInfrastractureEndpoints() {
   const services = [
-    'prometheus-operator',
+    'kube-prometheus-stack-prometheus-operator',
     'prometheus',
     'prometheus-pushgateway',
     'grafana',
