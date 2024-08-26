@@ -171,7 +171,7 @@ function install_monitoring(){
   core.info('install monitoring')
 
   call('helm repo add prometheus-community https://prometheus-community.github.io/helm-charts')
-  call(`helm install prometheus prometheus-community/kube-prometheus-stack - <<EOF\n${valuesForGrafana}\nEOF`)
+  call(`helm install prometheus prometheus-community/kube-prometheus-stack -f - <<EOF\n${valuesForGrafana}\nEOF`)
   call(`helm install prometheus-pushgateway prometheus-community/prometheus-pushgateway -f - << EOF\n${valuesForPrometheusPushGateway}\nEOF`)
 }
 
