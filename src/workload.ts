@@ -40,15 +40,8 @@ export function dockerLogin(repo: string, user: string, password: string) {
   })
 }
 
-export function deployDockerRegisrty(port: string) {
-  return logGroup('Deploy docker regisrty', async () => {
-    call(`docker run -d -p ${port}:${port} --name registry registry:2`)
-    core.info(call(`ss -tunlp | grep :${port}`))
-  })
-}
-
-export function generateDockerPath(id: string, port: string) {
-  return `localhost:${port}/${id}`
+export function generateDockerPath(id: string) {
+  return `${id}`
 }
 
 export function buildWorkload(
@@ -71,8 +64,7 @@ export function buildWorkload(
       false,
       workingDir
     )
-    core.info('Push docker tag @latest')
-    await callAsync(`docker push ${dockerImage}`)
+    await callAsync(`minikube image load ${dockerImage}`)
   })
 }
 

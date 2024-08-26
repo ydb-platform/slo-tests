@@ -12,6 +12,7 @@ spec:
       containers:
         - name: ${{LANGUAGE_ID}}-wl-${{COMMAND}}
           image: ${{DOCKER_IMAGE}}:latest
+          imagePullPolicy: Never
           args:
             - '${{COMMAND}}'
             - ${{ARGS}}

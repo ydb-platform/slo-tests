@@ -55,7 +55,6 @@ async function main(): Promise<void> {
 
     prepareAWS(awsCredentials, awsConfig)
 
-    await deployDockerRegisrty('5000')
 
     // check if all parts working: prometheus, prometheus-pushgateway, grafana, grafana-renderer
     const servicesPods = await getInfrastractureEndpoints()
@@ -80,7 +79,7 @@ async function main(): Promise<void> {
     )
 
     const dockerPaths = workloads.map(w =>
-      generateDockerPath(w.id, '5000')
+      generateDockerPath(w.id)
     )
 
     core.info('Create cluster and build all workloads')
