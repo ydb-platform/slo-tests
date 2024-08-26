@@ -4,7 +4,7 @@ import {withTimeoutSimple} from './utils/withTimeout'
 
 export async function getInfrastractureEndpoints() {
   const services = [
-    //'prometheus-operator',
+    'prometheus-operator',
     'prometheus',
     'prometheus-pushgateway',
     'grafana',
@@ -32,8 +32,9 @@ export async function getInfrastractureEndpoints() {
     return {
       prometheusOperator: (res[0] as PromiseFulfilledResult<string>).value,
       prometheus: (res[1] as PromiseFulfilledResult<string>).value,
-      grafana: (res[2] as PromiseFulfilledResult<string>).value,
-      ydbOperator: (res[3] as PromiseFulfilledResult<string>).value
+      prometheusPushgateway: (res[2] as PromiseFulfilledResult<string>).value,
+      grafana: (res[3] as PromiseFulfilledResult<string>).value,
+      ydbOperator: (res[4] as PromiseFulfilledResult<string>).value
     }
     //test
   })
