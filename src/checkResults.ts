@@ -76,7 +76,7 @@ export async function getDataFromGrafana(
 
   let busyboxCmd = `wget -q -O- --header='content-type: application/json' --post-data='${JSON.stringify(
     data
-  )}' 'http://grafana/api/ds/query' | base64`
+  )}' 'http://grafana/api/datasources/query' | base64`
 
   busyboxCmd = busyboxCmd.replace(/'/g, "'\\''")
 
