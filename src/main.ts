@@ -8,7 +8,6 @@ import {
   dockerLogin,
   generateDockerPath,
   runWorkload,
-  deployDockerRegisrty
 } from './workload'
 import {getInfrastractureEndpoints} from './getInfrastractureEndpoints'
 import {errorScheduler} from './errorScheduler'
