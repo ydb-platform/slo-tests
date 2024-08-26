@@ -30,9 +30,10 @@ export async function getInfrastractureEndpoints() {
     //   ydbOperator: (res[5] as PromiseFulfilledResult<string>).value
     // }
     return {
-      prometheus: (res[0] as PromiseFulfilledResult<string>).value,
-      grafana: (res[1] as PromiseFulfilledResult<string>).value,
-      ydbOperator: (res[2] as PromiseFulfilledResult<string>).value
+      prometheusOperator: (res[0] as PromiseFulfilledResult<string>).value,
+      prometheus: (res[1] as PromiseFulfilledResult<string>).value,
+      grafana: (res[2] as PromiseFulfilledResult<string>).value,
+      ydbOperator: (res[3] as PromiseFulfilledResult<string>).value
     }
     //test
   })
