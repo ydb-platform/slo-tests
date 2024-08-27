@@ -1,10 +1,10 @@
 import * as core from '@actions/core'
-import {logGroup} from './utils/groupDecorator'
-import {call, callKubernetes, callKubernetesPath, init_kubectlPath} from './callExecutables'
+import { logGroup } from './utils/groupDecorator'
+import { call, callKubernetes, callKubernetesPath, init_kubectlPath } from './callExecutables'
 
 // npx fs-to-json --input "k8s/ci/*.yaml" --output src/manifests.json
 import manifests from './manifests.json'
-import {withTimeout} from './utils/withTimeout'
+import { withTimeout } from './utils/withTimeout'
 import { describe } from 'node:test'
 
 let databaseManifest = manifests['k8s/ci/database.yaml'].content
@@ -34,9 +34,9 @@ export async function createCluster(
     core.info('Apply database and storage manifests')
     core.info(
       'storage apply result:\n' +
-        callKubernetesPath(
-          kubectl => `${kubectl} apply -f - <<EOF\n${storageManifest}\nEOF`
-        )
+      callKubernetesPath(
+        kubectl => `${kubectl} apply -f - <<EOF\n${storageManifest}\nEOF`
+      )
     )
     let lastStorageStatus = getStatus('storage')
     core.info('Check creation process')
@@ -59,15 +59,15 @@ export async function createCluster(
 
     core.info(
       'database apply result:\n' +
-        callKubernetesPath(
-          kubectl => `${kubectl} apply -f - <<EOF\n${databaseManifest}\nEOF`
-        )
+      callKubernetesPath(
+        kubectl => `${kubectl} apply -f - <<EOF\n${databaseManifest}\nEOF`
+      )
     )
     // TODO: create placeholders in k8s for database to speed up the startup
 
     let lastDatabaseStatus = getStatus('database')
     core.info('Check creation process')
-    
+
     await withTimeout(timeout, checkPeriod, 'YDB cluster create database', async () => {
       core.debug('check status of cluster')
       const databaseStatus = getStatus('database')
@@ -110,7 +110,7 @@ export function deleteCluster() {
     try {
       core.info(
         'Minikube delete result:\n' +
-          call('minikube delete')
+        call('minikube delete')
       )
     } catch (error) {
       core.info('Error while deleting minikube' + JSON.stringify(error))
@@ -118,7 +118,7 @@ export function deleteCluster() {
   })
 }
 
-function get_status_monitoring(){
+function get_status_monitoring() {
   const res = callKubernetes(
     `get pods -ojsonpath={.items..status..status}`
   )
@@ -126,7 +126,7 @@ function get_status_monitoring(){
   return mylist
 }
 
-function install_ydb_operator(){
+function install_ydb_operator() {
   core.info('install ydb operator')
 
   call('helm repo add ydb https://charts.ydb.tech/')
@@ -134,7 +134,7 @@ function install_ydb_operator(){
   call(`helm install ydb-operator ydb/ydb-operator -f - <<EOF\n${valuesForYDBOperator}\nEOF`)
 }
 
-function install_kubectl(){
+function install_kubectl() {
   core.info('install kubectl')
 
   call('curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"')
@@ -142,7 +142,7 @@ function install_kubectl(){
   call('sudo rm kubectl')
 }
 
-function install_helm(){
+function install_helm() {
   core.info('install helm')
 
   call('curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3')
@@ -151,7 +151,7 @@ function install_helm(){
   call('sudo rm get_helm.sh')
 }
 
-function install_minikube(){
+function install_minikube() {
   core.info('install minikube')
 
   call('curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64')
@@ -161,23 +161,24 @@ function install_minikube(){
   call('sudo rm minikube')
 }
 
-function run_minikube(){
+function run_minikube() {
   core.info('run minikube')
-  
+
   call('minikube start --memory=max --cpus=max')
 }
 
-function install_monitoring(){
+function install_monitoring() {
   core.info('install monitoring')
 
   call('helm repo add prometheus-community https://prometheus-community.github.io/helm-charts')
   call(`helm install prometheus prometheus-community/kube-prometheus-stack -f - <<EOF\n${valuesForGrafana}\nEOF`)
   call(`helm install prometheus-pushgateway prometheus-community/prometheus-pushgateway -f - << EOF\n${valuesForPrometheusPushGateway}\nEOF`)
+  call('helm install grafana-renderer oci://tccr.io/truecharts/grafana-image-renderer')
 }
 
-function add_slo_monitoring(){
+function add_slo_monitoring() {
   core.info('add monitoring table')
-  
+
   callKubernetesPath(
     kubectl => `${kubectl} apply -f - << EOF\n${sloConfigMap}\nEOF`
   )
@@ -186,7 +187,7 @@ function add_slo_monitoring(){
   // callKubernetes('-f slo-monitoring.yaml apply')
 }
 
-function install_docker(){
+function install_docker() {
   core.info('install docker')
 
   call('sudo apt update && sudo apt upgrade')
@@ -200,21 +201,21 @@ function install_docker(){
 }
 
 export async function deploy_minikube() {
-  return logGroup('Deploy YDB operator', async () => {  
-    if (!call('which kubectl')){
+  return logGroup('Deploy YDB operator', async () => {
+    if (!call('which kubectl')) {
       install_kubectl()
     }
-    if (!call('which helm')){
+    if (!call('which helm')) {
       install_helm()
-    }  
-    if (!call('which docker')){
+    }
+    if (!call('which docker')) {
       install_docker()
     }
-  
+
     install_minikube()
-  
+
     run_minikube()
-  
+
     init_kubectlPath()
   })
 }
@@ -222,8 +223,8 @@ export async function deploy_minikube() {
 export async function deploy_ydb_operator(
   timeout: number,
   checkPeriod: number = 10
-){
-  return logGroup('Deploy YDB operator', async () => {  
+) {
+  return logGroup('Deploy YDB operator', async () => {
     install_ydb_operator()
 
     await withTimeout(timeout, checkPeriod, 'monitoring create', async () => {
@@ -231,9 +232,9 @@ export async function deploy_ydb_operator(
       const monitoringStatus = get_status_monitoring()
       let allTrue = true
       monitoringStatus.forEach((status) => {
-        if (status != 'True'){
+        if (status != 'True') {
           allTrue = false
-        } 
+        }
       });
       if (allTrue === true) return true
       return false
@@ -244,7 +245,7 @@ export async function deploy_ydb_operator(
 export async function deploy_monitoring(
   timeout: number,
   checkPeriod: number = 10
-){
+) {
   return logGroup('Deploy monitoring', async () => {
     install_monitoring()
 
@@ -255,9 +256,9 @@ export async function deploy_monitoring(
       const monitoringStatus = get_status_monitoring()
       let allTrue = true
       monitoringStatus.forEach((status) => {
-        if (status != 'True'){
+        if (status != 'True') {
           allTrue = false
-        } 
+        }
       });
       if (allTrue === true) return true
       return false
