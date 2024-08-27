@@ -8,7 +8,7 @@ export async function getInfrastractureEndpoints() {
     'prometheus',
     'prometheus-pushgateway',
     'grafana',
-    'grafana-renderer',
+    'grafana-image-renderer',
     'ydb-operator'
   ]
   return Promise.allSettled(services.map(getEndpoint)).then(res => {
