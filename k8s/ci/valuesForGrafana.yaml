@@ -1,3 +1,5 @@
 grafana:
-  service: 
-    port: '3000'
+  service:
+    port: "3000"
+  plugins:
+    - grafana-image-renderer

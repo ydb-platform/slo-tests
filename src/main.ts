@@ -52,7 +52,7 @@ async function main(): Promise<void> {
     core.debug(`Setting up OctoKit`)
     const octokit = github.getOctokit(githubToken)
 
-    prepareAWS(awsCredentials, awsConfig)
+    // prepareAWS(awsCredentials, awsConfig)
 
 
     // check if all parts working: prometheus, prometheus-pushgateway, grafana, grafana-renderer
