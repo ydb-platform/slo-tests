@@ -125,7 +125,7 @@ function get_status_monitoring() {
   const res = callKubernetes(
     `get pods -ojsonpath={.items..status..status}`
   )
-  core.info(JSON.stringify(call('kubectl get pods')))
+  core.info(JSON.stringify(call('kubectl describe pod/prometheus-prometheus-0')))
   let mylist: string[] = res.split(" ")
   return mylist
 }
