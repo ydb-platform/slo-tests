@@ -13,6 +13,7 @@ let sloConfigMap = manifests['k8s/ci/slo-monitoring.yaml'].content
 let valuesForYDBOperator = manifests['k8s/ci/valuesForYDBOperator.yaml'].content
 let valuesForPrometheusPushGateway = manifests['k8s/ci/valuesForPrometheusPushGateway.yaml'].content
 let valuesForGrafana = manifests['k8s/ci/valuesForGrafana.yaml'].content
+let valuesPrometheus = 1
 
 /**
  * Create cluster with selected version
@@ -174,7 +175,7 @@ function install_monitoring() {
   call('helm repo add grafana https://grafana.github.io/helm-charts')
   call('helm repo update')
   call('kubectl create -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.64.0/bundle.yaml')
-  call(`helm install prometheus prometheus-community/kube-prometheus-stack -f - <<EOF\n${valuesForGrafana}\nEOF`)
+  call(`kubectl apply -f - <<EOF\n${valuesForGrafana}\nEOF`)
   call(`helm install prometheus-pushgateway prometheus-community/prometheus-pushgateway -f - << EOF\n${valuesForPrometheusPushGateway}\nEOF`)
   call('helm install grafana-renderer oci://tccr.io/truecharts/grafana-image-renderer')
 }
