@@ -3,6 +3,9 @@ kind: Storage
 metadata:
   name: storage-sample
 spec:
+  monitoring:
+    enabled: true
+    interval: 3s
   dataStore: []
   image:
     name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
