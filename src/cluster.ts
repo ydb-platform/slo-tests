@@ -10,10 +10,12 @@ import { describe } from 'node:test'
 let databaseManifest = manifests['k8s/ci/database.yaml'].content
 let storageManifest = manifests['k8s/ci/storage.yaml'].content
 let sloConfigMap = manifests['k8s/ci/slo-monitoring.yaml'].content
-let valuesForYDBOperator = manifests['k8s/ci/valuesForYDBOperator.yaml'].content
-let valuesForPrometheusPushGateway = manifests['k8s/ci/valuesForPrometheusPushGateway.yaml'].content
-let valuesForGrafana = manifests['k8s/ci/valuesForGrafana.yaml'].content
-let valuesPrometheus = 1
+let valuesForYDBOperator = manifests['k8s/ci/ydb-operator.yaml'].content
+let prometheusPushGateway = manifests['k8s/ci/prometheus-pushgateway.yaml'].content
+let grafanaRenderer = manifests['k8s/ci/grafana-renderer.yaml'].content
+let prometheus = manifests['k8s/ci/prometheus.yaml'].content
+let serviceMonitor = manifests['k8s/ci/serviceMonitor.yaml'].content
+let grafana = manifests['k8s/ci/grafana.yaml'].content
 
 /**
  * Create cluster with selected version
@@ -130,9 +132,8 @@ function get_status_monitoring() {
 function install_ydb_operator() {
   core.info('install ydb operator')
 
-  call('helm repo add ydb https://charts.ydb.tech/')
-  call('helm repo update')
-  call(`helm install ydb-operator ydb/ydb-operator -f - <<EOF\n${valuesForYDBOperator}\nEOF`)
+  call(`helm upgrade --install ydb-operator ydb/ydb-operator --values - <<EOF\n${valuesForYDBOperator}\nEOF`)
+  call(`kubectl apply -f - <<EOF\n${serviceMonitor}\nEOF`)
 }
 
 function install_kubectl() {
@@ -174,10 +175,12 @@ function install_monitoring() {
   call('helm repo add prometheus-community https://prometheus-community.github.io/helm-charts')
   call('helm repo add grafana https://grafana.github.io/helm-charts')
   call('helm repo update')
+
   call('kubectl create -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.64.0/bundle.yaml')
-  call(`kubectl apply -f - <<EOF\n${valuesForGrafana}\nEOF`)
-  call(`helm install prometheus-pushgateway prometheus-community/prometheus-pushgateway -f - << EOF\n${valuesForPrometheusPushGateway}\nEOF`)
-  call('helm install grafana-renderer oci://tccr.io/truecharts/grafana-image-renderer')
+  call(`kubectl apply -f - <<EOF\n${prometheus}\nEOF`)
+  call(`helm upgrade --install prometheus-pushgateway prometheus-community/prometheus-pushgateway --values - <<EOF\n${prometheusPushGateway}\nEOF`)
+  call(`helm upgrade --install grafana grafana/grafana --values - <<EOF\n${grafana}\nEOF`)
+  call(`kubectl apply -f - <<EOF\n${grafanaRenderer}\nEOF`)
 }
 
 function add_slo_monitoring() {
