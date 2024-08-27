@@ -171,6 +171,9 @@ function install_monitoring() {
   core.info('install monitoring')
 
   call('helm repo add prometheus-community https://prometheus-community.github.io/helm-charts')
+  call('helm repo add grafana https://grafana.github.io/helm-charts')
+  call('helm repo update')
+  call('kubectl create -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.64.0/bundle.yaml')
   call(`helm install prometheus prometheus-community/kube-prometheus-stack -f - <<EOF\n${valuesForGrafana}\nEOF`)
   call(`helm install prometheus-pushgateway prometheus-community/prometheus-pushgateway -f - << EOF\n${valuesForPrometheusPushGateway}\nEOF`)
   call('helm install grafana-renderer oci://tccr.io/truecharts/grafana-image-renderer')
