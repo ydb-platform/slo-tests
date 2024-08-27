@@ -4,11 +4,11 @@ import { withTimeoutSimple } from './utils/withTimeout'
 
 export async function getInfrastractureEndpoints() {
   const services = [
-    'kube-prometheus-stack-prometheus-operator',
+    'prometheus-operator',
     'prometheus',
     'prometheus-pushgateway',
     'grafana',
-    'grafana-image-renderer',
+    'grafana-renderer',
     'ydb-operator'
   ]
   return Promise.allSettled(services.map(getEndpoint)).then(res => {
@@ -29,7 +29,6 @@ export async function getInfrastractureEndpoints() {
       grafanaRenderer: (res[4] as PromiseFulfilledResult<string>).value,
       ydbOperator: (res[5] as PromiseFulfilledResult<string>).value
     }
-    //test
   })
 }
 
