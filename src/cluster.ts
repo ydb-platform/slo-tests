@@ -9,7 +9,6 @@ import { describe } from 'node:test'
 
 let databaseManifest = manifests['k8s/ci/database.yaml'].content
 let storageManifest = manifests['k8s/ci/storage.yaml'].content
-let sloConfigMap = manifests['k8s/ci/slo-monitoring.yaml'].content
 let valuesForYDBOperator = manifests['k8s/ci/ydb-operator.yaml'].content
 let prometheusPushGateway = manifests['k8s/ci/prometheus-pushgateway.yaml'].content
 let grafanaRenderer = manifests['k8s/ci/grafana-renderer.yaml'].content
@@ -184,17 +183,6 @@ function install_monitoring() {
   call(`kubectl apply -f - <<EOF\n${grafanaRenderer}\nEOF`)
 }
 
-function add_slo_monitoring() {
-  core.info('add monitoring table')
-
-  callKubernetesPath(
-    kubectl => `${kubectl} apply -f - << EOF\n${sloConfigMap}\nEOF`
-  )
-
-  // call('curl -o slo-monitoring.yaml https://raw.githubusercontent.com/ydb-platform/slo-tests/k8s-local/k8s/ci/slo-monitoring.yaml')
-  // callKubernetes('-f slo-monitoring.yaml apply')
-}
-
 function install_docker() {
   core.info('install docker')
 
@@ -256,8 +244,6 @@ export async function deploy_monitoring(
 ) {
   return logGroup('Deploy monitoring', async () => {
     install_monitoring()
-
-    add_slo_monitoring()
 
     await withTimeout(timeout, checkPeriod, 'monitoring create', async () => {
       core.debug('check status of monitoring')

@@ -29,8 +29,7 @@ env:
 #   tag: 7.5.15
 
 persistence:
-  enabled: true
-  storageClassName: yc-network-hdd
+  enabled: false
 
 grafana.ini:
   auth.anonymous:

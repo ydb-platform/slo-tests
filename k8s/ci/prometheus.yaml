@@ -50,9 +50,6 @@ spec:
   serviceMonitorSelector:
     matchLabels:
       ydb-cluster-monitor: slo-storage
-  resources:
-    requests:
-      memory: 400Mi
   enableAdminAPI: false
   replicas: 1
   securityContext:
@@ -60,12 +57,3 @@ spec:
     runAsNonRoot: true
     runAsGroup: 65534
     fsGroup: 2000
-  storage:
-    volumeClaimTemplate:
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 93Gi
-        storageClassName: yc-network-ssd-nonreplicated
