@@ -1,20 +1,20 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import {parseArguments} from './parseArguments'
-import {prepareAWS, call} from './callExecutables'
-import {createCluster, deleteCluster, deploy_minikube, deploy_ydb_operator, deploy_monitoring} from './cluster'
+import { parseArguments } from './parseArguments'
+import { prepareAWS, call } from './callExecutables'
+import { createCluster, deleteCluster, deploy_minikube, deploy_ydb_operator, deploy_monitoring } from './cluster'
 import {
   buildWorkload,
   dockerLogin,
   generateDockerPath,
   runWorkload,
 } from './workload'
-import {getInfrastractureEndpoints} from './getInfrastractureEndpoints'
-import {errorScheduler} from './errorScheduler'
-import {retry} from './utils/retry'
-import {IDesiredResults, checkResults} from './checkResults'
-import {grafanaScreenshot, postComment} from './grafanaScreenshot'
-import {createHash} from 'crypto'
+import { getInfrastractureEndpoints } from './getInfrastractureEndpoints'
+import { errorScheduler } from './errorScheduler'
+import { retry } from './utils/retry'
+import { IDesiredResults, checkResults } from './checkResults'
+import { grafanaScreenshot, postComment } from './grafanaScreenshot'
+import { createHash } from 'crypto'
 
 const isPullRequest = !!github.context.payload.pull_request
 
@@ -22,7 +22,7 @@ let clusterCreated = false
 
 async function main(): Promise<void> {
   try {
-    
+
     await deploy_minikube()
 
     await deploy_monitoring(10)
@@ -61,20 +61,20 @@ async function main(): Promise<void> {
 
     core.info(
       'Run SLO tests for: \n' +
-        workloads
-          .map(option => {
-            let str = `#${option.id}`
-            str += option.name ? `(${option.name})\n` : '\n'
-            str += `path: '${option.path}'\n`
-            str += option.buildContext
-              ? `build context: '${option.buildContext}'\n`
-              : ''
-            str += option.buildOptions
-              ? `build options: '${option.buildOptions}'\n`
-              : ''
-            return str
-          })
-          .join('===')
+      workloads
+        .map(option => {
+          let str = `#${option.id}`
+          str += option.name ? `(${option.name})\n` : '\n'
+          str += `path: '${option.path}'\n`
+          str += option.buildContext
+            ? `build context: '${option.buildContext}'\n`
+            : ''
+          str += option.buildOptions
+            ? `build options: '${option.buildOptions}'\n`
+            : ''
+          return str
+        })
+        .join('===')
     )
 
     const dockerPaths = workloads.map(w =>
@@ -100,7 +100,6 @@ async function main(): Promise<void> {
       )
     ])
 
-    core.info(call('docker images'))
     /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
     const continueRun =
       clusterWorkloadRes[0].status === 'fulfilled' &&
@@ -154,8 +153,7 @@ async function main(): Promise<void> {
                 ((5 + 4) * timeBetweenPhases + shutdownTime) / 60
               ),
               args:
-                `--time ${
-                  (5 + 2) * timeBetweenPhases
+                `--time ${(5 + 2) * timeBetweenPhases
                 } --shutdown-time ${shutdownTime} --read-rps 1000 ` +
                 `--write-rps 100 --prom-pgw http://prometheus-pushgateway:9091`
             })
@@ -174,12 +172,12 @@ async function main(): Promise<void> {
         } else {
           // TODO: somehow use objectives as input
           const objectives: IDesiredResults = {
-            success_rate: [{filter: {}, value: ['>', 0.98]}],
+            success_rate: [{ filter: {}, value: ['>', 0.98] }],
             max_99_latency: [
-              {filter: {status: 'ok'}, value: ['<', 100]},
-              {filter: {status: 'err'}, value: ['<', 30000]}
+              { filter: { status: 'ok' }, value: ['<', 100] },
+              { filter: { status: 'err' }, value: ['<', 30000] }
             ],
-            fail_interval: [{filter: {}, value: ['<', 20]}]
+            fail_interval: [{ filter: {}, value: ['<', 20] }]
           }
           let promises: Promise<boolean | void>[] = []
 
@@ -219,9 +217,8 @@ async function main(): Promise<void> {
                       grafanaDashboardHeight
                     )
                     const comment = `
-:volcano: Here are results of SLO test for **${
-                      workloads[i].name ?? workloads[i].id
-                    }**:
+:volcano: Here are results of SLO test for **${workloads[i].name ?? workloads[i].id
+                      }**:
 
 [Grafana Dashboard](${grafanaDomain}/d/${grafanaDashboard}?orgId=1&from=${timings.startTime.valueOf()}&to=${timings.endTime.valueOf()})
 

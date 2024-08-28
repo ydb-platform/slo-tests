@@ -1,9 +1,12 @@
 import path from 'path'
 import * as core from '@actions/core'
-import {context} from '@actions/github'
-import {GitHub} from '@actions/github/lib/utils'
-import {callAsync, callKubernetesAsync} from './callExecutables'
-import {writeFile} from 'fs/promises'
+import { context } from '@actions/github'
+import { GitHub } from '@actions/github/lib/utils'
+import { callAsync, callKubernetesAsync } from './callExecutables'
+import { writeFile } from 'fs/promises'
+import { uploadPoliciesAssets } from 'user-attachments';
+import fs from 'node:fs/promises';
+import process from 'node:process';
 
 export async function grafanaScreenshot(
   s3Endpoint: string,
@@ -18,9 +21,8 @@ export async function grafanaScreenshot(
   core.debug(
     `grafanaScreenshot(${s3Endpoint}, ${s3Folder}, ${workloadId}, ${startTime}, ${endTime}, ${dashboard}, ${width}, ${height})`
   )
-  const query = `http://grafana/render/d/${
-    dashboard.split('/')[0]
-  }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
+  const query = `http://grafana/render/d/${dashboard.split('/')[0]
+    }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
   core.debug('grafana query: ' + query)
   const imageb64 = await core.group('Get base64 image', () =>
     callKubernetesAsync(
@@ -29,32 +31,31 @@ export async function grafanaScreenshot(
   )
   core.debug(
     'grafana imageb64: ' +
-      imageb64.slice(0, 100) +
-      '...TRUNCATED...' +
-      imageb64.slice(-100)
+    imageb64.slice(0, 100) +
+    '...TRUNCATED...' +
+    imageb64.slice(-100)
   )
   core.debug('Write picture to FS')
 
   const fileName = `${workloadId}-${new Date().valueOf()}.png`
 
   // write image to fs
-  await writeFile(fileName, Buffer.from(imageb64, 'base64'))
+  //await writeFile(fileName, Buffer.from(imageb64, 'base64'))
 
   // upload
-  await callAsync(
-    `aws s3 --endpoint-url=${s3Endpoint} cp ./${fileName} "s3://${path.join(
-      s3Folder,
-      fileName
-    )}"`
-  )
+
+  const asset = await uploadPoliciesAssets({
+    file: new File([imageb64], fileName)
+  });
+
 
   // delete
-  await callAsync(`rm ${fileName}`)
+  //await callAsync(`rm ${fileName}`)
 
   // return name
-  const fullPictureUri =
-    'https://' + path.join(s3Endpoint.split('//')[1], s3Folder, fileName)
-  core.debug('fullPictureUri: ' + fullPictureUri)
+  const fullPictureUri = asset.href
+  //  'https://' + path.join(s3Endpoint.split('//')[1], s3Folder, fileName)
+  //core.debug('fullPictureUri: ' + fullPictureUri)
   return `${fullPictureUri}`
 }
 
