@@ -131,6 +131,8 @@ function get_status_monitoring() {
 function install_ydb_operator() {
   core.info('install ydb operator')
 
+  call('helm repo add ydb https://charts.ydb.tech/')
+  call('helm repo update')
   call(`helm upgrade --install ydb-operator ydb/ydb-operator --values - <<EOF\n${valuesForYDBOperator}\nEOF`)
   call(`kubectl apply -f - <<EOF\n${serviceMonitor}\nEOF`)
 }
