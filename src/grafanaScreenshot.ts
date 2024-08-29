@@ -4,7 +4,6 @@ import { context } from '@actions/github'
 import { GitHub } from '@actions/github/lib/utils'
 import { callAsync, callKubernetesAsync } from './callExecutables'
 import { writeFile } from 'fs/promises'
-import { uploadPoliciesAssets } from 'user-attachments';
 
 const fs = require('fs')
 
