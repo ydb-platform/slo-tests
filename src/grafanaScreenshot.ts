@@ -33,9 +33,6 @@ export async function grafanaScreenshotToLog(
 
   const fileName = `${workloadId}-${new Date().valueOf()}.png`
 
-  // write image to fs
-  await writeFile(fileName, Buffer.from(imageb64, 'base64'))
-
   // upload
   let dir = './logs'
   if (!fs.existsSync(dir)) {
