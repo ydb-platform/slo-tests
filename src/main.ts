@@ -199,16 +199,18 @@ async function main(): Promise<void> {
                 )
               )
 
-              async () => {
-                await grafanaScreenshotToLog(
-                  workloads[i].id,
-                  timings.startTime,
-                  timings.endTime,
-                  grafanaDashboard,
-                  grafanaDashboardWidth,
-                  grafanaDashboardHeight
-                )
-              }
+              promises.push(
+                (async () => {
+                  await grafanaScreenshotToLog(
+                    workloads[i].id,
+                    timings.startTime,
+                    timings.endTime,
+                    grafanaDashboard,
+                    grafanaDashboardWidth,
+                    grafanaDashboardHeight
+                  )
+                })()
+              )
 
               core.debug('isPullRequest=' + isPullRequest)
               if (isPullRequest) {
