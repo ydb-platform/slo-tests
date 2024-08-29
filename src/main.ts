@@ -5,7 +5,6 @@ import { prepareAWS, call } from './callExecutables'
 import { createCluster, deleteCluster, deploy_minikube, deploy_ydb_operator, deploy_monitoring } from './cluster'
 import {
   buildWorkload,
-  dockerLogin,
   generateDockerPath,
   runWorkload,
 } from './workload'
@@ -39,7 +38,6 @@ async function main(): Promise<void> {
       ydbVersion,
       timeBetweenPhases,
       shutdownTime,
-      grafanaDomain,
       grafanaDashboard,
       grafanaDashboardWidth,
       grafanaDashboardHeight
@@ -229,9 +227,7 @@ async function main(): Promise<void> {
 :volcano: Here are results of SLO test for **${workloads[i].name ?? workloads[i].id
                       }**:
 
-[Grafana Dashboard](${grafanaDomain}/d/${grafanaDashboard}?orgId=1&from=${timings.startTime.valueOf()}&to=${timings.endTime.valueOf()})
-
-![SLO-${workloads[i].id}](data:image/png;64,${pictureUri})\n`
+![SLO-${workloads[i].id}](${pictureUri})\n`
 
                     await postComment(
                       octokit,

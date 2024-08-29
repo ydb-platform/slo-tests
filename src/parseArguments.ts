@@ -36,7 +36,6 @@ export function parseArguments() {
     const awsConfig = core.getInput('AWS_CONFIG_B64')
     const s3Endpoint = core.getInput('s3_endpoint')
     const s3Folder = core.getInput('s3_images_folder')
-    const grafanaDomain = core.getInput('grafana_domain')
     const grafanaDashboard = core.getInput('grafana_dashboard') || '7CzMl5t4k'
     const grafanaDashboardWidth = Number(
       core.getInput('grafana_dashboard_width') || '1500'
@@ -74,7 +73,6 @@ export function parseArguments() {
       ydbVersion,
       timeBetweenPhases,
       shutdownTime,
-      grafanaDomain,
       grafanaDashboard,
       grafanaDashboardWidth,
       grafanaDashboardHeight
