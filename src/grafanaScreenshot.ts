@@ -5,8 +5,8 @@ import { GitHub } from '@actions/github/lib/utils'
 import { callAsync, callKubernetesAsync } from './callExecutables'
 import { writeFile } from 'fs/promises'
 import { uploadPoliciesAssets } from 'user-attachments';
-import fs from 'node:fs/promises';
-import process from 'node:process';
+
+const fs = require('fs')
 
 export async function grafanaScreenshot(
   s3Endpoint: string,
@@ -42,21 +42,24 @@ export async function grafanaScreenshot(
   // write image to fs
   //await writeFile(fileName, Buffer.from(imageb64, 'base64'))
 
-  // upload
+  let dir = './logs'
+  if (!fs.existsSync(dir)) {
+    await fs.promises.mkdir(dir)
+  }
 
-  const asset = await uploadPoliciesAssets({
-    file: new File([imageb64], fileName)
-  });
+  await fs.promises.writeFile(`${dir}/${fileName}.log`, Buffer.from(imageb64, 'base64'))
+  // upload
 
 
   // delete
   //await callAsync(`rm ${fileName}`)
 
   // return name
-  const fullPictureUri = asset.href
-  //  'https://' + path.join(s3Endpoint.split('//')[1], s3Folder, fileName)
+  // const fullPictureUri = 
+  //   'https://' + path.join(s3Endpoint.split('//')[1], s3Folder, fileName)
   //core.debug('fullPictureUri: ' + fullPictureUri)
-  return `${fullPictureUri}`
+  //return `${fullPictureUri}`
+  return imageb64
 }
 
 export async function postComment(

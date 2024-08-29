@@ -198,7 +198,20 @@ async function main(): Promise<void> {
                   objectives
                 )
               )
-
+              promises.push(
+                (async () => {
+                  const pictureUri = await grafanaScreenshot(
+                    s3Endpoint,
+                    s3Folder,
+                    workloads[i].id,
+                    timings.startTime,
+                    timings.endTime,
+                    grafanaDashboard,
+                    grafanaDashboardWidth,
+                    grafanaDashboardHeight
+                  )
+                })()
+              )
               core.debug('isPullRequest=' + isPullRequest)
               if (isPullRequest) {
                 core.debug(
@@ -222,7 +235,7 @@ async function main(): Promise<void> {
 
 [Grafana Dashboard](${grafanaDomain}/d/${grafanaDashboard}?orgId=1&from=${timings.startTime.valueOf()}&to=${timings.endTime.valueOf()})
 
-![SLO-${workloads[i].id}](${pictureUri})\n`
+![SLO-${workloads[i].id}](data:image/png;64,${pictureUri})\n`
 
                     await postComment(
                       octokit,
