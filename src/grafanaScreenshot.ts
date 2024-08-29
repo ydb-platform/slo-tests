@@ -46,7 +46,7 @@ export async function grafanaScreenshot(
     await fs.promises.mkdir(dir)
   }
 
-  await fs.promises.writeFile(`${dir}/${fileName}.log`, Buffer.from(imageb64, 'base64'))
+  await fs.promises.writeFile(`${dir}/${fileName}.png`, Buffer.from(imageb64, 'base64'))
   // upload
 
 
