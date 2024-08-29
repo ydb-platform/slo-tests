@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
-import {logGroup} from './utils/groupDecorator'
-import {getYdbVersions} from './cluster'
+import { logGroup } from './utils/groupDecorator'
+import { getYdbVersions } from './cluster'
 
 export interface IWorkloadOptions {
   /** SDK language or language+variant for kuberetes, prometheus metrics, PR comments */
@@ -32,10 +32,6 @@ export function parseArguments() {
     } while (haveValue)
 
     const githubToken: string = core.getInput('GITHUB_TOKEN')
-    const dockerRepo = core.getInput('DOCKER_REPO')
-    const dockerFolder = core.getInput('DOCKER_FOLDER')
-    const dockerUsername = core.getInput('DOCKER_USERNAME')
-    const dockerPassword = core.getInput('DOCKER_PASSWORD')
     const awsCredentials = core.getInput('AWS_CREDENTIALS_B64')
     const awsConfig = core.getInput('AWS_CONFIG_B64')
     const s3Endpoint = core.getInput('s3_endpoint')
@@ -75,10 +71,6 @@ export function parseArguments() {
       awsConfig,
       s3Endpoint,
       s3Folder,
-      dockerRepo,
-      dockerFolder,
-      dockerUsername,
-      dockerPassword,
       ydbVersion,
       timeBetweenPhases,
       shutdownTime,
@@ -113,8 +105,7 @@ function getWorkloadParam(id: number): IWorkloadOptions | null {
   // id and path are required
   if (languageId.length === 0 || workloadPath.length === 0) {
     core.debug(
-      `Not found params for ${id} workload - ${'language_id' + suffix} and ${
-        'workload_path' + suffix
+      `Not found params for ${id} workload - ${'language_id' + suffix} and ${'workload_path' + suffix
       } are not presented`
     )
     return null

@@ -6,11 +6,11 @@ import {
   callKubernetesPathAsync,
   call
 } from './callExecutables'
-import {logGroup} from './utils/groupDecorator'
+import { logGroup } from './utils/groupDecorator'
 
 // npx fs-to-json --input "k8s/ci/*.yaml" --output src/manifests.json
 import manifests from './manifests.json'
-import {withTimeout} from './utils/withTimeout'
+import { withTimeout } from './utils/withTimeout'
 
 const workloadManifestTemplate = manifests['k8s/ci/workload.yaml'].content
 
@@ -54,13 +54,13 @@ export function buildWorkload(
   if (!options || options.length === 0) options = ''
   if (!context || context.length === 0) context = '.'
 
-  return core.group(`Build workload ${id}`, async () => {
+  return logGroup(`Build workload ${id}`, async () => {
     core.info('Build docker image')
     await callAsync(
       `docker buildx build --platform linux/amd64 ` +
-        `-t ${dockerImage}:latest ` +
-        `${options} ` +
-        `${context}`,
+      `-t ${dockerImage}:latest ` +
+      `${options} ` +
+      `${context}`,
       false,
       workingDir
     )
@@ -79,7 +79,7 @@ export function runWorkload(
   command: 'create' | 'run',
   options: IWorkloadRunOptions
 ) {
-  return core.group(`Workload ${options.id} - ${command}`, async () => {
+  return logGroup(`Workload ${options.id} - ${command}`, async () => {
     const containerArgs = `grpc://database-sample-grpc:2135 /Root/database-sample --table-name slo-${options.id} ${options.args}`
 
     const workloadManifest = workloadManifestTemplate
@@ -99,11 +99,11 @@ export function runWorkload(
     const startTime = new Date()
     core.info(
       `Workload apply ${command} result:\n` +
-        (await callKubernetesPathAsync(
-          kubectl => `${kubectl} apply -f - <<EOF\n${workloadManifest}\nEOF`
-        ))
+      (await callKubernetesPathAsync(
+        kubectl => `${kubectl} apply -f - <<EOF\n${workloadManifest}\nEOF`
+      ))
     )
-    
+
     try {
       await withTimeout(
         options.timeoutMins,
@@ -129,7 +129,7 @@ export function runWorkload(
       const endTime = new Date()
       // print logs
       await saveLogs(options.id, command)
-      return {startTime, endTime}
+      return { startTime, endTime }
     }
   })
 }

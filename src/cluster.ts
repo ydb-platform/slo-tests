@@ -198,7 +198,7 @@ function install_docker() {
 }
 
 export async function deploy_minikube() {
-  return logGroup('Deploy YDB operator', async () => {
+  return logGroup('Deploy minikube', async () => {
     if (!call('which kubectl')) {
       install_kubectl()
     }
