@@ -7,6 +7,45 @@ import { writeFile } from 'fs/promises'
 
 const fs = require('fs')
 
+export async function grafanaScreenshotToLog(
+  workloadId: string,
+  startTime: Date,
+  endTime: Date,
+  dashboard = '7CzMl5t4k',
+  width = 1500,
+  height = 1100
+) {
+  const query = `http://grafana/render/d/${dashboard.split('/')[0]
+    }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
+  core.debug('grafana query: ' + query)
+  const imageb64 = await core.group('Get base64 image', () =>
+    callKubernetesAsync(
+      `run -q -i --image=busybox --rm grafana-screenshoter-${workloadId} --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`
+    )
+  )
+  core.debug(
+    'grafana imageb64: ' +
+    imageb64.slice(0, 100) +
+    '...TRUNCATED...' +
+    imageb64.slice(-100)
+  )
+  core.debug('Write picture to FS')
+
+  const fileName = `${workloadId}-${new Date().valueOf()}.png`
+
+  // write image to fs
+  await writeFile(fileName, Buffer.from(imageb64, 'base64'))
+
+  // upload
+  let dir = './logs'
+  if (!fs.existsSync(dir)) {
+    await fs.promises.mkdir(dir)
+  }
+
+  await fs.promises.writeFile(`${dir}/${fileName}`, Buffer.from(imageb64, 'base64'))
+}
+
+
 export async function grafanaScreenshot(
   s3Endpoint: string,
   s3Folder: string,
@@ -39,26 +78,24 @@ export async function grafanaScreenshot(
   const fileName = `${workloadId}-${new Date().valueOf()}.png`
 
   // write image to fs
-  //await writeFile(fileName, Buffer.from(imageb64, 'base64'))
+  await writeFile(fileName, Buffer.from(imageb64, 'base64'))
 
-  let dir = './logs'
-  if (!fs.existsSync(dir)) {
-    await fs.promises.mkdir(dir)
-  }
-
-  await fs.promises.writeFile(`${dir}/${fileName}.png`, Buffer.from(imageb64, 'base64'))
   // upload
-
+  await callAsync(
+    `aws s3 --endpoint-url=${s3Endpoint} cp ./${fileName} "s3://${path.join(
+      s3Folder,
+      fileName
+    )}"`
+  )
 
   // delete
-  //await callAsync(`rm ${fileName}`)
+  await callAsync(`rm ${fileName}`)
 
   // return name
-  // const fullPictureUri = 
-  //   'https://' + path.join(s3Endpoint.split('//')[1], s3Folder, fileName)
-  //core.debug('fullPictureUri: ' + fullPictureUri)
-  //return `${fullPictureUri}`
-  return imageb64
+  const fullPictureUri =
+    'https://' + path.join(s3Endpoint.split('//')[1], s3Folder, fileName)
+  core.debug('fullPictureUri: ' + fullPictureUri)
+  return `${fullPictureUri}`
 }
 
 export async function postComment(
