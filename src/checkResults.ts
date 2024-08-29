@@ -4,7 +4,6 @@ import * as github from '@actions/github'
 import { GitHub } from '@actions/github/lib/utils'
 import { callKubernetesPathAsync } from './callExecutables'
 import { retry } from './utils/retry'
-import { logGroup } from './utils/groupDecorator'
 
 export interface IGrafanaQuery {
   refId: string
@@ -215,82 +214,80 @@ export async function checkResults(
   desiredResults: IDesiredResults,
   queries?: IGrafanaQuery[]
 ) {
-  return logGroup('Check results', async () => {
-    core.info('Check results')
-    core.debug(
-      `Check results (${fromDate}, ${toDate}, ${JSON.stringify(queries)})`
-    )
-    if (!queries)
-      queries = [
-        {
-          refId: 'success_rate',
-          expr: 'max_over_time(oks[$__range])/(0.0001+max_over_time(not_oks[$__range])+max_over_time(oks[$__range]))>0',
-          interval: '1s'
-        },
-        {
-          refId: 'max_99_latency',
-          expr: 'max_over_time(latency{quantile="0.99"}[$__range])>0',
-          interval: ''
-        },
-        {
-          refId: 'fail_interval',
-          expr: 'sum_over_time(clamp(irate(not_oks[2s])*2, 0, 1)[$__range:1s])>0',
-          interval: '1s'
-        }
-      ]
-
-    const parsed = await retry(2, async () => {
-      const graphsRaw = await getDataFromGrafana(fromDate, toDate, queries!)
-      core.debug('graphsRaw: ' + graphsRaw)
-      return parseRawGraph(graphsRaw)
-    })
-
-    core.debug('parsed: ' + JSON.stringify(parsed))
-    const checks = checkGraphValues(workloadId, parsed, desiredResults)
-    core.info('checks: ' + JSON.stringify(checks))
-
-    let failed = false
-    let failedMsg = 'SLO check failed: '
-    for (let i = 0; i < checks.length; i++) {
-      if (checks[i][1] === 'error') {
-        failed = true
-        failedMsg += `${checks[i][2]}: ${checks[i][3]}`
+  core.info('Check results')
+  core.debug(
+    `Check results (${fromDate}, ${toDate}, ${JSON.stringify(queries)})`
+  )
+  if (!queries)
+    queries = [
+      {
+        refId: 'success_rate',
+        expr: 'max_over_time(oks[$__range])/(0.0001+max_over_time(not_oks[$__range])+max_over_time(oks[$__range]))>0',
+        interval: '1s'
+      },
+      {
+        refId: 'max_99_latency',
+        expr: 'max_over_time(latency{quantile="0.99"}[$__range])>0',
+        interval: ''
+      },
+      {
+        refId: 'fail_interval',
+        expr: 'sum_over_time(clamp(irate(not_oks[2s])*2, 0, 1)[$__range:1s])>0',
+        interval: '1s'
       }
-      try {
-        // try to add to checks
-        const conclusion =
-          checks[i][1] === 'error'
-            ? 'failure'
-            : checks[i][1] === 'notfound'
-              ? 'neutral'
-              : 'success'
-        const checkParams = {
-          owner: github.context.repo.owner,
-          repo: github.context.repo.repo,
-          name: `slo-check-${i}`,
-          head_sha: github.context.sha,
-          status: 'completed',
-          conclusion: conclusion,
-          started_at: fromDate.toISOString(),
-          output: {
-            title: `SLO check ${i}`,
-            summary: checks[i][3],
-            text: checks[i][3]
-          }
-        }
+    ]
 
-        core.info('create check: ' + JSON.stringify(checkParams))
-        core.info(
-          'Create check response: '
-          //+ JSON.stringify(await octokit.rest.checks.create(checkParams))
-        )
-      } catch (error) {
-        core.info('Create check error: ' + JSON.stringify(error))
-      }
-    }
-    if (failed) {
-      core.setFailed(failedMsg)
-    }
-    return checks.filter(ch => ch[1] == 'error').length > 0
+  const parsed = await retry(2, async () => {
+    const graphsRaw = await getDataFromGrafana(fromDate, toDate, queries!)
+    core.debug('graphsRaw: ' + graphsRaw)
+    return parseRawGraph(graphsRaw)
   })
+
+  core.debug('parsed: ' + JSON.stringify(parsed))
+  const checks = checkGraphValues(workloadId, parsed, desiredResults)
+  core.info('checks: ' + JSON.stringify(checks))
+
+  let failed = false
+  let failedMsg = 'SLO check failed: '
+  for (let i = 0; i < checks.length; i++) {
+    if (checks[i][1] === 'error') {
+      failed = true
+      failedMsg += `${checks[i][2]}: ${checks[i][3]}`
+    }
+    try {
+      // try to add to checks
+      const conclusion =
+        checks[i][1] === 'error'
+          ? 'failure'
+          : checks[i][1] === 'notfound'
+            ? 'neutral'
+            : 'success'
+      const checkParams = {
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        name: `slo-check-${i}`,
+        head_sha: github.context.sha,
+        status: 'completed',
+        conclusion: conclusion,
+        started_at: fromDate.toISOString(),
+        output: {
+          title: `SLO check ${i}`,
+          summary: checks[i][3],
+          text: checks[i][3]
+        }
+      }
+
+      core.info('create check: ' + JSON.stringify(checkParams))
+      core.info(
+        'Create check response: '
+        //+ JSON.stringify(await octokit.rest.checks.create(checkParams))
+      )
+    } catch (error) {
+      core.info('Create check error: ' + JSON.stringify(error))
+    }
+  }
+  if (failed) {
+    core.setFailed(failedMsg)
+  }
+  return checks.filter(ch => ch[1] == 'error').length > 0
 }
