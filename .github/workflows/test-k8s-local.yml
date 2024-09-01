@@ -22,7 +22,7 @@ jobs:
         env:
           DOCKER_REPO: ${{ secrets.SLO_DOCKER_REPO }}
         with:
-          repo: ydb-platform/ydb-python-sdk
+          repository: ydb-platform/ydb-python-sdk
 
       - name: Run SLO
         uses: ydb-platform/slo-tests@k8s-local
@@ -52,7 +52,7 @@ jobs:
           workload_build_context1: ../..
           workload_build_options1: -f Dockerfile --build-arg SDK_SERVICE=sync-python-query
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         env:
           DOCKER_REPO: ${{ secrets.SLO_DOCKER_REPO }}
         with:
