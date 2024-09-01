@@ -19,7 +19,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        if: env.DOCKER_REPO != null
         env:
           DOCKER_REPO: ${{ secrets.SLO_DOCKER_REPO }}
         with:
@@ -27,7 +26,6 @@ jobs:
 
       - name: Run SLO
         uses: ydb-platform/slo-tests@k8s-local
-        if: env.DOCKER_REPO != null
         env:
           DOCKER_REPO: ${{ secrets.SLO_DOCKER_REPO }}
         continue-on-error: true
@@ -55,7 +53,6 @@ jobs:
           workload_build_options1: -f Dockerfile --build-arg SDK_SERVICE=sync-python-query
 
       - uses: actions/upload-artifact@v3
-        if: env.DOCKER_REPO != null
         env:
           DOCKER_REPO: ${{ secrets.SLO_DOCKER_REPO }}
         with:
