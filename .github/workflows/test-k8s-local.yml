@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          repository: ydb-platform/ydb-nodejs-sdk
 
       - name: Run SLO
         uses: ydb-platform/slo-tests@k8s-local
