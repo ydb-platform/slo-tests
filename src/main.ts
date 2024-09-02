@@ -51,7 +51,7 @@ async function main(): Promise<void> {
 
     // check if all parts working: prometheus, prometheus-pushgateway, grafana, grafana-renderer
     const servicesPods = await getInfrastractureEndpoints()
-    core.info(call(JSON.stringify(call('kubectl get svc'))))
+    core.info(JSON.stringify(call('kubectl get svc')))
     core.info(`Services pods: ${JSON.stringify(servicesPods)}`)
 
     core.info(
