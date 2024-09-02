@@ -175,6 +175,9 @@ async function main(): Promise<void> {
           }
           let promises: Promise<boolean | void>[] = []
 
+          core.info(call('free -h'))
+          core.info(call('df -h'))
+
           runResult.map((r, i) => {
             if (r.status === 'fulfilled' && i !== runResult.length - 1) {
               const timings = (
@@ -251,7 +254,8 @@ async function main(): Promise<void> {
         }
       }
     }
-
+    core.info(call('free -h'))
+    core.info(call('df -h'))
     deleteCluster()
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
