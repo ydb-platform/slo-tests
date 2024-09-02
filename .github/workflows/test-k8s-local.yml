@@ -19,15 +19,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        env:
-          DOCKER_REPO: ${{ secrets.SLO_DOCKER_REPO }}
-        with:
-          repository: ydb-platform/ydb-python-sdk
 
       - name: Run SLO
         uses: ydb-platform/slo-tests@k8s-local
-        env:
-          DOCKER_REPO: ${{ secrets.SLO_DOCKER_REPO }}
         continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -40,21 +34,14 @@ jobs:
           timeBetweenPhases: 30
           shutdownTime: 30
 
-          language_id0: sync-python-table
-          language0: Python SDK over Table Service
-          workload_path0: tests/slo
-          workload_build_context0: ../..
-          workload_build_options0: -f Dockerfile --build-arg SDK_SERVICE=sync-python-table
-
-          language_id1: sync-python-query
-          language1: Python SDK over Query Service
-          workload_path1: tests/slo
-          workload_build_context1: ../..
-          workload_build_options1: -f Dockerfile --build-arg SDK_SERVICE=sync-python-query
+          language_id0: 'nodejs'
+          workload_path0: 'slo-workload'
+          language0: 'Native ydb-nodejs-sdk general'
+          workload_build_context0: ..
+          workload_build_options0: -f Dockerfile --build-arg SRC_PATH=slo-workload --build-arg JOB_NAME=workload-slo
 
       - uses: actions/upload-artifact@v4
-        env:
-          DOCKER_REPO: ${{ secrets.SLO_DOCKER_REPO }}
+        if: always()
         with:
           name: slo-logs
           path: logs/
