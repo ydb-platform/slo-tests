@@ -23,7 +23,7 @@ jobs:
           repository: ydb-platform/ydb-go-sdk
 
       - name: Run SLO
-        uses: ydb-platform/slo-tests@main
+        uses: ydb-platform/slo-tests@k8s-local
         continue-on-error: true
         env:
           ACTIONS_RUNNER_DEBUG: true
