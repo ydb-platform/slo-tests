@@ -10,7 +10,7 @@ spec:
   image:
     name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
   nodes: 8
-  domain: root
+  domain: Root
   erasure: block-4-2
   configuration: |-
     static_erasure: block-4-2
@@ -23,7 +23,7 @@ spec:
       port: 2135
     domains_config:
       domain:
-        - name: root
+        - name: Root
           storage_pool_types:
             - kind: ssd
               pool_config:
