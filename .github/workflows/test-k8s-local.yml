@@ -23,8 +23,10 @@ jobs:
           repository: ydb-platform/ydb-go-sdk
 
       - name: Run SLO
-        uses: ydb-platform/slo-tests@k8s-local
+        uses: ydb-platform/slo-tests@main
         continue-on-error: true
+        env:
+          ACTIONS_RUNNER_DEBUG: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS_CREDENTIALS_B64: ${{ secrets.SLO_AWS_CREDENTIALS }}
