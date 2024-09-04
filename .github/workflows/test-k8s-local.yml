@@ -20,7 +20,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          repository: ydb-platform/ydb-dotnet-sdk
+          repository: ydb-platform/ydb-python-sdk
 
       - name: Run SLO
         uses: ydb-platform/slo-tests@k8s-local
@@ -33,25 +33,22 @@ jobs:
           AWS_CONFIG_B64: ${{ secrets.SLO_AWS_CONFIG }}
           s3_endpoint: ${{ secrets.SLO_S3_ENDPOINT }}
           s3_images_folder: ${{ vars.SLO_S3_IMAGES_FOLDER }}
-          # grafana_dashboard: ${{ vars.SLO_GRAFANA_DASHBOARD }}
-          grafana_dashboard: dca60386-0d3d-43f5-a2af-5f3fd3e3b295
-          grafana_dashboard_width: 2000
-          grafana_dashboard_height: 2300
+          grafana_dashboard: ${{ vars.SLO_GRAFANA_DASHBOARD }}
           ydb_version: 'newest'
           timeBetweenPhases: 30
           shutdownTime: 30
 
-          language_id0: 'table-service'
-          workload_path0: 'slo/src'
-          language0: '.NET SDK over table-service'
+          language_id0: sync-python-table
+          language0: Python SDK over Table Service
+          workload_path0: tests/slo
           workload_build_context0: ../..
-          workload_build_options0: -f Dockerfile --build-arg SRC_PATH=TableService
-          
-          language_id1: 'ado-net'
-          workload_path1: 'slo/src'
-          language1: 'ADO.NET over query-service'
+          workload_build_options0: -f Dockerfile --build-arg SDK_SERVICE=sync-python-table
+
+          language_id1: sync-python-query
+          language1: Python SDK over Query Service
+          workload_path1: tests/slo
           workload_build_context1: ../..
-          workload_build_options1: -f Dockerfile --build-arg SRC_PATH=AdoNet
+          workload_build_options1: -f Dockerfile --build-arg SDK_SERVICE=sync-python-query
 
       - uses: actions/upload-artifact@v4
         with:
