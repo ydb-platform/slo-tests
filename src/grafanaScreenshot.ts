@@ -4,6 +4,7 @@ import { context } from '@actions/github'
 import { GitHub } from '@actions/github/lib/utils'
 import { callAsync, callKubernetesAsync } from './callExecutables'
 import { writeFile } from 'fs/promises'
+import { link } from 'fs'
 
 const fs = require('fs')
 
@@ -78,21 +79,25 @@ export async function grafanaScreenshot(
   await writeFile(fileName, Buffer.from(imageb64, 'base64'))
 
   // upload
-  await callAsync(
-    `aws s3 --endpoint-url=${s3Endpoint} cp ./${fileName} "s3://${path.join(
-      s3Folder,
-      fileName
-    )}"`
+  // await callAsync(
+  //   `aws s3 --endpoint-url=${s3Endpoint} cp ./${fileName} "s3://${path.join(
+  //     s3Folder,
+  //     fileName
+  //   )}"`
+  // )
+
+  const fullPictureUri = await callAsync(
+    `
+    curl -F "file=@${fileName}" https://file.io
+    `
   )
 
   // delete
   await callAsync(`rm ${fileName}`)
 
   // return name
-  const fullPictureUri =
-    'https://' + path.join(s3Endpoint.split('//')[1], s3Folder, fileName)
   core.debug('fullPictureUri: ' + fullPictureUri)
-  return `${fullPictureUri}`
+  return `${fullPictureUri.link}`
 }
 
 export async function postComment(
