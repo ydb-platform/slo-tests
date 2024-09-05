@@ -64,7 +64,7 @@ export function buildWorkload(
   return logGroup(`Build workload ${id}`, async () => {
     core.info('Build docker image')
     await callAsync(
-      `docker buildx build --platform linux/amd64 ` +
+      `docker build --platform linux/amd64 ` +
       `-t ${dockerImage}:latest ` +
       `${options} ` +
       `${context}`,
