@@ -3,6 +3,8 @@ name: test-local-SLO
 on: 
   workflow_dispatch:
   pull_request:
+    branches:
+      - 'k8s-local'
 
 jobs:
   test-slo:
