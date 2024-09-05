@@ -92,14 +92,14 @@ export async function grafanaScreenshot(
     `
   )
 
-  core.info(JSON.stringify(fullPictureUri))
+  core.info(JSON.stringify(fullPictureUri["link"]))
 
   // delete
   await callAsync(`rm ${fileName}`)
 
   // return name
-  core.debug('fullPictureUri: ' + fullPictureUri.link)
-  return `${fullPictureUri.link}`
+  core.debug('fullPictureUri: ' + fullPictureUri["link"])
+  return `${fullPictureUri["link"]}`
 }
 
 export async function postComment(
