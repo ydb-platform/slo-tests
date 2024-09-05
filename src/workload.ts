@@ -16,6 +16,13 @@ const workloadManifestTemplate = manifests['k8s/ci/workload.yaml'].content
 
 const fs = require('fs')
 
+export function disable_buildkit() {
+  core.info("Disable buildkit")
+
+  call('export DOCKER_BUILDKIT=0')
+  call('export COMPOSE_DOCKER_CLI_BUILD=0')
+}
+
 export function dockerLogin(repo: string, user: string, password: string) {
   return logGroup('Docker login', async () => {
     try {
