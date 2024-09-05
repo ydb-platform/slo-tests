@@ -92,6 +92,8 @@ export async function grafanaScreenshot(
     `
   )
 
+  core.info(JSON.stringify(fullPictureUri))
+
   // delete
   await callAsync(`rm ${fileName}`)
 
