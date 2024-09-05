@@ -96,7 +96,7 @@ export async function grafanaScreenshot(
   await callAsync(`rm ${fileName}`)
 
   // return name
-  core.debug('fullPictureUri: ' + fullPictureUri)
+  core.debug('fullPictureUri: ' + fullPictureUri.link)
   return `${fullPictureUri.link}`
 }
 
