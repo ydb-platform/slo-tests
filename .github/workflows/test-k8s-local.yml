@@ -1,6 +1,7 @@
 name: test-local-SLO
 on: 
   workflow_dispatch:
+  pull_request:
     
 jobs:
   test-slo:
