@@ -45,8 +45,6 @@ export async function grafanaScreenshotToLog(
 
 
 export async function grafanaScreenshot(
-  s3Endpoint: string,
-  s3Folder: string,
   workloadId: string,
   startTime: Date,
   endTime: Date,
@@ -55,7 +53,7 @@ export async function grafanaScreenshot(
   height = 1100
 ) {
   core.debug(
-    `grafanaScreenshot(${s3Endpoint}, ${s3Folder}, ${workloadId}, ${startTime}, ${endTime}, ${dashboard}, ${width}, ${height})`
+    `grafanaScreenshot(${workloadId}, ${startTime}, ${endTime}, ${dashboard}, ${width}, ${height})`
   )
   const query = `http://grafana/render/d/${dashboard.split('/')[0]
     }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
@@ -79,13 +77,6 @@ export async function grafanaScreenshot(
   await writeFile(fileName, Buffer.from(imageb64, 'base64'))
 
   // upload
-  // await callAsync(
-  //   `aws s3 --endpoint-url=${s3Endpoint} cp ./${fileName} "s3://${path.join(
-  //     s3Folder,
-  //     fileName
-  //   )}"`
-  // )
-
   const fullPictureUri = await callAsync(
     `
     curl -F "file=@${fileName}" https://file.io

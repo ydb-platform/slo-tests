@@ -32,10 +32,6 @@ export function parseArguments() {
     } while (haveValue)
 
     const githubToken: string = core.getInput('GITHUB_TOKEN')
-    const awsCredentials = core.getInput('AWS_CREDENTIALS_B64')
-    const awsConfig = core.getInput('AWS_CONFIG_B64')
-    const s3Endpoint = core.getInput('s3_endpoint')
-    const s3Folder = core.getInput('s3_images_folder')
     const grafanaDashboard = core.getInput('grafana_dashboard') || '7CzMl5t4k'
     const grafanaDashboardWidth = Number(
       core.getInput('grafana_dashboard_width') || '1500'
@@ -66,10 +62,6 @@ export function parseArguments() {
     return {
       workloads,
       githubToken,
-      awsCredentials,
-      awsConfig,
-      s3Endpoint,
-      s3Folder,
       ydbVersion,
       timeBetweenPhases,
       shutdownTime,

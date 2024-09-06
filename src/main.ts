@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { parseArguments } from './parseArguments'
-import { prepareAWS, call } from './callExecutables'
+import { call } from './callExecutables'
 import { createCluster, deleteCluster, deploy_minikube, deploy_ydb_operator, deploy_monitoring } from './cluster'
 import {
   buildWorkload,
@@ -32,10 +32,6 @@ async function main(): Promise<void> {
     let {
       workloads,
       githubToken,
-      awsCredentials,
-      awsConfig,
-      s3Endpoint,
-      s3Folder,
       ydbVersion,
       timeBetweenPhases,
       shutdownTime,
@@ -46,8 +42,6 @@ async function main(): Promise<void> {
 
     core.debug(`Setting up OctoKit`)
     const octokit = github.getOctokit(githubToken)
-
-    prepareAWS(awsCredentials, awsConfig)
 
 
     // check if all parts working: prometheus, prometheus-pushgateway, grafana, grafana-renderer
@@ -218,8 +212,6 @@ async function main(): Promise<void> {
                 promises.push(
                   (async () => {
                     const pictureUri = await grafanaScreenshot(
-                      s3Endpoint,
-                      s3Folder,
                       workloads[i].id,
                       timings.startTime,
                       timings.endTime,
