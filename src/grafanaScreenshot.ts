@@ -50,6 +50,8 @@ export async function postFotoToFileio(
 ) {
   const fileName = `${workloadId}.png`
 
+  callAsync('ls -la')
+
   const fullPictureUri = await callAsync(
     `
     curl -F file=@${fileName} https://file.io
