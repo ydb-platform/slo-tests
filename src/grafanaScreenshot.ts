@@ -19,11 +19,10 @@ export async function grafanaScreenshotToLog(
   const query = `http://grafana/render/d/${dashboard.split('/')[0]
     }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
   core.debug('grafana query: ' + query)
-  const imageb64 = await core.group('Get base64 image', () =>
-    callKubernetesAsync(
-      `run -q -i --image=busybox --rm grafana-screenshoter-${workloadId} --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`
-    )
+  const imageb64 = await callKubernetesAsync(
+    `run -q -i --image=busybox --rm grafana-screenshoter-${workloadId} --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`
   )
+
   core.debug(
     'grafana imageb64: ' +
     imageb64.slice(0, 100) +
