@@ -32,7 +32,7 @@ export async function grafanaScreenshotToLog(
   )
   core.debug('Write picture to FS')
 
-  const fileName = `${workloadId}-${new Date().valueOf()}.png`
+  const fileName = `${workloadId}.png`
 
   // upload
   let dir = './logs'
@@ -43,6 +43,29 @@ export async function grafanaScreenshotToLog(
   await fs.promises.writeFile(`${dir}/${fileName}`, Buffer.from(imageb64, 'base64'))
 }
 
+export async function postFotoToFileio(
+  workloadId: string,
+  dashboard = '7CzMl5t4k',
+) {
+  const fileName = `${workloadId}.png`
+
+  // upload
+  let dir = './logs'
+  if (!fs.existsSync(dir)) {
+    await fs.promises.mkdir(dir)
+  }
+
+  const fullPictureUri = await callAsync(
+    `
+    curl -F "file=@${dir}/${fileName}" https://file.io
+    `
+  )
+
+  const fullURL = JSON.parse(fullPictureUri)
+
+  core.debug('fullPictureUri: ' + fullURL["link"])
+  return `${fullURL["link"]}`
+}
 
 export async function grafanaScreenshot(
   workloadId: string,

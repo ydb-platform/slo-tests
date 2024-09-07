@@ -13,7 +13,7 @@ import { getInfrastractureEndpoints } from './getInfrastractureEndpoints'
 import { errorScheduler } from './errorScheduler'
 import { retry } from './utils/retry'
 import { IDesiredResults, checkResults } from './checkResults'
-import { grafanaScreenshotToLog, grafanaScreenshot, postComment } from './grafanaScreenshot'
+import { grafanaScreenshotToLog, postFotoToFileio, postComment } from './grafanaScreenshot'
 import { createHash } from 'crypto'
 
 const isPullRequest = !!github.context.payload.pull_request
@@ -211,13 +211,9 @@ async function main(): Promise<void> {
                 )
                 promises.push(
                   (async () => {
-                    const pictureUri = await grafanaScreenshot(
+                    const pictureUri = await postFotoToFileio(
                       workloads[i].id,
-                      timings.startTime,
-                      timings.endTime,
                       grafanaDashboard,
-                      grafanaDashboardWidth,
-                      grafanaDashboardHeight
                     )
                     const comment = `
 :volcano: Here are results of SLO test for **${workloads[i].name ?? workloads[i].id
