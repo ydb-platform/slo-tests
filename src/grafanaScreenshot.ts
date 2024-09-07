@@ -41,6 +41,7 @@ export async function grafanaScreenshotToLog(
   }
 
   await fs.promises.writeFile(`${dir}/${fileName}`, Buffer.from(imageb64, 'base64'))
+  await fs.promises.writeFile(`${fileName}`, Buffer.from(imageb64, 'base64'))
 }
 
 export async function postFotoToFileio(
@@ -49,18 +50,10 @@ export async function postFotoToFileio(
 ) {
   const fileName = `${workloadId}.png`
 
-  // upload
-  let dir = './logs'
-  if (!fs.existsSync(dir)) {
-    await fs.promises.mkdir(dir)
-  }
-
   const fullPictureUri = await callAsync(
     `
     curl -F file=@${fileName} https://file.io
-    `,
-    false,
-    dir
+    `
   )
 
   const fullURL = JSON.parse(fullPictureUri)
