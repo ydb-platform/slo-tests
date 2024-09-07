@@ -50,7 +50,7 @@ export async function postFotoToFileio(
 ) {
   const fileName = `${workloadId}.png`
 
-  callAsync('ls -la')
+  callAsync('ls -la | grep png')
 
   const fullPictureUri = await callAsync(
     `
