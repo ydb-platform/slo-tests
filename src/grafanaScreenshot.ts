@@ -55,15 +55,13 @@ export async function postFotoToFileio(
     await fs.promises.mkdir(dir)
   }
 
-  callAsync(`cd ${dir}`)
-
   const fullPictureUri = await callAsync(
     `
     curl -F "file=@${fileName}" https://file.io
-    `
+    `,
+    false,
+    dir
   )
-
-  callAsync(`cd -`)
 
   const fullURL = JSON.parse(fullPictureUri)
 
