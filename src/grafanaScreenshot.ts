@@ -57,7 +57,7 @@ export async function postFotoToFileio(
 
   const fullPictureUri = await callAsync(
     `
-    curl -F "file=@${fileName}" https://file.io
+    curl -F file=@${fileName} https://file.io
     `,
     false,
     dir
