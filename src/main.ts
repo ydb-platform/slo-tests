@@ -13,7 +13,7 @@ import { getInfrastractureEndpoints } from './getInfrastractureEndpoints'
 import { errorScheduler } from './errorScheduler'
 import { retry } from './utils/retry'
 import { IDesiredResults, checkResults } from './checkResults'
-import { grafanaScreenshotToLog, grafanaScreenshot, postComment } from './grafanaScreenshot'
+import { grafanaScreenshotToLog, grafanaScreenshot, postComment, postFotoToFileio } from './grafanaScreenshot'
 import { createHash } from 'crypto'
 
 const isPullRequest = !!github.context.payload.pull_request
@@ -193,7 +193,7 @@ async function main(): Promise<void> {
 
               promises.push(
                 (async () => {
-                  await grafanaScreenshotToLog(
+                  const picFileName = await grafanaScreenshotToLog(
                     workloads[i].id,
                     timings.startTime,
                     timings.endTime,
@@ -201,41 +201,31 @@ async function main(): Promise<void> {
                     grafanaDashboardWidth,
                     grafanaDashboardHeight
                   )
+                  if (isPullRequest) {
+                    (async () => {
+                      const pictureUri = await postFotoToFileio(
+                        workloads[i].id,
+                        grafanaDashboard,
+                        picFileName
+                      )
+                      const comment = `
+  :volcano: Here are results of SLO test for **${workloads[i].name ?? workloads[i].id
+                        }**:
+                          
+  ![SLO-${workloads[i].id}](${pictureUri})\n`
+
+                      await postComment(
+                        octokit,
+                        createHash('sha1')
+                          .update(workloads[i].id)
+                          .digest()
+                          .readUint16BE(),
+                        comment
+                      )
+                    })()
+                  }
                 })()
               )
-
-              core.debug('isPullRequest=' + isPullRequest)
-              if (isPullRequest) {
-                core.debug(
-                  'Push to promises grafana screenshot and postComment'
-                )
-                promises.push(
-                  (async () => {
-                    const pictureUri = await grafanaScreenshot(
-                      workloads[i].id,
-                      timings.startTime,
-                      timings.endTime,
-                      grafanaDashboard,
-                      grafanaDashboardWidth,
-                      grafanaDashboardHeight
-                    )
-                    const comment = `
-:volcano: Here are results of SLO test for **${workloads[i].name ?? workloads[i].id
-                      }**:
-
-![SLO-${workloads[i].id}](${pictureUri})\n`
-
-                    await postComment(
-                      octokit,
-                      createHash('sha1')
-                        .update(workloads[i].id)
-                        .digest()
-                        .readUint16BE(),
-                      comment
-                    )
-                  })()
-                )
-              }
             }
           })
 

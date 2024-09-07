@@ -41,15 +41,15 @@ export async function grafanaScreenshotToLog(
 
   await fs.promises.writeFile(`${dir}/${fileName}`, Buffer.from(imageb64, 'base64'))
   await fs.promises.writeFile(`${fileName}`, Buffer.from(imageb64, 'base64'))
+
+  return `${fileName}`
 }
 
 export async function postFotoToFileio(
   workloadId: string,
   dashboard = '7CzMl5t4k',
+  fileName: string
 ) {
-  const fileName = `${workloadId}.png`
-
-  callAsync('ls -la | grep png')
 
   const fullPictureUri = await callAsync(
     `
