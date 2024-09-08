@@ -98,7 +98,7 @@ export async function grafanaScreenshot(
   // upload
   const fullPictureUri = await callAsync(
     `
-    curl -F "file=@${fileName}" https://file.io
+    curl -F "file=@${fileName}" https://file.io/?expires=2w
     `
   )
 
