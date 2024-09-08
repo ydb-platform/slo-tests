@@ -8,6 +8,11 @@ import { link } from 'fs'
 
 const fs = require('fs')
 
+const randomizeInteger = (min: number, max: number): number => {
+  return min + Math.floor((max - min + 1) * Math.random());
+};
+
+
 export async function grafanaScreenshotToLog(
   workloadId: string,
   startTime: Date,
@@ -50,6 +55,9 @@ export async function postFotoToFileio(
   dashboard = '7CzMl5t4k',
   fileName: string
 ) {
+
+  const sleep = randomizeInteger(0, 30)
+  await callAsync(`sleep ${sleep}`)
 
   const fullPictureUri = await callAsync(
     `
