@@ -37,7 +37,7 @@ export function parseArguments() {
       core.getInput('grafana_dashboard_width') || '1300'
     )
     const grafanaDashboardHeight = Number(
-      core.getInput('grafana_dashboard_height') || '1500'
+      core.getInput('grafana_dashboard_height') || '1350'
     )
 
     let ydbVersion = core.getInput('ydb_version')
