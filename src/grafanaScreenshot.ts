@@ -22,7 +22,7 @@ export async function grafanaScreenshotToLog(
   endTime: Date,
   dashboard = '7CzMl5t4k',
   width = 1300,
-  height = 1100
+  height = 1200
 ) {
   const query = `http://grafana/render/d/${dashboard.split('/')[0]
     }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
