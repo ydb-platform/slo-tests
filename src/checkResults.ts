@@ -2,8 +2,9 @@ import crypto from 'crypto'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { GitHub } from '@actions/github/lib/utils'
-import { callKubernetesPathAsync } from './callExecutables'
+import { callAsync, callKubernetesPathAsync } from './callExecutables'
 import { retry } from './utils/retry'
+import { json } from 'stream/consumers'
 
 export interface IGrafanaQuery {
   refId: string
@@ -87,6 +88,8 @@ export async function getDataFromGrafana(
   core.info(
     `getDataFromGrafana kube request:\nkubectl run -q -i --image=busybox --rm grafana-result-peeker --restart=Never -- sh -c '${busyboxCmd}'`
   )
+
+  core.info(JSON.stringify(callAsync('cat /proc/meminfo | head -n 3')))
 
   return Buffer.from(
     await callKubernetesPathAsync(

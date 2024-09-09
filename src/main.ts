@@ -24,12 +24,6 @@ let clusterCreated = false
 
 async function main(): Promise<void> {
   try {
-    let dir = './logs'
-    if (!fs.existsSync(dir)) {
-      await fs.promises.mkdir(dir)
-    }
-    call('echo "*/1 * * * * cat /proc/meminfo | head -n 3 2>&1 >> ./logs/mem.log" >> /var/spool/cron/root')
-
     await deploy_minikube()
 
     await deploy_monitoring(10)
