@@ -89,8 +89,6 @@ export async function getDataFromGrafana(
     `getDataFromGrafana kube request:\nkubectl run -q -i --image=busybox --rm grafana-result-peeker --restart=Never -- sh -c '${busyboxCmd}'`
   )
 
-  core.info(JSON.stringify(callAsync('cat /proc/meminfo | head -n 3')))
-
   return Buffer.from(
     await callKubernetesPathAsync(
       kubectl =>

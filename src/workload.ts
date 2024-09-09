@@ -122,6 +122,9 @@ export function runWorkload(
               `get job/${options.id}-wl-${command} -o=jsonpath={.status}`
             )
           )
+
+          core.info(JSON.stringify(callAsync('cat /proc/meminfo | head -n 3')))
+
           core.debug('Workload status check: ' + JSON.stringify(status))
           if (status.failed) {
             const msg = `Workload ${options.id} ${command} failed`
