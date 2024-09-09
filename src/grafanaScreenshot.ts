@@ -26,7 +26,7 @@ export async function grafanaScreenshotToLog(
 ) {
   const query = `http://grafana/render/d/${dashboard.split('/')[0]
     //    }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
-    }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=1350&height=950$&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
+    }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=1500&height=1100$&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
   core.debug('grafana query: ' + query)
   const imageb64 = await callKubernetesAsync(
     `run -q -i --image=busybox --rm grafana-screenshoter-${workloadId} --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`
