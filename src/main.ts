@@ -22,7 +22,7 @@ let clusterCreated = false
 
 async function main(): Promise<void> {
   try {
-    core.info(JSON.stringify(callAsync('cat /proc/meminfo | head -n 3')))
+    core.info(JSON.stringify(callAsync('watch -n 5 cat /proc/meminfo | head -n 3')))
     await deploy_minikube()
 
     await deploy_monitoring(10)
