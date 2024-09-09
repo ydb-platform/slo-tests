@@ -123,7 +123,7 @@ export function runWorkload(
             )
           )
 
-          core.info(JSON.stringify(callAsync('cat /proc/meminfo | head -n 3')))
+          core.info(JSON.stringify(callAsync('free -h')))
 
           core.debug('Workload status check: ' + JSON.stringify(status))
           if (status.failed) {
