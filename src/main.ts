@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { parseArguments } from './parseArguments'
-import { call } from './callExecutables'
+import { call, callAsync } from './callExecutables'
 import { createCluster, deleteCluster, deploy_minikube, deploy_ydb_operator, deploy_monitoring } from './cluster'
 import {
   buildWorkload,
@@ -190,7 +190,7 @@ async function main(): Promise<void> {
                   objectives
                 )
               )
-
+              call('sudo apt-get install imagemagick')
               promises.push(
                 (async () => {
                   const picFileName = await grafanaScreenshotToLog(
@@ -204,8 +204,6 @@ async function main(): Promise<void> {
                   if (isPullRequest) {
                     (async () => {
                       const pictureUri = await postFotoToFileio(
-                        workloads[i].id,
-                        grafanaDashboard,
                         picFileName
                       )
                       const comment = `

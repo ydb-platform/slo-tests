@@ -12,6 +12,9 @@ const randomizeInteger = (min: number, max: number): number => {
   return min + Math.floor((max - min + 1) * Math.random());
 };
 
+async function cropImage(photoname: string) {
+
+}
 
 export async function grafanaScreenshotToLog(
   workloadId: string,
@@ -22,7 +25,8 @@ export async function grafanaScreenshotToLog(
   height = 1100
 ) {
   const query = `http://grafana/render/d/${dashboard.split('/')[0]
-    }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
+    //    }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=${width}&height=${height}&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
+    }/slo?orgId=1&from=${startTime.valueOf()}&to=${endTime.valueOf()}&width=750&height=650$&tz=Europe%2FIstanbul&kiosk=tv&var-filter=job|=|workload-${workloadId}`
   core.debug('grafana query: ' + query)
   const imageb64 = await callKubernetesAsync(
     `run -q -i --image=busybox --rm grafana-screenshoter-${workloadId} --restart=Never -- sh -c "wget -q -O- '${query}' | base64"`
@@ -47,12 +51,13 @@ export async function grafanaScreenshotToLog(
   await fs.promises.writeFile(`${dir}/${fileName}`, Buffer.from(imageb64, 'base64'))
   await fs.promises.writeFile(`${fileName}`, Buffer.from(imageb64, 'base64'))
 
+  cropImage(`${dir}/${fileName}`)
+  cropImage(`${fileName}`)
+
   return `${fileName}`
 }
 
 export async function postFotoToFileio(
-  workloadId: string,
-  dashboard = '7CzMl5t4k',
   fileName: string
 ) {
 
