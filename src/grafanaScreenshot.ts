@@ -21,7 +21,7 @@ export async function grafanaScreenshotToLog(
   startTime: Date,
   endTime: Date,
   dashboard = '7CzMl5t4k',
-  width = 1500,
+  width = 1300,
   height = 1100
 ) {
   const query = `http://grafana/render/d/${dashboard.split('/')[0]
