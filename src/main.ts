@@ -16,13 +16,20 @@ import { IDesiredResults, checkResults } from './checkResults'
 import { grafanaScreenshotToLog, grafanaScreenshot, postComment, postFotoToFileio } from './grafanaScreenshot'
 import { createHash } from 'crypto'
 
+const fs = require('fs')
+
 const isPullRequest = !!github.context.payload.pull_request
 
 let clusterCreated = false
 
 async function main(): Promise<void> {
   try {
-    core.info(JSON.stringify(callAsync('watch -n 5 cat /proc/meminfo | head -n 3')))
+    let dir = './logs'
+    if (!fs.existsSync(dir)) {
+      await fs.promises.mkdir(dir)
+    }
+    call('echo "*/1 * * * * cat /proc/meminfo | head -n 3 2>&1 >> ./logs/mem.log" >> /var/spool/cron/root')
+
     await deploy_minikube()
 
     await deploy_monitoring(10)
