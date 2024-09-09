@@ -123,6 +123,7 @@ export function runWorkload(
             )
           )
 
+          core.info(JSON.stringify(callAsync('df -h')))
           core.info(JSON.stringify(callAsync('free -h')))
 
           core.debug('Workload status check: ' + JSON.stringify(status))
