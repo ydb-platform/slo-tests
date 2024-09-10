@@ -123,8 +123,8 @@ export function runWorkload(
             )
           )
 
-          core.info(JSON.stringify(callAsync('df -h')))
-          core.info(JSON.stringify(callAsync('free -h')))
+          core.info(JSON.stringify(callAsync('kubectl describe database.ydb.tech')))
+          core.info(JSON.stringify(callAsync('kubectl describe storages.ydb.tech')))
 
           core.debug('Workload status check: ' + JSON.stringify(status))
           if (status.failed) {

@@ -16,8 +16,6 @@ import { IDesiredResults, checkResults } from './checkResults'
 import { grafanaScreenshotToLog, grafanaScreenshot, postComment, postFotoToFileio } from './grafanaScreenshot'
 import { createHash } from 'crypto'
 
-const fs = require('fs')
-
 const isPullRequest = !!github.context.payload.pull_request
 
 let clusterCreated = false
