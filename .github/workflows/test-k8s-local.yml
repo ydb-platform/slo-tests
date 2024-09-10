@@ -18,12 +18,12 @@ jobs:
       pull-requests: write
       contents: read
       issues: write
-
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          repository: ydb-platform/ydb-java-dialects
+          repository: ydb-platform/ydb-python-sdk
 
       - name: Run SLO
         uses: ydb-platform/slo-tests@k8s-local
@@ -33,16 +33,22 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           grafana_dashboard: ${{ vars.SLO_GRAFANA_DASHBOARD }}
-          grafana_dashboard_width: 2000
-          grafana_dashboard_height: 2300
           ydb_version: 'newest'
           timeBetweenPhases: 30
           shutdownTime: 30
 
-          language_id0: 'hibernate'
-          workload_path0: 'slo'
-          language0: 'Hibernate YQL Dialect over YDB JDBC Driver'
-          workload_build_options0: -f Dockerfile --build-arg SRC_PATH=hibernate
+          language_id0: sync-python-table
+          language0: Python SDK over Table Service
+          workload_path0: tests/slo
+          workload_build_context0: ../..
+          workload_build_options0: -f Dockerfile --build-arg SDK_SERVICE=sync-python-table
+
+          language_id1: sync-python-query
+          language1: Python SDK over Query Service
+          workload_path1: tests/slo
+          workload_build_context1: ../..
+          workload_build_options1: -f Dockerfile --build-arg SDK_SERVICE=sync-python-query
+
 
       - uses: actions/upload-artifact@v4
         with:
