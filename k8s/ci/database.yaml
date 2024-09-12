@@ -7,7 +7,7 @@ spec:
     enabled: true
     interval: 3s
   image:
-    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:24.2.7
+    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
   nodes: 3
   resources:
     containerResources:
