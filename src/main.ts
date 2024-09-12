@@ -7,7 +7,8 @@ import {
   buildWorkload,
   generateDockerPath,
   runWorkload,
-  disable_buildkit
+  disable_buildkit,
+  create_logs
 } from './workload'
 import { getInfrastractureEndpoints } from './getInfrastractureEndpoints'
 import { errorScheduler } from './errorScheduler'
@@ -16,12 +17,15 @@ import { IDesiredResults, checkResults } from './checkResults'
 import { grafanaScreenshotToLog, grafanaScreenshot, postComment, postFotoToFileio } from './grafanaScreenshot'
 import { createHash } from 'crypto'
 
+
 const isPullRequest = !!github.context.payload.pull_request
 
 let clusterCreated = false
 
 async function main(): Promise<void> {
   try {
+    await create_logs()
+
     await deploy_minikube()
 
     await deploy_monitoring(10)

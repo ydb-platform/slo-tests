@@ -161,3 +161,10 @@ async function saveLogs(id: string, command: string) {
     })
   }
 }
+
+export async function create_logs() {
+  let dir = './logs'
+  if (!fs.existsSync(dir)) {
+    await fs.promises.mkdir(dir)
+  }
+}
