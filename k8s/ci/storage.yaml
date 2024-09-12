@@ -16,7 +16,7 @@ spec:
     static_erasure: block-4-2
     host_configs:
       - drive:
-          - path: SectorMap:1:64
+          - path: SectorMap:1:128
             type: SSD
         host_config_id: 1
     grpc_config:
@@ -83,35 +83,35 @@ spec:
                 - vdisk_locations:
                   - node_id: 1
                     pdisk_category: SSD
-                    path: SectorMap:1:64
+                    path: SectorMap:1:128
                 - vdisk_locations:
                   - node_id: 2
                     pdisk_category: SSD
-                    path: SectorMap:1:64
+                    path: SectorMap:1:128
                 - vdisk_locations:
                   - node_id: 3
                     pdisk_category: SSD
-                    path: SectorMap:1:64
+                    path: SectorMap:1:128
                 - vdisk_locations:
                   - node_id: 4
                     pdisk_category: SSD
-                    path: SectorMap:1:64
+                    path: SectorMap:1:128
                 - vdisk_locations:
                   - node_id: 5
                     pdisk_category: SSD
-                    path: SectorMap:1:64
+                    path: SectorMap:1:128
                 - vdisk_locations:
                   - node_id: 6
                     pdisk_category: SSD
-                    path: SectorMap:1:64
+                    path: SectorMap:1:128
                 - vdisk_locations:
                   - node_id: 7
                     pdisk_category: SSD
-                    path: SectorMap:1:64
+                    path: SectorMap:1:128
                 - vdisk_locations:
                   - node_id: 8
                     pdisk_category: SSD
-                    path: SectorMap:1:64
+                    path: SectorMap:1:128
     channel_profile_config:
       profile:
         - channel:
