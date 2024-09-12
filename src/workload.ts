@@ -167,4 +167,5 @@ export async function create_logs() {
   if (!fs.existsSync(dir)) {
     await fs.promises.mkdir(dir)
   }
+  callAsync(`rm -rf ${dir}/*`)
 }
