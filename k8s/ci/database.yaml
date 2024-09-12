@@ -12,7 +12,7 @@ spec:
   resources:
     containerResources:
       limits:
-        cpu: 1
+        cpu: 3
     storageUnits:
       - count: 1
         unitKind: ssd
