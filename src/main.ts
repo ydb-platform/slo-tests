@@ -119,6 +119,7 @@ async function main(): Promise<void> {
     }
 
     if (continueRun) {
+      await callAsync(`sleep 20s`)
       // retry create operation one time in case of error
       const createResult = await Promise.allSettled(
         workloads.map(async (wl, idx) =>
@@ -138,7 +139,7 @@ async function main(): Promise<void> {
       if (createResult.filter(r => r.status === 'fulfilled').length === 0) {
         throw new Error('No workloads performed `create` action, exit')
       } else {
-        await callAsync(`sleep 30s`)
+        await callAsync(`sleep 5s`)
         // run in parrallel without retries
         const runResult = await Promise.allSettled([
           ...workloads.map((wl, idx) =>
