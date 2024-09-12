@@ -138,6 +138,7 @@ async function main(): Promise<void> {
       if (createResult.filter(r => r.status === 'fulfilled').length === 0) {
         throw new Error('No workloads performed `create` action, exit')
       } else {
+        await callAsync(`sleep 30s`)
         // run in parrallel without retries
         const runResult = await Promise.allSettled([
           ...workloads.map((wl, idx) =>
@@ -193,7 +194,6 @@ async function main(): Promise<void> {
                   objectives
                 )
               )
-              call('sudo apt-get install imagemagick')
               promises.push(
                 (async () => {
                   const picFileName = await grafanaScreenshotToLog(
