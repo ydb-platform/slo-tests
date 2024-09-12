@@ -149,8 +149,8 @@ async function main(): Promise<void> {
               ),
               args:
                 `--time ${(5 + 2) * timeBetweenPhases
-                } --shutdown-time ${shutdownTime} --read-rps 100 ` +
-                `--write-rps 10 --prom-pgw http://prometheus-pushgateway:9091`
+                } --shutdown-time ${shutdownTime} --read-rps 1 ` +
+                `--write-rps 1 --prom-pgw http://prometheus-pushgateway:9091`
             })
           ),
           errorScheduler(servicesPods.grafana, timeBetweenPhases)
