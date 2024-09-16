@@ -83,7 +83,7 @@ export function runWorkload(
   options: IWorkloadRunOptions
 ) {
   return core.group(`Workload ${options.id} - ${command}`, async () => {
-    const containerArgs = `grpc://database-sample-grpc:2135 /Root/database-sample --table-name slo-${options.id} ${options.args}`
+    const containerArgs = `grpc://database-sample-grpc:2135 /root/database-sample --table-name slo-${options.id} ${options.args}`
 
     const workloadManifest = workloadManifestTemplate
       .replace(/\$\{\{LANGUAGE_ID}}/g, options.id)
