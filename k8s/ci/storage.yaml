@@ -29,6 +29,7 @@ spec:
           storage: 93Gi
   image:
     name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
+  domain: root
   nodes: 9
   erasure: mirror-3-dc
   configuration: |-
@@ -42,7 +43,7 @@ spec:
       port: 2135
     domains_config:
       domain:
-        - name: Root
+        - name: root
           storage_pool_types:
             - kind: ssd
               pool_config:
