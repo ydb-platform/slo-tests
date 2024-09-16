@@ -111,7 +111,7 @@ export function deleteCluster() {
 
     try {
       const pvcs = callKubernetes(
-        'get pvc -o=jsonpath="{.items[*].metadata.name}" -l ydb-cluster=slo-storage'
+        'get pvc -o=jsonpath="{.items[*].metadata.name}" -l ydb.tech/statefulset-name=storage-sample'
       )
       core.debug('pvcs' + pvcs)
       core.info('PVC delete result:\n' + callKubernetes(`delete pvc ${pvcs}`))
