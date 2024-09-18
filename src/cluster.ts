@@ -169,7 +169,7 @@ function install_kind() {
 function run_kind() {
   core.info('run kind')
 
-  fs.writeFileSync('kindConfig.yaml', JSON.stringify(kindConfig))
+  fs.writeFileSync('kindConfig.yaml', kindConfig)
   core.info(call('kind --version'))
   core.info(call('cat kindConfig.yaml'))
   call(`kind create cluster \
