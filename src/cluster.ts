@@ -44,6 +44,12 @@ export async function createCluster(
         kubectl => `${kubectl} apply -f - <<EOF\n${storageManifest}\nEOF`
       )
     )
+    core.info(
+      'storage apply result:\n' +
+      callKubernetesPath(
+        kubectl => `${kubectl} describe databases.ydb.tech`
+      )
+    )
     let lastStorageStatus = getStatus('storage')
     core.info('Check creation process')
 
@@ -107,6 +113,7 @@ function getStatus(statusOf: 'database' | 'storage') {
   const res = callKubernetes(
     `get ${statusOf}s.ydb.tech ${statusOf}-sample -ojsonpath={.status}`
   )
+  core.info(`status: ${JSON.parse(res).state}`)
   return JSON.parse(res).state
 }
 
