@@ -2,12 +2,14 @@ apiVersion: ydb.tech/v1alpha1
 kind: Storage
 metadata:
   name: storage
-  namespace: ydb
 spec:
+  monitoring:
+    enabled: true
+    interval: 3s
   image:
-    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
+    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:23.3.17
   domain: Root
-  nodes: 3
+  nodes: 1
   service:
     grpc:
       tls:
@@ -36,125 +38,83 @@ spec:
                 values:
                   - kind-storage
           topologyKey: "kubernetes.io/hostname"
-  erasure: mirror-3-dc
+  erasure: none
   dataStore: []
   configuration: |+
-    static_erasure: mirror-3-dc
+    static_erasure: none
     host_configs:
       - drive:
           - path: SectorMap:1:1
             type: SSD
-      - drive:
-          - path: SectorMap:2:1
-            type: SSD
-      - drive:
-          - path: SectorMap:3:1
-            type: SSD
         host_config_id: 1
+    grpc_config:
+      port: 2135
     domains_config:
-      security_config:
-        enforce_user_token_requirement: false
-        administration_allowed_sids: 
-          jorres
       domain:
-      - name: Root
-        storage_pool_types:
-        - kind: ssd
-          pool_config:
-            box_id: 1
-            erasure_species: mirror-3-dc
-            kind: ssd
-            pdisk_filter:
-            - property:
-              - type: SSD # device type to match host_configs.drive.type
-            vdisk_kind: Default
+        - name: Root
+          storage_pool_types:
+            - kind: ssd
+              pool_config:
+                box_id: 1
+                erasure_species: none
+                kind: ssd
+                pdisk_filter:
+                  - property:
+                      - type: SSD
+                vdisk_kind: Default
       state_storage:
-      - ring:
-          node: [1, 2, 3]
-          nto_select: 3
-        ssid: 1
-    table_service_config:
-      sql_version: 1
+        - ring:
+            node:
+              - 1
+            nto_select: 1
+          ssid: 1
     actor_system_config:
-      executor:         
-      - name: System    
-        threads: 1
-        type: BASIC
-      - name: User      
-        threads: 1
-        type: BASIC
-      - name: Batch     
-        threads: 1      
-        type: BASIC
-      - name: IO        
-        threads: 1
-        time_per_mailbox_micro_secs: 100
-        type: IO
-      - name: IC        
-        spin_threshold: 10
-        threads: 4      
-        time_per_mailbox_micro_secs: 100
-        type: BASIC
+      executor:
+        - name: System
+          spin_threshold: 0
+          threads: 2
+          type: BASIC
+        - name: User
+          spin_threshold: 0
+          threads: 3
+          type: BASIC
+        - name: Batch
+          spin_threshold: 0
+          threads: 2
+          type: BASIC
+        - name: IO
+          threads: 1
+          time_per_mailbox_micro_secs: 100
+          type: IO
+        - name: IC
+          spin_threshold: 10
+          threads: 1
+          time_per_mailbox_micro_secs: 100
+          type: BASIC
       scheduler:
         progress_threshold: 10000
         resolution: 256
         spin_threshold: 0
-    blob_storage_config:    # configuration of static blobstorage group.
+    blob_storage_config:
       service_set:
         groups:
-        - erasure_species: mirror-3-dc
-          rings:
-          - fail_domains:
-            - vdisk_locations:
-              - node_id: storage-0
-                pdisk_category: SSD
-                path: SectorMap:1:1
-            - vdisk_locations:
-              - node_id: storage-0
-                pdisk_category: SSD
-                path: SectorMap:2:1
-            - vdisk_locations:
-              - node_id: storage-0
-                pdisk_category: SSD
-                path: SectorMap:3:1
-          - fail_domains:
-            - vdisk_locations:
-              - node_id: storage-1
-                pdisk_category: SSD
-                path: SectorMap:1:1
-            - vdisk_locations:
-              - node_id: storage-1
-                pdisk_category: SSD
-                path: SectorMap:2:1
-            - vdisk_locations:
-              - node_id: storage-1
-                pdisk_category: SSD
-                path: SectorMap:3:1
-          - fail_domains:
-            - vdisk_locations:
-              - node_id: storage-2
-                pdisk_category: SSD
-                path: SectorMap:1:1
-            - vdisk_locations:
-              - node_id: storage-2
-                pdisk_category: SSD
-                path: SectorMap:2:1
-            - vdisk_locations:
-              - node_id: storage-2
-                pdisk_category: SSD
-                path: SectorMap:3:1
+          - erasure_species: none
+            rings:
+              - fail_domains:
+                  - vdisk_locations:
+                      - node_id: 1
+                        path: SectorMap:1:1
+                        pdisk_category: SSD
     channel_profile_config:
       profile:
-      - channel:
-        - erasure_species: mirror-3-dc
-          pdisk_category: 0
-          storage_pool_kind: ssd
-        - erasure_species: mirror-3-dc
-          pdisk_category: 0
-          storage_pool_kind: ssd
-        - erasure_species: mirror-3-dc
-          pdisk_category: 0
-          storage_pool_kind: ssd
-        profile_id: 0
-    grpc_config:
-        port: 2135
+        - channel:
+            - erasure_species: none
+              pdisk_category: 0
+              storage_pool_kind: ssd
+            - erasure_species: none
+              pdisk_category: 0
+              storage_pool_kind: ssd
+            - erasure_species: none
+              pdisk_category: 0
+              storage_pool_kind: ssd
+          profile_id: 0

@@ -2,7 +2,6 @@ apiVersion: ydb.tech/v1alpha1
 kind: Database
 metadata:
   name: database
-  namespace: ydb
 spec:
   image:
     name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
