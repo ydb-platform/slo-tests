@@ -168,7 +168,7 @@ function run_kind() {
 
   call(`kind create cluster \
  --image=kindest/node:v1.28.0 \
- --config=-<<EOF\n${kindConfig}\nEOF \
+ --config - <<EOF\n${kindConfig}\nEOF \
  --wait 5m`)
   call('kubectl config use-context kind-kind')
   call('kubectl label --overwrite node kind-worker topology.kubernetes.io/zone=abc1')
