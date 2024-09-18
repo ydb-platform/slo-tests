@@ -96,7 +96,7 @@ async function main(): Promise<void> {
     ])
     core.info(JSON.stringify(
       'storage apply result:\n' +
-      call(`kubectl describe storages.ydb.tech`)
+      call(`kubectl describe databases.ydb.tech`)
     )
     )
     /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
