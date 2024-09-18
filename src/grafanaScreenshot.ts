@@ -4,7 +4,6 @@ import { context } from '@actions/github'
 import { GitHub } from '@actions/github/lib/utils'
 import { callAsync, callKubernetesAsync } from './callExecutables'
 import { writeFile } from 'fs/promises'
-import { link } from 'fs'
 
 const fs = require('fs')
 
@@ -12,9 +11,6 @@ const randomizeInteger = (min: number, max: number): number => {
   return min + Math.floor((max - min + 1) * Math.random());
 };
 
-async function cropImage(photoname: string) {
-
-}
 
 export async function grafanaScreenshotToLog(
   workloadId: string,
@@ -49,9 +45,6 @@ export async function grafanaScreenshotToLog(
 
   await fs.promises.writeFile(`${dir}/${fileName}`, Buffer.from(imageb64, 'base64'))
   await fs.promises.writeFile(`${fileName}`, Buffer.from(imageb64, 'base64'))
-
-  cropImage(`${dir}/${fileName}`)
-  cropImage(`${fileName}`)
 
   return `${fileName}`
 }

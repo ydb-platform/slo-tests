@@ -6,6 +6,9 @@ import { call, callKubernetes, callKubernetesPath, init_kubectlPath } from './ca
 import manifests from './manifests.json'
 import { withTimeout } from './utils/withTimeout'
 import { describe } from 'node:test'
+import { writeFile } from 'fs/promises'
+
+const fs = require('fs')
 
 let databaseManifest = manifests['k8s/ci/database.yaml'].content
 let storageManifest = manifests['k8s/ci/storage.yaml'].content
@@ -166,9 +169,10 @@ function install_kind() {
 function run_kind() {
   core.info('run kind')
 
+  fs.promises.writeFile('kindConfig.yaml', kindConfig)
   call(`kind create cluster \
  --image=kindest/node:v1.28.0 \
- --config - <<EOF\n${kindConfig}\nEOF \
+ --config=kindConfig.yaml \
  --wait 5m`)
   call('kubectl config use-context kind-kind')
   call('kubectl label --overwrite node kind-worker topology.kubernetes.io/zone=abc1')
