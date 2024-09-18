@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { parseArguments } from './parseArguments'
 import { call, callAsync } from './callExecutables'
-import { createCluster, deleteCluster, deploy_minikube, deploy_ydb_operator, deploy_monitoring } from './cluster'
+import { createCluster, deleteCluster, deploy_kind, deploy_ydb_operator, deploy_monitoring } from './cluster'
 import {
   buildWorkload,
   generateDockerPath,
@@ -26,7 +26,7 @@ async function main(): Promise<void> {
   try {
     await create_logs()
 
-    await deploy_minikube()
+    await deploy_kind()
 
     await deploy_monitoring(10)
 

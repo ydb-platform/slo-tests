@@ -71,7 +71,7 @@ export function buildWorkload(
       false,
       workingDir
     )
-    await callAsync(`minikube image load ${dockerImage}`)
+    await callAsync(`kind load docker-image ${dockerImage}`)
   })
 }
 

@@ -15,6 +15,7 @@ let grafanaRenderer = manifests['k8s/ci/grafana-renderer.yaml'].content
 let prometheus = manifests['k8s/ci/prometheus.yaml'].content
 let serviceMonitor = manifests['k8s/ci/serviceMonitor.yaml'].content
 let grafana = manifests['k8s/ci/grafana.yaml'].content
+let kindConfig = manifests['k8s/ci/kind-config.yaml'].content
 
 /**
  * Create cluster with selected version
@@ -108,14 +109,14 @@ function getStatus(statusOf: 'database' | 'storage') {
 
 export function deleteCluster() {
   return logGroup('Delete cluster', () => {
-    core.info('Delete minikube')
+    core.info('Delete kind')
     try {
       core.info(
-        'Minikube delete result:\n' +
-        call('minikube delete')
+        'kind delete result:\n' +
+        call('kind delete')
       )
     } catch (error) {
-      core.info('Error while deleting minikube' + JSON.stringify(error))
+      core.info('Error while deleting kind' + JSON.stringify(error))
     }
   })
 }
@@ -154,20 +155,25 @@ function install_helm() {
   call('sudo rm get_helm.sh')
 }
 
-function install_minikube() {
-  core.info('install minikube')
+function install_kind() {
+  core.info('install kind')
 
-  call('curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64')
-  call('chmod +x minikube')
-  call('mkdir -p /usr/local/bin/')
-  call('sudo install minikube /usr/local/bin/')
-  call('sudo rm minikube')
+  call('[ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64')
+  call('chmod +x ./kind')
+  call('sudo mv ./kind /usr/local/bin/kind')
 }
 
-function run_minikube() {
-  core.info('run minikube')
+function run_kind() {
+  core.info('run kind')
 
-  call('minikube start --memory=max --cpus=max')
+  call(`kind create cluster \
+ --image=kindest/node:v1.28.0 \
+ --config=-<<EOF\n${kindConfig}\nEOF \
+ --wait 5m`)
+  call('kubectl config use-context kind-kind')
+  call('kubectl label --overwrite node kind-worker topology.kubernetes.io/zone=abc1')
+  call('kubectl label --overwrite node kind-worker2 topology.kubernetes.io/zone=abc2')
+  call('kubectl label --overwrite node kind-worker3 topology.kubernetes.io/zone=abc3')
 }
 
 function install_monitoring() {
@@ -197,8 +203,8 @@ function install_docker() {
   call('sudo usermod -aG docker $(whoami)')
 }
 
-export async function deploy_minikube() {
-  return logGroup('Deploy minikube', async () => {
+export async function deploy_kind() {
+  return logGroup('Deploy kind', async () => {
     if (!call('which kubectl')) {
       install_kubectl()
     }
@@ -209,9 +215,9 @@ export async function deploy_minikube() {
       install_docker()
     }
 
-    install_minikube()
+    install_kind()
 
-    run_minikube()
+    run_kind()
 
     init_kubectlPath()
   })
