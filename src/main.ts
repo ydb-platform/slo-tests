@@ -94,10 +94,10 @@ async function main(): Promise<void> {
         })
       )
     ])
-    core.info(
+    core.info(JSON.stringify(
       'storage apply result:\n' +
-      call(`kubectl describe storages.ydb.tech`
-      )
+      call(`kubectl describe storages.ydb.tech`)
+    )
     )
     /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
     const continueRun =
