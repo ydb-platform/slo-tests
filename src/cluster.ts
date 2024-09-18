@@ -169,7 +169,8 @@ function install_kind() {
 function run_kind() {
   core.info('run kind')
 
-  call(`echo - <<EOF\n${kindConfig}\nEOF >> kindConfig.yaml`)
+  call(`touch kindConfig.yaml`)
+  call(`echo - <<EOF\n${kindConfig}\nEOF > kindConfig.yaml`)
   core.info(call('kind --version'))
   core.info(call('cat kindConfig.yaml'))
   call(`kind create cluster \
