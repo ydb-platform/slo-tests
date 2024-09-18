@@ -171,6 +171,7 @@ function run_kind() {
 
   fs.promises.writeFile('kindConfig.yaml', kindConfig)
   core.info(call('kind --version'))
+  core.info(call('cat kindConfig.yaml'))
   call(`kind create cluster \
  --image=kindest/node:v1.28.0 \
  --config=kindConfig.yaml \
