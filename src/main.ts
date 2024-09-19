@@ -79,7 +79,7 @@ async function main(): Promise<void> {
     core.info('Create cluster and build all workloads')
     const builded = workloads.map(() => false)
     const clusterWorkloadRes = await Promise.allSettled([
-      await createCluster(ydbVersion, 15),
+      createCluster(ydbVersion, 15),
       // TODO: create placeholder pods for databases
       // TODO: catch build error and stop cluster creation
       ...workloads.map((wl, idx) =>
