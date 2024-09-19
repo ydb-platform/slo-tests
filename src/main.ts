@@ -95,6 +95,9 @@ async function main(): Promise<void> {
       )
     ])
 
+    core.info(JSON.stringify(call("kubectl describe databases.ydb.tech")))
+    core.info(JSON.stringify(call("kubectl describe storages.ydb.tech")))
+
     /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
     const continueRun =
       clusterWorkloadRes[0].status === 'fulfilled' &&
