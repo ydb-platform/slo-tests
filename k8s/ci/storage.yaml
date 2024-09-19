@@ -44,7 +44,7 @@ spec:
     static_erasure: none
     host_configs:
       - drive:
-          - path: SectorMap:1:1
+          - path: SectorMap:1:64
             type: SSD
         host_config_id: 1
     grpc_config:
@@ -103,7 +103,7 @@ spec:
               - fail_domains:
                   - vdisk_locations:
                       - node_id: 1
-                        path: SectorMap:1:1
+                        path: SectorMap:1:64
                         pdisk_category: SSD
     channel_profile_config:
       profile:

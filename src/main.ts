@@ -94,11 +94,7 @@ async function main(): Promise<void> {
         })
       )
     ])
-    core.info(JSON.stringify(
-      'storage apply result:\n' +
-      call(`kubectl get pods`)
-    )
-    )
+
     /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
     const continueRun =
       clusterWorkloadRes[0].status === 'fulfilled' &&
