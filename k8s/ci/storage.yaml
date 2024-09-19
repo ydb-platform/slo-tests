@@ -7,7 +7,7 @@ spec:
     enabled: true
     interval: 3s
   image:
-    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:23.3.17
+    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
   domain: Root
   nodes: 1
   service:
