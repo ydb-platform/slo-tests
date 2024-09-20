@@ -27,8 +27,8 @@ spec:
       ipFamilies:
         - IPv4
   additionalLabels:
-    ydb-cluster: slo-storage
-    ydb-cluster-monitor: slo-storage
+    ydb-cluster: kind-storage
+    ydb-cluster-monitor: kind-database
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -37,7 +37,7 @@ spec:
               - key: ydb-cluster
                 operator: In
                 values:
-                  - slo-storage
+                  - kind-storage
           topologyKey: "kubernetes.io/hostname"
   erasure: none
   dataStore: []
@@ -45,7 +45,7 @@ spec:
     static_erasure: none
     host_configs:
       - drive:
-          - path: SectorMap:1:6
+          - path: SectorMap:1:64
             type: SSD
         host_config_id: 1
     grpc_config:
@@ -104,7 +104,7 @@ spec:
               - fail_domains:
                   - vdisk_locations:
                       - node_id: 1
-                        path: SectorMap:1:6
+                        path: SectorMap:1:64
                         pdisk_category: SSD
     channel_profile_config:
       profile:

@@ -3,11 +3,8 @@ kind: Database
 metadata:
   name: database
 spec:
-  monitoring:
-    enabled: true
-    interval: 3s
   image:
-    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
+    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:23.3.17
   domain: Root
   nodes: 3
   resources:
@@ -32,8 +29,8 @@ spec:
       ipFamilies:
         - IPv4
   additionalLabels:
-    ydb-cluster: slo-storage
-    ydb-cluster-monitor: slo-storage
+    ydb-cluster: kind-database
+    ydb-cluster-monitor: kind-database
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -42,7 +39,7 @@ spec:
               - key: ydb-cluster
                 operator: In
                 values:
-                  - slo-storage
+                  - kind-database
           topologyKey: "kubernetes.io/hostname"
   storageClusterRef:
     name: storage
