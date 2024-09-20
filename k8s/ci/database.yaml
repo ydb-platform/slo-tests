@@ -29,8 +29,8 @@ spec:
       ipFamilies:
         - IPv4
   additionalLabels:
-    ydb-cluster: kind-database
-    ydb-cluster-monitor: kind-database
+    ydb-cluster: slo-storage
+    ydb-cluster-monitor: slo-storage
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -39,7 +39,7 @@ spec:
               - key: ydb-cluster
                 operator: In
                 values:
-                  - kind-database
+                  - slo-storage
           topologyKey: "kubernetes.io/hostname"
   storageClusterRef:
     name: storage
