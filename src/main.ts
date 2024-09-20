@@ -76,9 +76,6 @@ async function main(): Promise<void> {
 
     //disable_buildkit()
 
-    core.info(JSON.stringify(call("df -h")))
-    core.info(JSON.stringify(call("free -h")))
-
     core.info('Create cluster and build all workloads')
     const builded = workloads.map(() => false)
     const clusterWorkloadRes = await Promise.allSettled([

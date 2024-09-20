@@ -107,6 +107,7 @@ function getStatus(statusOf: 'database' | 'storage') {
   const res = callKubernetes(
     `get ${statusOf}s.ydb.tech ${statusOf} -ojsonpath={.status}`
   )
+  core.info(JSON.stringify(call(`kubectl describe ${statusOf}s.ydb.tech`)))
   return JSON.parse(res).state
 }
 
