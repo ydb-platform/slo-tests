@@ -3,14 +3,17 @@ kind: Database
 metadata:
   name: database
 spec:
+  monitoring:
+    enabled: true
+    interval: 3s
   image:
-    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:23.3.17
+    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
   domain: Root
   nodes: 3
   resources:
     storageUnits:
       - unitKind: ssd
-        count: 2
+        count: 1
   service:
     grpc:
       tls:
