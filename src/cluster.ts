@@ -12,7 +12,7 @@ const fs = require('fs')
 
 let databaseManifest = manifests['k8s/ci/database.yaml'].content
 let storageManifest = manifests['k8s/ci/storage.yaml'].content
-let valuesForYDBOperator = manifests['k8s/ci/ydb-operator.yaml'].content
+let valuesForYDBOperator = manifests['k8s/ci/valuesForYDBOperator.yaml'].content
 let prometheusPushGateway = manifests['k8s/ci/prometheus-pushgateway.yaml'].content
 let grafanaRenderer = manifests['k8s/ci/grafana-renderer.yaml'].content
 let prometheus = manifests['k8s/ci/prometheus.yaml'].content
