@@ -72,6 +72,7 @@ export function buildWorkload(
       workingDir
     )
     await callAsync(`kind load docker-image ${dockerImage}`)
+    await callAsync(`docker rmi ${dockerImage}:latest`)
   })
 }
 

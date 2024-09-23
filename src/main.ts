@@ -78,10 +78,7 @@ async function main(): Promise<void> {
 
     core.info('Create cluster and build all workloads')
     const builded = workloads.map(() => false)
-    const clusterWorkloadRes = await Promise.allSettled([
-      createCluster(ydbVersion, 15),
-      // TODO: create placeholder pods for databases
-      // TODO: catch build error and stop cluster creation
+    await Promise.allSettled([
       ...workloads.map((wl, idx) =>
         buildWorkload(
           wl.id,
@@ -94,9 +91,12 @@ async function main(): Promise<void> {
         })
       )
     ])
-
-    core.info(JSON.stringify(call("kubectl describe databases.ydb.tech")))
-    core.info(JSON.stringify(call("kubectl describe storages.ydb.tech")))
+    call('docker builder prune -f')
+    const clusterWorkloadRes = await Promise.allSettled([
+      createCluster(ydbVersion, 15),
+      // TODO: create placeholder pods for databases
+      // TODO: catch build error and stop cluster creation
+    ])
 
     /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
     const continueRun =
