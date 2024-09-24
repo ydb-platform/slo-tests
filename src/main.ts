@@ -242,6 +242,9 @@ async function main(): Promise<void> {
     }
     core.info(JSON.stringify(call("kubectl describe databases.ydb.tech")))
     core.info(JSON.stringify(call("kubectl describe storages.ydb.tech")))
+    core.info(JSON.stringify(call("kubectl logs database-0")))
+    core.info(JSON.stringify(call("kubectl logs database-1")))
+    core.info(JSON.stringify(call("kubectl logs database-2")))
     deleteCluster()
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
