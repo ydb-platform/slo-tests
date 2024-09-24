@@ -1,4 +1,4 @@
-name: test-local-SLO
+name: test-local-SLO 
 on: 
   workflow_dispatch:
   pull_request:
