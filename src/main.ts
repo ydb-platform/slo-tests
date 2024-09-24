@@ -78,19 +78,19 @@ async function main(): Promise<void> {
 
     core.info('Create cluster and build all workloads')
     const builded = workloads.map(() => false)
-    // await Promise.allSettled([
-    //   ...workloads.map((wl, idx) =>
-    //     buildWorkload(
-    //       wl.id,
-    //       dockerPaths[idx],
-    //       wl.path,
-    //       wl.buildOptions,
-    //       wl.buildContext
-    //     ).then(() => {
-    //       builded[idx] = true
-    //     })
-    //   )
-    // ])
+    await Promise.allSettled([
+      ...workloads.map((wl, idx) =>
+        buildWorkload(
+          wl.id,
+          dockerPaths[idx],
+          wl.path,
+          wl.buildOptions,
+          wl.buildContext
+        ).then(() => {
+          builded[idx] = true
+        })
+      )
+    ])
     call('docker builder prune -f')
     const clusterWorkloadRes = await Promise.allSettled([
       createCluster(ydbVersion, 15),
