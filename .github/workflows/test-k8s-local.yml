@@ -9,7 +9,7 @@ on:
 jobs:
   test-slo:
     concurrency:
-      group: slo-${{ github.ref }}-go
+      group: slo-${{ github.ref }}
 
     runs-on: ubuntu-latest
     name: SLO test
@@ -23,7 +23,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          repository: ydb-platform/ydb-python-sdk@reduce_docker_size
+          repository: ydb-platform/ydb-python-sdk/tree/reduce_docker_size
+          
 
       - name: Run SLO
         uses: ydb-platform/slo-tests@k8s-local
