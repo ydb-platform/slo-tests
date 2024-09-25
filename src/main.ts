@@ -264,7 +264,7 @@ async function main(): Promise<void> {
       }
     }
     call('POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=prometheus" -o jsonpath="{.items[0].metadata.name}")')
-    call('kubectl promdump -p "${POD_NAME}" > "./logs/prom_data.tar.gz"')
+    call('home/runner/.krew/bin/kubectl-promdump -p "${POD_NAME}" > "./logs/prom_data.tar.gz"')
     deleteCluster()
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
