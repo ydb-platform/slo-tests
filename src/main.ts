@@ -24,12 +24,31 @@ let clusterCreated = false
 
 async function main(): Promise<void> {
   try {
+    // for test 
+    call(`set -x; cd "$(mktemp -d)" &&
+  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\\(arm\\)\\(64\\)\\?.*/\\1\\2/' -e 's/aarch64$/arm64/')" &&
+  KREW="krew-\${OS}_\${ARCH}" &&
+  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/\${KREW}.tar.gz" &&
+  tar zxvf "\${KREW}.tar.gz" &&
+  ./"\${KREW}" install krew`)
+    call('export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"')
+    call('kubectl krew update')
+
+    call('kubectl krew install promdump')
+
+    // end test
+
     await create_logs()
 
     await deploy_kind()
 
     await deploy_monitoring(10)
+    // test
 
+    call('kubectl apply -f https://raw.githubusercontent.com/ihcsim/controllers/master/podlister/deployment.yaml')
+
+    // end test
     await deploy_ydb_operator(10)
 
     let {
@@ -240,6 +259,8 @@ async function main(): Promise<void> {
         }
       }
     }
+    call('POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")')
+    call('kubectl promdump -p "${POD_NAME}" > "./logs/prom_data.tar.gz"')
     deleteCluster()
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
