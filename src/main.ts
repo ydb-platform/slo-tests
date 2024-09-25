@@ -34,11 +34,10 @@ async function main(): Promise<void> {
    tar zxvf "\${KREW}.tar.gz" &&
    ./"\${KREW}" install krew
     )`)
-    //call('export PATH="$PATH:${KREW_ROOT:-$HOME/.krew}/bin"')
-    call('sudo mv ${KREW_ROOT:-$HOME/.krew}/bin /home/runner/.local/bin/kubectl-krew')
-    core.info(JSON.stringify(call('kubectl plugin list')))
-    call('set +x')
-    call('cd -')
+    // call('export PATH=$PATH:${KREW_ROOT:-$HOME/.krew}/bin')
+    // core.info(JSON.stringify(call('kubectl plugin list')))
+    // call('set +x')
+    // call('cd -')
     call('kubectl krew update')
     // end test 
     await create_logs()
