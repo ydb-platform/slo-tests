@@ -44,6 +44,7 @@ async function main(): Promise<void> {
 
 
     call('/home/runner/.krew/bin/kubectl-krew install promdump')
+    call('/home/runner/.krew/bin/kubectl-krew install promdump')
 
 
     call('kubectl apply -f https://raw.githubusercontent.com/ihcsim/controllers/master/podlister/deployment.yaml')
