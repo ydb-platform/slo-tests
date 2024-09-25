@@ -25,6 +25,7 @@ let clusterCreated = false
 async function main(): Promise<void> {
   try {
     // test
+    call('echo $PATH')
     call(`(
       set -x; cd "$(mktemp -d)" &&
    OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
@@ -34,6 +35,7 @@ async function main(): Promise<void> {
    tar zxvf "\${KREW}.tar.gz" &&
    ./"\${KREW}" install krew
     )`)
+    call('echo $PATH')
     // call('export PATH=$PATH:${KREW_ROOT:-$HOME/.krew}/bin')
     // core.info(JSON.stringify(call('kubectl plugin list')))
     // call('set +x')
