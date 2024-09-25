@@ -35,6 +35,7 @@ async function main(): Promise<void> {
    ./"\${KREW}" install krew
     )`)
     //call('export PATH="$PATH:${KREW_ROOT:-$HOME/.krew}/bin"')
+    call('sudo mv ${KREW_ROOT:-$HOME/.krew}/bin /usr/local/bin/kubectl-krew')
     core.info(JSON.stringify(call('kubectl plugin list')))
     call('set +x')
     call('cd -')
