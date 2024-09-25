@@ -44,6 +44,7 @@ async function main(): Promise<void> {
     call('kubectl krew update')
 
     call('kubectl krew install promdump')
+    call('cd -')
 
     // end test
     await deploy_ydb_operator(10)
