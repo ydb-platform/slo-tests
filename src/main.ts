@@ -35,8 +35,9 @@ async function main(): Promise<void> {
    ./"\${KREW}" install krew
     )`)
     //call('export PATH=$PATH:${KREW_ROOT:-$HOME/.krew}/bin')
-    call('echo ${KREW_ROOT:-$(pwd)/.krew}/bin >> $GITHUB_PATH')
-    // core.info(JSON.stringify(call('kubectl plugin list')))
+    //const krew = '/.krew/bin/kubectl-krew'
+    core.info(JSON.stringify(call('ls -la')))
+    core.info(JSON.stringify(call('pwd')))
     // call('set +x')
     // call('cd -')
     call('kubectl-krew update')
