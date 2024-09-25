@@ -35,11 +35,11 @@ async function main(): Promise<void> {
    ./"\${KREW}" install krew
     )`)
     //call('export PATH=$PATH:${KREW_ROOT:-$HOME/.krew}/bin')
-    call('echo ${KREW_ROOT:-$HOME/.krew}/bin >> $GITHUB_PATH')
+    call('echo ${KREW_ROOT:-$(pwd)/.krew}/bin >> $GITHUB_PATH')
     // core.info(JSON.stringify(call('kubectl plugin list')))
     // call('set +x')
     // call('cd -')
-    call('kubectl krew update')
+    call('kubectl-krew update')
     // end test 
     await create_logs()
 
