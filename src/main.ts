@@ -39,7 +39,8 @@ async function main(): Promise<void> {
    ./"\${KREW}" install krew
     )`)
     call('export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"')
-    call('kubectl plugin list')
+    call('set +x')
+    call('kubectl get pods')
     call('kubectl krew update')
 
     call('kubectl krew install promdump')
