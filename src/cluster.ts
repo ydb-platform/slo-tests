@@ -112,10 +112,10 @@ function getStatus(statusOf: 'database' | 'storage') {
 
 export function deleteCluster() {
   return logGroup('Delete cluster', () => {
-    core.info('Delete kind')
+    core.info('Delete cluster')
     try {
       core.info(
-        'kind delete result:\n' +
+        'Cluster delete result:\n' +
         call('kind delete')
       )
     } catch (error) {
