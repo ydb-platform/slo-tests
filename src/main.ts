@@ -26,20 +26,17 @@ async function main(): Promise<void> {
   try {
     await create_logs()
 
-    await deploy_kind()
-
-    await deploy_monitoring(10)
     // test
 
     call('kubectl apply -f https://raw.githubusercontent.com/ihcsim/controllers/master/podlister/deployment.yaml')
 
     call(`set -x; cd "$(mktemp -d)" &&
-  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
-  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\\(arm\\)\\(64\\)\\?.*/\\1\\2/' -e 's/aarch64$/arm64/')" &&
-  KREW="krew-\${OS}_\${ARCH}" &&
-  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/\${KREW}.tar.gz" &&
-  tar zxvf "\${KREW}.tar.gz" &&
-  ./"\${KREW}" install krew`)
+      OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+      ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\\(arm\\)\\(64\\)\\?.*/\\1\\2/' -e 's/aarch64$/arm64/')" &&
+      KREW="krew-\${OS}_\${ARCH}" &&
+      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/\${KREW}.tar.gz" &&
+      tar zxvf "\${KREW}.tar.gz" &&
+      ./"\${KREW}" install krew`)
     call('export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"')
     call('kubectl krew update')
 
@@ -47,6 +44,11 @@ async function main(): Promise<void> {
     call('cd -')
 
     // end test
+
+    await deploy_kind()
+
+    await deploy_monitoring(10)
+
     await deploy_ydb_operator(10)
 
     let {
