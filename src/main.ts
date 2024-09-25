@@ -36,11 +36,11 @@ async function main(): Promise<void> {
     )`)
     //call('export PATH=$PATH:${KREW_ROOT:-$HOME/.krew}/bin')
     //const krew = '/.krew/bin/kubectl-krew'
-    core.info(JSON.stringify(call('ls -la')))
+    core.info(JSON.stringify(call('echo ${KREW}')))
     core.info(JSON.stringify(call('pwd')))
     // call('set +x')
     // call('cd -')
-    call('kubectl-krew update')
+    call('/home/runner/work/slo-tests/slo-tests/.krew/bin/kubectl-krew update')
     // end test 
     await create_logs()
 
