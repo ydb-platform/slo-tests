@@ -34,8 +34,8 @@ async function main(): Promise<void> {
    tar zxvf "\${KREW}.tar.gz" &&
    ./"\${KREW}" install krew
     )`)
-    call('export PATH="123"')
-    call('echo $PATH')
+    //call('export PATH=$PATH:${KREW_ROOT:-$HOME/.krew}/bin')
+    call('echo ${KREW_ROOT:-$HOME/.krew}/bin >> $GITHUB_PATH')
     // core.info(JSON.stringify(call('kubectl plugin list')))
     // call('set +x')
     // call('cd -')
