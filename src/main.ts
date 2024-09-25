@@ -38,7 +38,7 @@ async function main(): Promise<void> {
     // core.info(JSON.stringify(call('kubectl plugin list')))
     // call('set +x')
     // call('cd -')
-    call('kubectl krew update')
+    call('kubectl plugin list')
     // end test 
     await create_logs()
 
