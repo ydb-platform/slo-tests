@@ -50,7 +50,7 @@ spec:
   serviceMonitorSelector:
     matchLabels:
       ydb-cluster-monitor: slo-storage
-  enableAdminAPI: false
+  enableAdminAPI: true
   replicas: 1
   securityContext:
     runAsUser: 1000
