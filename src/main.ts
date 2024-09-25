@@ -262,7 +262,7 @@ async function main(): Promise<void> {
         }
       }
     }
-    call('POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")')
+    call('POD_NAME=$(get pods -l "app.kubernetes.io/name=prometheus" -o jsonpath="{.items[0].metadata.name}")')
     call('kubectl promdump -p "${POD_NAME}" > "./logs/prom_data.tar.gz"')
     deleteCluster()
   } catch (error) {
