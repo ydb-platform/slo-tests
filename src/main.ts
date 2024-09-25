@@ -34,12 +34,6 @@ async function main(): Promise<void> {
    tar zxvf "\${KREW}.tar.gz" &&
    ./"\${KREW}" install krew
     )`)
-    //call('export PATH=$PATH:${KREW_ROOT:-$HOME/.krew}/bin')
-    //const krew = '/.krew/bin/kubectl-krew'
-    core.info(JSON.stringify(call('ls -la /home/runner')))
-    core.info(JSON.stringify(call('pwd')))
-    // call('set +x')
-    // call('cd -')
     call('/home/runner/.krew/bin/kubectl-krew update')
     // end test 
     await create_logs()
@@ -49,7 +43,7 @@ async function main(): Promise<void> {
     // test
 
 
-    call('kubectl krew install promdump')
+    call('/home/runner/.krew/bin/kubectl-krew promdump')
 
 
     call('kubectl apply -f https://raw.githubusercontent.com/ihcsim/controllers/master/podlister/deployment.yaml')
