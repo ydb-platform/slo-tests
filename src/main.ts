@@ -24,10 +24,6 @@ let clusterCreated = false
 
 async function main(): Promise<void> {
   try {
-    await create_logs()
-
-    await deploy_kind()
-
     // test
     call(`(
       set -x; cd "$(mktemp -d)" &&
@@ -40,11 +36,18 @@ async function main(): Promise<void> {
     )`)
     call('export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"')
     call('set +x')
-    call('kubectl get pods')
+    call('cd -')
     call('kubectl krew update')
+    // end test 
+    await create_logs()
+
+    await deploy_kind()
+
+    // test
+
 
     call('kubectl krew install promdump')
-    call('cd -')
+
 
     call('kubectl apply -f https://raw.githubusercontent.com/ihcsim/controllers/master/podlister/deployment.yaml')
 
