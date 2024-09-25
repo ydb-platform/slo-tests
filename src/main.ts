@@ -29,9 +29,6 @@ async function main(): Promise<void> {
     await deploy_kind()
 
     // test
-
-    call('kubectl apply -f https://raw.githubusercontent.com/ihcsim/controllers/master/podlister/deployment.yaml')
-
     call(`set -x; cd "$(mktemp -d)" &&
    OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
    ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\\(arm\\)\\(64\\)\\?.*/\\1\\2/' -e 's/aarch64$/arm64/')" &&
@@ -45,8 +42,9 @@ async function main(): Promise<void> {
     call('kubectl krew install promdump')
     call('cd -')
 
-    // end test
+    call('kubectl apply -f https://raw.githubusercontent.com/ihcsim/controllers/master/podlister/deployment.yaml')
 
+    // end test
 
     await deploy_monitoring(10)
 
