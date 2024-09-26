@@ -25,29 +25,34 @@ let clusterCreated = false
 async function main(): Promise<void> {
   try {
     // test
-    call(`(
-      set -x; cd "$(mktemp -d)" &&
-   OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
-   ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\\(arm\\)\\(64\\)\\?.*/\\1\\2/' -e 's/aarch64$/arm64/')" &&
-   KREW="krew-\${OS}_\${ARCH}" &&
-   curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/\${KREW}.tar.gz" &&
-   tar zxvf "\${KREW}.tar.gz" &&
-   ./"\${KREW}" install krew
-    )`)
-    call('/home/runner/.krew/bin/kubectl-krew update')
+    //   call(`(
+    //     set -x; cd "$(mktemp -d)" &&
+    //  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+    //  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\\(arm\\)\\(64\\)\\?.*/\\1\\2/' -e 's/aarch64$/arm64/')" &&
+    //  KREW="krew-\${OS}_\${ARCH}" &&
+    //  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/\${KREW}.tar.gz" &&
+    //  tar zxvf "\${KREW}.tar.gz" &&
+    //  ./"\${KREW}" install krew
+    //   )`)
+    //   call('/home/runner/.krew/bin/kubectl-krew update')
     // end test 
     await create_logs()
 
-    await deploy_kind()
+    //await deploy_kind()
 
     // test
 
+    call('curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64')
+    call('chmod +x minikube')
+    call('mkdir -p /usr/local/bin/')
+    call('install minikube /usr/local/bin/')
+    call('minikube start --memory=max --cpus=max')
 
-    call('/home/runner/.krew/bin/kubectl-krew install promdump')
-    call('/home/runner/.krew/bin/kubectl-krew install promdump')
+    // call('/home/runner/.krew/bin/kubectl-krew install promdump')
+    // call('/home/runner/.krew/bin/kubectl-krew install promdump')
 
 
-    call('kubectl apply -f https://raw.githubusercontent.com/ihcsim/controllers/master/podlister/deployment.yaml')
+    // call('kubectl apply -f https://raw.githubusercontent.com/ihcsim/controllers/master/podlister/deployment.yaml')
 
     // end test
 
