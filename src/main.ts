@@ -263,14 +263,14 @@ async function main(): Promise<void> {
         }
       }
     }
-    call('kubectl port-forward svc/prometheus-operator 8080 &')
-    const snapshot = JSON.parse(call('curl -XPOST http://localhost:8080/api/v2/admin/tsdb/snapshot'))
-    call('POD_OPERATOR_NAME=$(kubectl get pods -l "app.kubernetes.io/name=prometheus-operator" -o jsonpath="{.items[0].metadata.name}")')
-    call(`kubectl cp 
-  $POD_OPERATOR_NAME:/prometheus/snapshots/${snapshot["name"]} 
-  -c prometheus ./logs/`)
-    call('POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=prometheus" -o jsonpath="{.items[0].metadata.name}")')
-    call('/home/runner/.krew/bin/kubectl-promdump -p "$POD_NAME" > "./logs/prom_data.tar.gz"')
+    //   call('kubectl port-forward svc/prometheus-operator 8080 &')
+    //   const snapshot = JSON.parse(call('curl -XPOST http://localhost:8080/api/v2/admin/tsdb/snapshot'))
+    //   call('POD_OPERATOR_NAME=$(kubectl get pods -l "app.kubernetes.io/name=prometheus-operator" -o jsonpath="{.items[0].metadata.name}")')
+    //   call(`kubectl cp 
+    // $POD_OPERATOR_NAME:/prometheus/snapshots/${snapshot["name"]} 
+    // -c prometheus ./logs/`)
+    //   call('POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=prometheus" -o jsonpath="{.items[0].metadata.name}")')
+    //   call('/home/runner/.krew/bin/kubectl-promdump -p "$POD_NAME" > "./logs/prom_data.tar.gz"')
     deleteCluster()
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
