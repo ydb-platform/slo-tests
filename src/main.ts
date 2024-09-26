@@ -260,10 +260,8 @@ async function main(): Promise<void> {
       }
     }
     //   call('kubectl port-forward svc/prometheus-operator 8080 &')
-    //   const snapshot = JSON.parse(call('curl -XPOST http://localhost:8080/api/v2/admin/tsdb/snapshot'))
-    // core.info(JSON.stringify(call(`kubectl get pod ${servicesPods["grafana"]} -o yaml | grep image`)))
-    // call(`kubectl exec pod/${servicesPods['prometheusOperator']} -- /bin/sh -c 'prometheus snapshot create /prometheus/snapshot'`)
-    // call(`kubectl cp ${servicesPods['prometheusOperator']}:/prometheus/snapshot} -c prometheus ./logs/`)
+    call(`kubectl exec prometheus-prometheus-0 -- tar czf /prometheus/prometheus.tar.gz -C /prometheus .`)
+    call(`kubectl cp default/prometheus-prometheus-0:/prometheus/prometheus.tar.gz ./logs/prometheus.tar.gz`)
     //   call('POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=prometheus" -o jsonpath="{.items[0].metadata.name}")')
     //   call('/home/runner/.krew/bin/kubectl-promdump -p "$POD_NAME" > "./logs/prom_data.tar.gz"')
     deleteCluster()
