@@ -25,8 +25,8 @@ env:
   GF_LOG_FILTERS: rendering:debug
 
 # need to downgrade to take screenshots of dashboard, not only of panel
-# image:
-#   tag: 7.5.15
+image:
+  tag: 9.5.1
 
 persistence:
   enabled: false
