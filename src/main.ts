@@ -101,7 +101,8 @@ async function main(): Promise<void> {
 
     core.info('Create cluster and build all workloads')
     const builded = workloads.map(() => false)
-    await Promise.allSettled([
+    const clusterWorkloadRes = await Promise.allSettled([
+      createCluster(ydbVersion, 15),
       ...workloads.map((wl, idx) =>
         buildWorkload(
           wl.id,
@@ -115,11 +116,6 @@ async function main(): Promise<void> {
       )
     ])
     call('docker builder prune -f')
-    const clusterWorkloadRes = await Promise.allSettled([
-      createCluster(ydbVersion, 15),
-      // TODO: create placeholder pods for databases
-      // TODO: catch build error and stop cluster creation
-    ])
 
     /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
     const continueRun =
