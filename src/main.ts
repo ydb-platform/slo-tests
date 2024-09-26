@@ -46,8 +46,8 @@ async function main(): Promise<void> {
     call('chmod +x minikube')
     call('mkdir -p /usr/local/bin/')
     call('install minikube /usr/local/bin/')
-    call('minikube start --memory=max --cpus=max')
-
+    await callAsync('minikube start --memory=max --cpus=max')
+    call('sleep 10')
     // call('/home/runner/.krew/bin/kubectl-krew install promdump')
     // call('/home/runner/.krew/bin/kubectl-krew install promdump')
 
