@@ -34,10 +34,10 @@ export function parseArguments() {
     const githubToken: string = core.getInput('GITHUB_TOKEN')
     const grafanaDashboard = core.getInput('grafana_dashboard') || '7CzMl5t4k'
     const grafanaDashboardWidth = Number(
-      core.getInput('grafana_dashboard_width') || '1300'
+      core.getInput('grafana_dashboard_width') || '1500'
     )
     const grafanaDashboardHeight = Number(
-      core.getInput('grafana_dashboard_height') || '1200'
+      core.getInput('grafana_dashboard_height') || '1700'
     )
 
     let ydbVersion = core.getInput('ydb_version')
