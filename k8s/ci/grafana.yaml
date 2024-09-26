@@ -26,7 +26,7 @@ env:
 
 # need to downgrade to take screenshots of dashboard, not only of panel
 image:
-  tag: 9.5.1
+  tag: 7.5.15
 
 persistence:
   enabled: false
