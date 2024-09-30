@@ -24,32 +24,10 @@ let clusterCreated = false
 
 async function main(): Promise<void> {
   try {
-    // test
-    //   call(`(
-    //     set -x; cd "$(mktemp -d)" &&
-    //  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
-    //  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\\(arm\\)\\(64\\)\\?.*/\\1\\2/' -e 's/aarch64$/arm64/')" &&
-    //  KREW="krew-\${OS}_\${ARCH}" &&
-    //  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/\${KREW}.tar.gz" &&
-    //  tar zxvf "\${KREW}.tar.gz" &&
-    //  ./"\${KREW}" install krew
-    //   )`)
-    //   call('/home/runner/.krew/bin/kubectl-krew update')
-    // end test 
+
     await create_logs()
 
     await deploy_kind()
-
-    // // test
-
-
-    // call('/home/runner/.krew/bin/kubectl-krew install promdump')
-    // call('/home/runner/.krew/bin/kubectl-krew install promdump')
-
-
-    // call('kubectl apply -f https://raw.githubusercontent.com/ihcsim/controllers/master/podlister/deployment.yaml')
-
-    // end test
 
     await deploy_monitoring(10)
 
@@ -259,11 +237,6 @@ async function main(): Promise<void> {
         }
       }
     }
-    //   call('kubectl port-forward svc/prometheus-operator 8080 &')
-    call(`kubectl exec prometheus-prometheus-0 -- tar czf /prometheus/prometheus.tar.gz -C /prometheus .`)
-    call(`kubectl cp default/prometheus-prometheus-0:/prometheus/prometheus.tar.gz ./logs/prometheus.tar.gz`)
-    //   call('POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=prometheus" -o jsonpath="{.items[0].metadata.name}")')
-    //   call('/home/runner/.krew/bin/kubectl-promdump -p "$POD_NAME" > "./logs/prom_data.tar.gz"')
     deleteCluster()
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
