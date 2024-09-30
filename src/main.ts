@@ -237,6 +237,7 @@ async function main(): Promise<void> {
         }
       }
     }
+    call(`kubectl logs pod/${servicesPods['grafana']} > ./logs/grafana.log`)
     deleteCluster()
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)

@@ -174,8 +174,8 @@ function run_kind() {
  --image=kindest/node:v1.28.0 \
  --config=kindConfig.yaml \
  --wait 5m`)
+  core.info(JSON.stringify(call('kubectl config current-context')))
   call('kubectl config use-context kind-kind')
-
 }
 
 function install_monitoring() {
