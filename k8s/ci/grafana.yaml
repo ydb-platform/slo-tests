@@ -394,7 +394,7 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "",
+                  "expr": "latency{jobName=\"read\", status=\"ok\"} > 0",
                   "legendFormat": "{{sdk}}-{{sdkVersion}}-p{{quantile}}",
                   "range": true,
                   "refId": "A"
