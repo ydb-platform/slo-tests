@@ -15,6 +15,10 @@ datasources:
 adminUser: admin
 adminPassword: passw0rD
 
+log:
+  mode: console
+  level: debug
+
 # Use an existing secret for the admin user.
 admin: {}
 
