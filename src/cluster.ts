@@ -174,6 +174,11 @@ function run_kind() {
  --image=kindest/node:v1.28.0 \
  --config=kindConfig.yaml \
  --wait 5m`)
+  call('kubectl config use-context kind-kind')
+  call('kubectl label --overwrite node kind-worker topology.kubernetes.io/zone=abc1')
+  call('kubectl label --overwrite node kind-worker2 topology.kubernetes.io/zone=abc2')
+  call('kubectl label --overwrite node kind-worker3 topology.kubernetes.io/zone=abc3')
+  call('kubectl label --overwrite node kind-worker4 topology.kubernetes.io/zone=abc4')
 }
 
 function install_monitoring() {
