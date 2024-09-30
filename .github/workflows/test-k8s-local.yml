@@ -24,7 +24,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ydb-platform/ydb-python-sdk
-          ref: reduce_docker_size
           
 
       - name: Run SLO
