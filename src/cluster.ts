@@ -27,7 +27,7 @@ let kindConfig = manifests['k8s/ci/kind-config.yaml'].content
  * @param checkPeriod update period in seconds
  */
 export async function createCluster(
-  version: string = '23.1.19',
+  version: string = '24.1',
   timeout: number,
   checkPeriod: number = 10
 ) {
