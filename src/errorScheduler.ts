@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import {callKubernetes, callKubernetesAsync} from './callExecutables'
+import { callKubernetes, callKubernetesAsync } from './callExecutables'
 
 let grafanaPod: string | null = null
 
@@ -10,7 +10,7 @@ export async function errorScheduler(
   // get database target's IP
   const targetIP = (
     await callKubernetesAsync(
-      `get pods database-sample-0 -o=jsonpath='{.status.podIP}'`
+      `get pods database-0 -o=jsonpath='{.status.podIP}'`
     )
   ).split('\n')[0]
   core.info(`Target of the error scheduler (database-sample-0) IP: ${targetIP}`)
@@ -36,8 +36,7 @@ export async function errorScheduler(
   })
 
   const freezeCmd = (freeze: '1' | '0') =>
-    `run -it --image=busybox --rm tablet-${
-      freeze === '0' ? 'un' : ''
+    `run -it --image=busybox --rm tablet-${freeze === '0' ? 'un' : ''
     }freezer --restart=Never --` +
     ` sh -c "wget -q -O- '${targetIP}:8765/tablets/app?` +
     `TabletID=72057594037968897&node=1&page=SetFreeze&freeze=${freeze}' "`
