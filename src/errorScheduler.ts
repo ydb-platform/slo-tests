@@ -13,7 +13,7 @@ export async function errorScheduler(
       `get pods database-0 -o=jsonpath='{.status.podIP}'`
     )
   ).split('\n')[0]
-  core.info(`Target of the error scheduler (database-sample-0) IP: ${targetIP}`)
+  core.info(`Target of the error scheduler (database-0) IP: ${targetIP}`)
 
   // get grafana pod name
   grafanaPod = grafanaPodName
@@ -50,21 +50,21 @@ export async function errorScheduler(
   // delete pod
   await createError(
     'Delete database pod',
-    `delete pod database-sample-1`,
+    `delete pod database-1`,
     timeBetweenS
   )
 
   // force delete pod
   await createError(
     'Force delete database pod',
-    `delete pod database-sample-1 --force=true --grace-period=0`,
+    `delete pod database-1 --force=true --grace-period=0`,
     timeBetweenS
   )
 
   // kill from inside
   await createError(
     'Kill database from inside',
-    `exec -it database-sample-0 -- /bin/bash -c "kill -2 1 && echo 'process killed'"`,
+    `exec -it database-0 -- /bin/bash -c "kill -2 1 && echo 'process killed'"`,
     timeBetweenS
   )
   // TODO: add process sleep
