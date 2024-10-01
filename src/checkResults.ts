@@ -5,6 +5,9 @@ import { GitHub } from '@actions/github/lib/utils'
 import { callAsync, callKubernetesPathAsync } from './callExecutables'
 import { retry } from './utils/retry'
 import { json } from 'stream/consumers'
+import {
+  RestEndpointMethodTypes
+} from "@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types";
 
 export interface IGrafanaQuery {
   refId: string
@@ -263,7 +266,7 @@ export async function checkResults(
           : checks[i][1] === 'notfound'
             ? 'neutral'
             : 'success'
-      const checkParams = {
+      const checkParams: RestEndpointMethodTypes["checks"]["create"]["parameters"] = {
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         name: `slo-check-${i}`,
