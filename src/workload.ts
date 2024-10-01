@@ -124,8 +124,6 @@ export function runWorkload(
             )
           )
 
-          //core.info(JSON.stringify(callAsync(`kubectl describe job ${options.id}`)))
-
           core.debug('Workload status check: ' + JSON.stringify(status))
           if (status.failed) {
             const msg = `Workload ${options.id} ${command} failed`
