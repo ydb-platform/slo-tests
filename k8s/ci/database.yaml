@@ -4,8 +4,7 @@ metadata:
   name: database
 spec:
   monitoring:
-    enabled: true
-    interval: 3s
+    enabled: false
   image:
     name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
   domain: Root
