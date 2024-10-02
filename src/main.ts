@@ -157,7 +157,7 @@ async function main(): Promise<void> {
                 `--write-rps ${writeRps} --prom-pgw http://prometheus-pushgateway:9091`
             })
           ),
-          errorScheduler(servicesPods.grafana, timeBetweenPhases)
+          //errorScheduler(servicesPods.grafana, timeBetweenPhases)
         ])
 
         core.debug('run results: ' + JSON.stringify(runResult))
@@ -254,7 +254,7 @@ async function main(): Promise<void> {
 
     callAsync('timeout 60 kubectl port-forward prometheus-prometheus-0 9090')
     call('sleep 5s')
-    call('curl -s  https://localhost:9090/api/v1/label/__name__/values | jq -r ".data[]" | sort > ./logs/prometheusLabelsNames.log')
+    call('curl -s  https://localhost:9090/api/v1/label/__name__/values > ./logs/prometheusLabelsNames.log')
 
     deleteCluster()
   } catch (error) {
