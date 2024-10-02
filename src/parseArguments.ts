@@ -59,15 +59,15 @@ export function parseArguments() {
       core.info(`Use YDB docker version = '${ydbVersion}'`)
     }
 
-    let read_rps = '1000'
-    let write_rps = '50'
+    let readRps = '1000'
+    let writeRps = '50'
 
     if (Number(core.getInput('READ_RPS')) > 0) {
-      read_rps = core.getInput('READ_RPS')
+      readRps = core.getInput('READ_RPS')
     }
 
     if (Number(core.getInput('WRITE_RPS')) > 0) {
-      write_rps = core.getInput('WRITE_RPS')
+      writeRps = core.getInput('WRITE_RPS')
     }
 
     return {
@@ -79,8 +79,8 @@ export function parseArguments() {
       grafanaDashboard,
       grafanaDashboardWidth,
       grafanaDashboardHeight,
-      read_rps,
-      write_rps
+      readRps,
+      writeRps
     }
   })
 }
