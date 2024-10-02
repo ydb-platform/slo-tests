@@ -116,7 +116,7 @@ export function deleteCluster() {
     try {
       core.info(
         'Cluster delete result:\n' +
-        call('kind delete')
+        call('kind delete cluster')
       )
     } catch (error) {
       core.info('Error while deleting kind' + JSON.stringify(error))
