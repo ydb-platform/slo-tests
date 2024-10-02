@@ -242,6 +242,16 @@ async function main(): Promise<void> {
       }
     }
     call(`kubectl logs pod/${servicesPods['grafana']} > ./logs/grafana.log`)
+    call(`kubectl logs pod/${servicesPods['grafanaRenderer']} > ./logs/grafanaRenderer.log`)
+    call(`kubectl logs pod/${servicesPods['prometheus']} > ./logs/prometheus.log`)
+    call(`kubectl logs pod/${servicesPods['prometheusOperator']} > ./logs/prometheusOperator.log`)
+    call(`kubectl logs pod/${servicesPods['prometheusPushgateway']} > ./logs/prometheusPushgateway.log`)
+    call(`kubectl logs pod/${servicesPods['ydbOperator']} > ./logs/ydbOperator.log`)
+    call(`kubectl logs pod/database-0 > ./logs/database-0.log`)
+    call(`kubectl logs pod/database-1 > ./logs/database-1.log`)
+    call(`kubectl logs pod/database-2 > ./logs/database-2.log`)
+    call(`kubectl logs pod/storage-0 > ./logs/storage-0.log`)
+
     deleteCluster()
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
