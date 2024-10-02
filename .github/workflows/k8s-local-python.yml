@@ -1,6 +1,17 @@
 name: test-k8s-local-python
 on: 
   workflow_dispatch:
+    inputs:
+      read-rps:
+        description: Required Read RPS
+        required: true
+        type: string
+        default: '1000'
+      write-rps:
+        description: Required Write RPS
+        required: true
+        type: string
+        default: '50'
   pull_request:
     branches:
       - 'k8s-local'
@@ -32,6 +43,8 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           grafana_dashboard: ${{ vars.SLO_GRAFANA_DASHBOARD }}
+          READ_RPS: ${{ github.event.inputs.read-rps }}
+          WRITE_RPS: ${{ github.event.inputs.write-rps }}
           ydb_version: 'newest'
           timeBetweenPhases: 30
           shutdownTime: 30
