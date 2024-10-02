@@ -34,6 +34,8 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           grafana_dashboard: ${{ vars.SLO_GRAFANA_DASHBOARD }}
+          READ_RPS: ${{ github.event.inputs.read-rps }}
+          WRITE_RPS: ${{ github.event.inputs.write-rps }}
           ydb_version: 'newest'
           timeBetweenPhases: 30
           shutdownTime: 30
