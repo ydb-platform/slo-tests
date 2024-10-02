@@ -178,7 +178,6 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "rate(oks[$__rate_interval]) > 0",
                   "hide": false,
                   "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} OK",
                   "range": true,
@@ -190,7 +189,6 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "rate(not_oks[$__rate_interval]) > 0",
                   "hide": false,
                   "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} not OK",
                   "range": true,
@@ -286,7 +284,6 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "histogram_quantile(1, rate(attempts_bucket[$__rate_interval]))",
                   "hide": false,
                   "legendFormat": "{{sdk}}-{{sdkVersion}} {{jobName}}-{{status}}",
                   "range": true,
@@ -394,7 +391,6 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "latency{jobName=\"read\", status=\"ok\"} > 0",
                   "legendFormat": "{{sdk}}-{{sdkVersion}}-p{{quantile}}",
                   "range": true,
                   "refId": "A"
@@ -486,7 +482,6 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "latency{jobName=\"write\", status=\"ok\"} > 0",
                   "legendFormat": "{{sdk}}-{{sdkVersion}}-p{{quantile}}",
                   "range": true,
                   "refId": "A"
@@ -578,7 +573,6 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "latency{jobName=\"read\", status=\"err\"} > 0",
                   "legendFormat": "{{sdk}}-{{sdkVersion}}-p{{quantile}}",
                   "range": true,
                   "refId": "A"
@@ -670,7 +664,6 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "latency{jobName=\"write\", status=\"err\"} > 0",
                   "legendFormat": "{{sdk}}-{{sdkVersion}}-p{{quantile}}",
                   "range": true,
                   "refId": "A"
