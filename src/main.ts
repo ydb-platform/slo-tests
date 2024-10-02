@@ -253,7 +253,7 @@ async function main(): Promise<void> {
     call(`kubectl logs pod/storage-0 > ./logs/storage-0.log`)
 
     const targetIP = (call(`kubectl get pods prometheus-prometheus-0 -o=jsonpath='{.status.podIP}'`)).split('\n')[0]
-    call(`kubectl exec -it ${servicesPods['grafana']} -- /bin/bash -c "curl -s  http://${targetIP}:9090/api/v1/label/__name__/values | jq -r ".data[] | sort" > ./logs/prometheusLabelsNames.log`)
+    call(`kubectl exec -it ${servicesPods['grafana']} -- /bin/bash -c "curl -s  http://${targetIP}:9090/api/v1/label/__name__/values | jq -r ".data[]" | sort > ./logs/prometheusLabelsNames.log`)
 
     deleteCluster()
   } catch (error) {
