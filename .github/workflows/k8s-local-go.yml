@@ -1,6 +1,17 @@
 name: k8s-local-go
 on: 
   workflow_dispatch:
+    inputs:
+      read-rps:
+        description: Required Read RPS
+        required: true
+        type: string
+        default: '1000'
+      write-rps:
+        description: Required Write RPS
+        required: true
+        type: string
+        default: '50'
   pull_request:
     branches:
       - 'k8s-local'
@@ -30,6 +41,8 @@ jobs:
         continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          READ_RPS: ${{ github.event.inputs.read-rps }}
+          WRITE_RPS: ${{ github.event.inputs.write-rps }}
           grafana_dashboard: ${{ vars.SLO_GRAFANA_DASHBOARD }}
           ydb_version: 'newest'
           timeBetweenPhases: 30
