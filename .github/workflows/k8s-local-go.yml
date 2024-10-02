@@ -1,0 +1,59 @@
+name: test-k8s-local-go
+on: 
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - 'k8s-local'
+
+jobs:
+  test-slo:
+    concurrency:
+      group: slo-${{ github.ref }}
+
+    runs-on: ubuntu-latest
+    name: SLO test
+    permissions:
+      checks: write
+      pull-requests: write
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ydb-platform/ydb-go-sdk
+
+      - name: Run SLO
+        uses: ydb-platform/slo-tests@k8s-local
+        env:
+          DOCKER_REPO: ${{ secrets.SLO_DOCKER_REPO }}
+        continue-on-error: true
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          grafana_dashboard: ${{ vars.SLO_GRAFANA_DASHBOARD }}
+          ydb_version: 'newest'
+          timeBetweenPhases: 30
+          shutdownTime: 30
+
+          language_id0: 'native-table'
+          workload_path0: 'tests/slo'
+          language0: 'Native ydb-go-sdk/v3 over table-service'
+          workload_build_context0: ../..
+          workload_build_options0: -f Dockerfile --build-arg SRC_PATH=native/table --build-arg JOB_NAME=workload-native-table
+
+          language_id1: 'database-sql'
+          workload_path1: 'tests/slo'
+          language1: 'Go SDK database/sql'
+          workload_build_context1: ../..
+          workload_build_options1: -f Dockerfile --build-arg SRC_PATH=database/sql --build-arg JOB_NAME=workload-database-sql
+
+          language_id2: 'native-query'
+          workload_path2: 'tests/slo'
+          language2: 'Native ydb-go-sdk/v3 over query-service'
+          workload_build_context2: ../..
+          workload_build_options2: -f Dockerfile --build-arg SRC_PATH=native/query --build-arg JOB_NAME=workload-native-query
+  
+      - uses: actions/upload-artifact@v4
+        with:
+          name: slo-logs
+          path: logs/

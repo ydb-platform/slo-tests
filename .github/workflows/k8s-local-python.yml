@@ -1,4 +1,4 @@
-name: test-local-SLO
+name: test-k8s-local-python
 on: 
   workflow_dispatch:
   pull_request:
@@ -17,12 +17,13 @@ jobs:
       pull-requests: write
       contents: read
       issues: write
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           repository: ydb-platform/ydb-python-sdk
-
+          
       - name: Run SLO
         uses: ydb-platform/slo-tests@k8s-local
         env:
