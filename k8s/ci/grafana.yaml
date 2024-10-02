@@ -178,7 +178,7 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "",
+                  "expr": "rate(oks[$__rate_interval]) > 0",
                   "hide": false,
                   "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} OK",
                   "range": true,
@@ -190,7 +190,7 @@ dashboards:
                     "uid": "prometheus"
                   },
                   "editorMode": "builder",
-                  "expr": "",
+                  "expr": "rate(not_oks[$__rate_interval]) > 0",
                   "hide": false,
                   "legendFormat": "({{sdk}}-{{sdkVersion}}) {{jobName}} not OK",
                   "range": true,
