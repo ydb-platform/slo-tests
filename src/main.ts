@@ -43,7 +43,9 @@ async function main(): Promise<void> {
       shutdownTime,
       grafanaDashboard,
       grafanaDashboardWidth,
-      grafanaDashboardHeight
+      grafanaDashboardHeight,
+      read_rps,
+      write_rps
     } = parseArguments()
 
     core.debug(`Setting up OctoKit`)
@@ -151,8 +153,8 @@ async function main(): Promise<void> {
               ),
               args:
                 `--time ${(5 + 2) * timeBetweenPhases
-                } --shutdown-time ${shutdownTime} --read-rps 1000 ` +
-                `--write-rps 100 --prom-pgw http://prometheus-pushgateway:9091`
+                } --shutdown-time ${shutdownTime} --read-rps ${read_rps} ` +
+                `--write-rps ${write_rps} --prom-pgw http://prometheus-pushgateway:9091`
             })
           ),
           errorScheduler(servicesPods.grafana, timeBetweenPhases)
