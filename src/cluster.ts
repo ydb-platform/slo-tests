@@ -2,23 +2,21 @@ import * as core from '@actions/core'
 import { logGroup } from './utils/groupDecorator'
 import { call, callKubernetes, callKubernetesPath, init_kubectlPath } from './callExecutables'
 
-// npx fs-to-json --input "k8s/ci/*.yaml" --output src/manifests.json
-import manifests from './manifests.json'
+import {
+ databaseManifestTemplate ,
+ storageManifestTemplate ,
+ valuesForYDBOperator ,
+ prometheusPushGateway ,
+ grafanaRenderer ,
+ prometheus ,
+ serviceMonitor ,
+ grafana ,
+ kindConfig
+} from './manifests'
 import { withTimeout } from './utils/withTimeout'
-import { describe } from 'node:test'
-import { writeFile } from 'fs/promises'
 
 const fs = require('fs')
 
-let databaseManifest = manifests['k8s/ci/database.yaml'].content
-let storageManifest = manifests['k8s/ci/storage.yaml'].content
-let valuesForYDBOperator = manifests['k8s/ci/valuesForYDBOperator.yaml'].content
-let prometheusPushGateway = manifests['k8s/ci/prometheus-pushgateway.yaml'].content
-let grafanaRenderer = manifests['k8s/ci/grafana-renderer.yaml'].content
-let prometheus = manifests['k8s/ci/prometheus.yaml'].content
-let serviceMonitor = manifests['k8s/ci/serviceMonitor.yaml'].content
-let grafana = manifests['k8s/ci/grafana.yaml'].content
-let kindConfig = manifests['k8s/ci/kind-config.yaml'].content
 
 /**
  * Create cluster with selected version
@@ -32,8 +30,8 @@ export async function createCluster(
   checkPeriod: number = 10
 ) {
   return logGroup('Create cluster', async () => {
-    databaseManifest = databaseManifest.replace('${{VERSION}}', version)
-    storageManifest = storageManifest.replace('${{VERSION}}', version)
+    const databaseManifest = databaseManifestTemplate.replace('${{VERSION}}', version)
+    const storageManifest = storageManifestTemplate.replace('${{VERSION}}', version)
 
     core.debug('database manifest:\n\n' + databaseManifest)
     core.debug('storage manifest:\n\n' + storageManifest)
