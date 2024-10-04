@@ -5,8 +5,6 @@ import { call, callKubernetes, callKubernetesPath, init_kubectlPath } from './ca
 import {
   databaseManifestTemplate,
   storageManifestTemplate,
-  databaseManifest,
-  storageManifest,
   valuesForYDBOperator,
   prometheusPushGateway,
   grafanaRenderer,
