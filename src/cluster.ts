@@ -2,12 +2,9 @@ import * as core from '@actions/core'
 import {logGroup} from './utils/groupDecorator'
 import {call, callKubernetes, callKubernetesPath} from './callExecutables'
 
-// npx fs-to-json --input "k8s/ci/*.yaml" --output src/manifests.json
-import manifests from './manifests.json'
+import {databaseManifestTemplate, storageManifestTemplate} from './manifests/manifests'
 import {withTimeout} from './utils/withTimeout'
 
-let databaseManifest = manifests['k8s/ci/database.yaml'].content
-let storageManifest = manifests['k8s/ci/storage.yaml'].content
 
 /**
  * Create cluster with selected version
@@ -21,8 +18,8 @@ export async function createCluster(
   checkPeriod: number = 10
 ) {
   return logGroup('Create cluster', async () => {
-    databaseManifest = databaseManifest.replace('${{VERSION}}', version)
-    storageManifest = storageManifest.replace('${{VERSION}}', version)
+    const databaseManifest = databaseManifestTemplate.replace('${{VERSION}}', version)
+    const storageManifest = storageManifestTemplate.replace('${{VERSION}}', version)
 
     core.debug('database manifest:\n\n' + databaseManifest)
     core.debug('storage manifest:\n\n' + storageManifest)

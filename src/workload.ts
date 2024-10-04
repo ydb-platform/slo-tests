@@ -7,11 +7,8 @@ import {
 } from './callExecutables'
 import {logGroup} from './utils/groupDecorator'
 
-// npx fs-to-json --input "k8s/ci/*.yaml" --output src/manifests.json
-import manifests from './manifests.json'
+import {workloadManifestTemplate} from './manifests/manifests'
 import {withTimeout} from './utils/withTimeout'
-
-const workloadManifestTemplate = manifests['k8s/ci/workload.yaml'].content
 
 const fs = require('fs')
 
