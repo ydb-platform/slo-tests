@@ -5,7 +5,7 @@
   "description": "TypeScript action for performing SLO tests for YDB in k8s cluster",
   "main": "lib/main.js",
   "scripts": {
-    "manifests": "npx fs-to-json --input \"k8s/ci/workload.yaml\" --output src/manifests/workload.json && npx fs-to-json --input \"k8s/ci/database.yaml\" --output src/manifests/database.json && npx fs-to-json --input \"k8s/ci/storage.yaml\" --output src/manifests/storage.json",
+    "manifests": "ls k8s/ci/*.yaml | sed -e 's/k8s\\/ci\\///g; s/\\.yaml//g' | xargs -I NAME npx fs-to-json --input k8s/ci/NAME.yaml --output src/manifests/NAME.json",
     "build": "npm run manifests && tsc",
     "format": "prettier --write '**/*.ts'",
     "format-check": "prettier --check '**/*.ts'",
