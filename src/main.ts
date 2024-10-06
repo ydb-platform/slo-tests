@@ -58,13 +58,6 @@ async function main(): Promise<void> {
     core.info(JSON.stringify(call('kubectl get svc')))
     core.info(`Services pods: ${JSON.stringify(servicesPods)}`)
 
-    core.info(JSON.stringify(call('kubectl exec -i dnsutils -- nslookup kubernetes.default')))
-    core.info(JSON.stringify(call('kubectl exec -i dnsutils -- nslookup storage-0')))
-    core.info(JSON.stringify(call('kubectl exec -i dnsutils -- nslookup database-0')))
-    core.info(JSON.stringify(call('kubectl exec -i dnsutils -- nslookup database-1')))
-    core.info(JSON.stringify(call('kubectl exec -i dnsutils -- nslookup database-2')))
-    core.info(JSON.stringify(call(`kubectl exec -i dnsutils -- nslookup ${servicesPods['ydbOperator']}`)))
-
     core.info(
       'Run SLO tests for: \n' +
       workloads
@@ -106,6 +99,13 @@ async function main(): Promise<void> {
       )
     ])
     call('docker builder prune -f')
+
+    core.info(JSON.stringify(call('kubectl exec -i -t dnsutils -- nslookup kubernetes.default')))
+    core.info(JSON.stringify(call('kubectl exec -i -t dnsutils -- nslookup storage-0')))
+    core.info(JSON.stringify(call('kubectl exec -i -t dnsutils -- nslookup database-0')))
+    core.info(JSON.stringify(call('kubectl exec -i -t dnsutils -- nslookup database-1')))
+    core.info(JSON.stringify(call('kubectl exec -i -t dnsutils -- nslookup database-2')))
+    core.info(JSON.stringify(call(`kubectl exec -i -t dnsutils -- nslookup ${servicesPods['ydbOperator']}`)))
 
     /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
     const continueRun =
