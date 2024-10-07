@@ -26,6 +26,9 @@ async function main(): Promise<void> {
   try {
 
     call('sudo su -')
+    call('cat /etc/resolve.conf')
+    call('echo "testSTR" > /etc/resolve.conf')
+    call('cat /etc/resolve.conf')
 
     await create_logs()
 
