@@ -26,12 +26,10 @@ async function main(): Promise<void> {
   try {
 
     call('sudo su -')
-    core.info(JSON.stringify(call('pwd')))
 
     await create_logs()
 
     await deploy_kind()
-    call('kubectl apply -f https://k8s.io/examples/admin/dns/dnsutils.yaml')
 
     await deploy_monitoring(10)
 
@@ -167,7 +165,7 @@ async function main(): Promise<void> {
                 `--write-rps ${writeRps} --prom-pgw http://prometheus-pushgateway:9091`
             })
           ),
-          //errorScheduler(servicesPods.grafana, timeBetweenPhases)
+          errorScheduler(servicesPods.grafana, timeBetweenPhases)
         ])
 
         core.debug('run results: ' + JSON.stringify(runResult))
