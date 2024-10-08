@@ -26,9 +26,7 @@ async function main(): Promise<void> {
   try {
 
     call('sudo su -')
-    core.info(JSON.stringify(call('cat /etc/resolv.conf')))
-    call('sudo echo "testSTR" > /etc/resolv.conf')
-    core.info(JSON.stringify(call('cat /etc/resolv.conf')))
+    core.info(JSON.stringify(call('pwd')))
 
     await create_logs()
 
