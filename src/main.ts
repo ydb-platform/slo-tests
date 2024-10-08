@@ -164,7 +164,7 @@ async function main(): Promise<void> {
                 `--write-rps ${writeRps} --prom-pgw http://prometheus-pushgateway:9091`
             })
           ),
-          //errorScheduler(servicesPods.grafana, timeBetweenPhases)
+          errorScheduler(servicesPods.grafana, timeBetweenPhases)
         ])
 
         core.debug('run results: ' + JSON.stringify(runResult))
