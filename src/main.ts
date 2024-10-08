@@ -100,7 +100,6 @@ async function main(): Promise<void> {
     call('docker builder prune -f')
 
     // core.info(JSON.stringify(call('kubectl get pods -n kube-system')))
-    core.info(JSON.stringify(call('kubectl exec -i dnsutils -- cat /etc/resolv.conf')))
     // core.info(JSON.stringify(call('kubectl exec -i dnsutils -- nslookup storage-0.default')))
     // core.info(JSON.stringify(call('kubectl exec -i dnsutils -- nslookup database-0.default')))
     // core.info(JSON.stringify(call('kubectl exec -i dnsutils -- nslookup database-1.default')))
