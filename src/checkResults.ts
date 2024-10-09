@@ -1,9 +1,12 @@
 import crypto from 'crypto'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import {GitHub} from '@actions/github/lib/utils'
-import {callKubernetesPathAsync} from './callExecutables'
-import {retry} from './utils/retry'
+
+import { GitHub } from '@actions/github/lib/utils'
+import { callAsync, callKubernetesPathAsync } from './callExecutables'
+import { retry } from './utils/retry'
+import { json } from 'stream/consumers'
+
 import {
   RestEndpointMethodTypes
 } from "@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types";
@@ -42,7 +45,7 @@ export async function getDataFromGrafana(
       key: `Q-${getUUID()}-${i}`,
       // requestId: `Q-${getUUID()}-${i}`,
       interval: q.interval,
-      ...(q.format ? {format: q.format} : {}),
+      ...(q.format ? { format: q.format } : {}),
       datasource: {
         type: 'prometheus',
         uid: 'prometheus'
@@ -83,7 +86,11 @@ export async function getDataFromGrafana(
 
   busyboxCmd = busyboxCmd.replace(/'/g, "'\\''")
 
-  core.debug(
+  // core.debug(
+  //   `getDataFromGrafana kube request:\nkubectl run -q -i --image=busybox --rm grafana-result-peeker --restart=Never -- sh -c '${busyboxCmd}'`
+  // )
+
+  core.info(
     `getDataFromGrafana kube request:\nkubectl run -q -i --image=busybox --rm grafana-result-peeker --restart=Never -- sh -c '${busyboxCmd}'`
   )
 
@@ -109,7 +116,7 @@ export interface IParsedResults {
 }
 
 interface IDesiredResult {
-  filter: {[label: string]: string}
+  filter: { [label: string]: string }
   value: ['>' | '<', number]
 }
 export interface IDesiredResults {
@@ -160,7 +167,7 @@ export function checkGraphValues(
     )
 
     for (const desiredRes of desired) {
-      const filter = {job: `workload-${workloadId}`, ...desiredRes.filter}
+      const filter = { job: `workload-${workloadId}`, ...desiredRes.filter }
       let inspected = (result || []).filter(filterGraphData(filter))
       core.debug(
         `Apply filter '${JSON.stringify(filter)}': ${JSON.stringify(inspected)}`
@@ -195,8 +202,7 @@ export function checkGraphValues(
             `${checkId}-${i}`,
             decision ? 'ok' : 'error',
             checkName,
-            `${inspectedRes.value} ${decision ? '' : '!'}${
-              desiredRes.value[0]
+            `${inspectedRes.value} ${decision ? '' : '!'}${desiredRes.value[0]
             } ${desiredRes.value[1]}`
           ])
         }
@@ -260,8 +266,8 @@ export async function checkResults(
         checks[i][1] === 'error'
           ? 'failure'
           : checks[i][1] === 'notfound'
-          ? 'neutral'
-          : 'success'
+            ? 'neutral'
+            : 'success'
       const checkParams: RestEndpointMethodTypes["checks"]["create"]["parameters"] = {
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
@@ -279,8 +285,8 @@ export async function checkResults(
 
       core.info('create check: ' + JSON.stringify(checkParams))
       core.info(
-        'Create check response: ' +
-          JSON.stringify(await octokit.rest.checks.create(checkParams))
+        'Create check response: '
+        //+ JSON.stringify(await octokit.rest.checks.create(checkParams))
       )
     } catch (error) {
       core.info('Create check error: ' + JSON.stringify(error))

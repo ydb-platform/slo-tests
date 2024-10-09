@@ -8,33 +8,9 @@ import {logGroup} from './utils/groupDecorator'
 let kubectlPath: string | null = null
 let callId = 0
 
-export function prepareK8S(base64kubeconfig: string) {
-  return logGroup('Prepare k8s', () => {
-    // create ~/.kube folder
-    const kubePath = path.join(homedir(), '.kube')
-    core.info(`mkdir ${kubePath}`)
-    try {
-      mkdirSync(kubePath)
-    } catch (error: any) {
-      core.debug('error' + JSON.stringify(error))
-      if (error?.code === 'EEXIST') {
-        core.debug(kubePath + ' EEXIST')
-      } else throw error
-    }
-
-    // add kubeconfig
-    if (base64kubeconfig.length > 0) {
-      core.debug('Get kubeconfig string')
-      const kubeconfig = Buffer.from(base64kubeconfig, 'base64').toString(
-        'utf8'
-      )
-      core.info(`Write kubeconfig to ~/.kube/config`)
-      writeFileSync(path.join(homedir(), '.kube/config'), kubeconfig)
-    }
-
-    kubectlPath = call('which kubectl').split('\n')[0]
-    core.info(`kubectl path: ${kubectlPath}`)
-  })
+export function init_kubectlPath(){
+  kubectlPath = call('which kubectl').split('\n')[0]
+  core.info(`kubectl path: ${kubectlPath}`)
 }
 
 export function prepareAWS(awsCredentialsB64: string, awsConfigB64: string) {

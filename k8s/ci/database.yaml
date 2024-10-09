@@ -1,11 +1,35 @@
 apiVersion: ydb.tech/v1alpha1
 kind: Database
 metadata:
-  name: database-sample
+  name: database
 spec:
   monitoring:
-    enabled: true
-    interval: 3s
+    enabled: false
+  image:
+    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:24.2.7
+  domain: Root
+  nodes: 3
+  resources:
+    storageUnits:
+      - unitKind: ssd
+        count: 1
+  service:
+    grpc:
+      tls:
+        enabled: false
+      ipFamilyPolicy: SingleStack
+      ipFamilies:
+        - IPv4
+    interconnect:
+      tls:
+        enabled: false
+      ipFamilyPolicy: SingleStack
+      ipFamilies:
+        - IPv4
+    status:
+      ipFamilyPolicy: SingleStack
+      ipFamilies:
+        - IPv4
   additionalLabels:
     ydb-cluster: slo-storage
     ydb-cluster-monitor: slo-storage
@@ -18,17 +42,6 @@ spec:
                 operator: In
                 values:
                   - slo-storage
-          topologyKey: 'kubernetes.io/hostname'
-  image:
-    name: cr.yandex/crptqonuodf51kdj7a7d/ydb:${{VERSION}}
-  domain: root
-  nodes: 6
-  resources:
-    containerResources:
-      limits:
-        cpu: 1
-    storageUnits:
-      - count: 1
-        unitKind: ssd
+          topologyKey: "kubernetes.io/hostname"
   storageClusterRef:
-    name: storage-sample
+    name: storage

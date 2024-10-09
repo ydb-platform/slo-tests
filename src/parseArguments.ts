@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
-import {logGroup} from './utils/groupDecorator'
-import {getYdbVersions} from './cluster'
+import { logGroup } from './utils/groupDecorator'
+import { getYdbVersions } from './cluster'
 
 export interface IWorkloadOptions {
   /** SDK language or language+variant for kuberetes, prometheus metrics, PR comments */
@@ -32,22 +32,12 @@ export function parseArguments() {
     } while (haveValue)
 
     const githubToken: string = core.getInput('GITHUB_TOKEN')
-    const kubeconfig = core.getInput('KUBECONFIG_B64')
-    const dockerRepo = core.getInput('DOCKER_REPO')
-    const dockerFolder = core.getInput('DOCKER_FOLDER')
-    const dockerUsername = core.getInput('DOCKER_USERNAME')
-    const dockerPassword = core.getInput('DOCKER_PASSWORD')
-    const awsCredentials = core.getInput('AWS_CREDENTIALS_B64')
-    const awsConfig = core.getInput('AWS_CONFIG_B64')
-    const s3Endpoint = core.getInput('s3_endpoint')
-    const s3Folder = core.getInput('s3_images_folder')
-    const grafanaDomain = core.getInput('grafana_domain')
     const grafanaDashboard = core.getInput('grafana_dashboard') || '7CzMl5t4k'
     const grafanaDashboardWidth = Number(
-      core.getInput('grafana_dashboard_width') || '1500'
+      core.getInput('grafana_dashboard_width') || '1300'
     )
     const grafanaDashboardHeight = Number(
-      core.getInput('grafana_dashboard_height') || '1700'
+      core.getInput('grafana_dashboard_height') || '1200'
     )
 
     let ydbVersion = core.getInput('ydb_version')
@@ -69,25 +59,28 @@ export function parseArguments() {
       core.info(`Use YDB docker version = '${ydbVersion}'`)
     }
 
+    let readRps = '1000'
+    let writeRps = '50'
+
+    if (Number(core.getInput('READ_RPS')) > 0) {
+      readRps = core.getInput('READ_RPS')
+    }
+
+    if (Number(core.getInput('WRITE_RPS')) > 0) {
+      writeRps = core.getInput('WRITE_RPS')
+    }
+
     return {
       workloads,
       githubToken,
-      kubeconfig,
-      awsCredentials,
-      awsConfig,
-      s3Endpoint,
-      s3Folder,
-      dockerRepo,
-      dockerFolder,
-      dockerUsername,
-      dockerPassword,
       ydbVersion,
       timeBetweenPhases,
       shutdownTime,
-      grafanaDomain,
       grafanaDashboard,
       grafanaDashboardWidth,
-      grafanaDashboardHeight
+      grafanaDashboardHeight,
+      readRps,
+      writeRps
     }
   })
 }
@@ -115,8 +108,7 @@ function getWorkloadParam(id: number): IWorkloadOptions | null {
   // id and path are required
   if (languageId.length === 0 || workloadPath.length === 0) {
     core.debug(
-      `Not found params for ${id} workload - ${'language_id' + suffix} and ${
-        'workload_path' + suffix
+      `Not found params for ${id} workload - ${'language_id' + suffix} and ${'workload_path' + suffix
       } are not presented`
     )
     return null
