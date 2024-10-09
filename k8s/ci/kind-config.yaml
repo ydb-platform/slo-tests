@@ -11,3 +11,18 @@ nodes:
       - hostPath: /tmp/worker-1-
         containerPath: /home/tmp
         readOnly: true
+  - role: worker
+    extraMounts:
+      - hostPath: /tmp/worker-2-
+        containerPath: /home/tmp
+        readOnly: true
+  - role: worker
+    extraMounts:
+      - hostPath: /tmp/worker-3-
+        containerPath: /home/tmp
+        readOnly: true
+  - role: worker
+    extraMounts:
+      - hostPath: /tmp/worker-4-
+        containerPath: /home/tmp
+        readOnly: true
