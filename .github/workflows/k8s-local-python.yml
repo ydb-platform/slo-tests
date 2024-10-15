@@ -1,5 +1,4 @@
-
-name: k8s-local-python
+name: test-k8s-local-python
 on: 
   workflow_dispatch:
     inputs:
@@ -36,7 +35,6 @@ jobs:
         with:
           repository: ydb-platform/ydb-python-sdk
           
-
       - name: Run SLO
         uses: ydb-platform/slo-tests@k8s-local
         env:

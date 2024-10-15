@@ -1,100 +1,87 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import {parseArguments} from './parseArguments'
-import {prepareAWS, prepareK8S} from './callExecutables'
-import {obtainMutex, releaseMutex} from './mutex'
-import {createCluster, deleteCluster} from './cluster'
+import { parseArguments } from './parseArguments'
+import { call, callAsync } from './callExecutables'
+import { createCluster, deleteCluster, deploy_kind, deploy_ydb_operator, deploy_monitoring } from './cluster'
 import {
   buildWorkload,
-  dockerLogin,
   generateDockerPath,
-  runWorkload
+  runWorkload,
+  disable_buildkit,
+  create_logs
 } from './workload'
-import {getInfrastractureEndpoints} from './getInfrastractureEndpoints'
-import {errorScheduler} from './errorScheduler'
-import {retry} from './utils/retry'
-import {IDesiredResults, checkResults} from './checkResults'
-import {grafanaScreenshot, postComment} from './grafanaScreenshot'
-import {createHash} from 'crypto'
+import { getInfrastractureEndpoints } from './getInfrastractureEndpoints'
+import { errorScheduler } from './errorScheduler'
+import { retry } from './utils/retry'
+import { IDesiredResults, checkResults } from './checkResults'
+import { grafanaScreenshotToLog, grafanaScreenshot, postComment, postFotoToFileio } from './grafanaScreenshot'
+import { createHash } from 'crypto'
+
 
 const isPullRequest = !!github.context.payload.pull_request
 
-let mutexObtained = false
 let clusterCreated = false
 
 async function main(): Promise<void> {
   try {
+    await create_logs()
+
+    await deploy_kind()
+
+    await deploy_monitoring(10)
+
+    await deploy_ydb_operator(10)
+
     let {
       workloads,
       githubToken,
-      kubeconfig,
-      awsCredentials,
-      awsConfig,
-      s3Endpoint,
-      s3Folder,
-      dockerRepo,
-      dockerFolder,
-      dockerUsername,
-      dockerPassword,
       ydbVersion,
       timeBetweenPhases,
       shutdownTime,
-      grafanaDomain,
       grafanaDashboard,
       grafanaDashboardWidth,
-      grafanaDashboardHeight
+      grafanaDashboardHeight,
+      readRps,
+      writeRps
     } = parseArguments()
 
     core.debug(`Setting up OctoKit`)
     const octokit = github.getOctokit(githubToken)
 
-    prepareK8S(kubeconfig)
-    prepareAWS(awsCredentials, awsConfig)
-
-    await dockerLogin(dockerRepo, dockerUsername, dockerPassword)
 
     // check if all parts working: prometheus, prometheus-pushgateway, grafana, grafana-renderer
     const servicesPods = await getInfrastractureEndpoints()
+    core.info(JSON.stringify(call('kubectl get svc')))
     core.info(`Services pods: ${JSON.stringify(servicesPods)}`)
 
     core.info(
       'Run SLO tests for: \n' +
-        workloads
-          .map(option => {
-            let str = `#${option.id}`
-            str += option.name ? `(${option.name})\n` : '\n'
-            str += `path: '${option.path}'\n`
-            str += option.buildContext
-              ? `build context: '${option.buildContext}'\n`
-              : ''
-            str += option.buildOptions
-              ? `build options: '${option.buildOptions}'\n`
-              : ''
-            return str
-          })
-          .join('===')
+      workloads
+        .map(option => {
+          let str = `#${option.id}`
+          str += option.name ? `(${option.name})\n` : '\n'
+          str += `path: '${option.path}'\n`
+          str += option.buildContext
+            ? `build context: '${option.buildContext}'\n`
+            : ''
+          str += option.buildOptions
+            ? `build options: '${option.buildOptions}'\n`
+            : ''
+          return str
+        })
+        .join('===')
     )
-    const mutexId =
-      workloads.length > 1
-        ? workloads.map(v => v.id).join('__+__')
-        : workloads[0].id
-
-    await obtainMutex(mutexId, Math.ceil( // test timeout plus one minute
-      ((5 + 4) * timeBetweenPhases + shutdownTime) / 60
-    ) + 1, 30)
-    core.info('Mutex obtained!')
-    mutexObtained = true
 
     const dockerPaths = workloads.map(w =>
-      generateDockerPath(dockerRepo, dockerFolder, w.id)
+      generateDockerPath(w.id)
     )
+
+    //disable_buildkit()
 
     core.info('Create cluster and build all workloads')
     const builded = workloads.map(() => false)
     const clusterWorkloadRes = await Promise.allSettled([
       createCluster(ydbVersion, 15),
-      // TODO: create placeholder pods for databases
-      // TODO: catch build error and stop cluster creation
       ...workloads.map((wl, idx) =>
         buildWorkload(
           wl.id,
@@ -107,6 +94,14 @@ async function main(): Promise<void> {
         })
       )
     ])
+    call('docker builder prune -f')
+
+    // core.info(JSON.stringify(call('kubectl get pods -n kube-system')))
+    // core.info(JSON.stringify(call('kubectl exec -i dnsutils -- nslookup storage-0.default')))
+    // core.info(JSON.stringify(call('kubectl exec -i dnsutils -- nslookup database-0.default')))
+    // core.info(JSON.stringify(call('kubectl exec -i dnsutils -- nslookup database-1.default')))
+    // core.info(JSON.stringify(call('kubectl exec -i dnsutils -- nslookup database-2.default')))
+    // core.info(JSON.stringify(call(`kubectl exec -i dnsutils -- nslookup ${servicesPods['ydbOperator']}.default`)))
 
     /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
     const continueRun =
@@ -161,10 +156,9 @@ async function main(): Promise<void> {
                 ((5 + 4) * timeBetweenPhases + shutdownTime) / 60
               ),
               args:
-                `--time ${
-                  (5 + 2) * timeBetweenPhases
-                } --shutdown-time ${shutdownTime} --read-rps 1000 ` +
-                `--write-rps 100 --prom-pgw http://prometheus-pushgateway:9091`
+                `--time ${(5 + 2) * timeBetweenPhases
+                } --shutdown-time ${shutdownTime} --read-rps ${readRps} ` +
+                `--write-rps ${writeRps} --prom-pgw http://prometheus-pushgateway:9091`
             })
           ),
           errorScheduler(servicesPods.grafana, timeBetweenPhases)
@@ -181,12 +175,12 @@ async function main(): Promise<void> {
         } else {
           // TODO: somehow use objectives as input
           const objectives: IDesiredResults = {
-            success_rate: [{filter: {}, value: ['>', 0.98]}],
+            success_rate: [{ filter: {}, value: ['>', 0.98] }],
             max_99_latency: [
-              {filter: {status: 'ok'}, value: ['<', 100]},
-              {filter: {status: 'err'}, value: ['<', 30000]}
+              { filter: { status: 'ok' }, value: ['<', 100] },
+              { filter: { status: 'err' }, value: ['<', 30000] }
             ],
-            fail_interval: [{filter: {}, value: ['<', 20]}]
+            fail_interval: [{ filter: {}, value: ['<', 20] }]
           }
           let promises: Promise<boolean | void>[] = []
 
@@ -207,44 +201,39 @@ async function main(): Promise<void> {
                   objectives
                 )
               )
+              promises.push(
+                (async () => {
+                  const picFileName = await grafanaScreenshotToLog(
+                    workloads[i].id,
+                    timings.startTime,
+                    timings.endTime,
+                    grafanaDashboard,
+                    grafanaDashboardWidth,
+                    grafanaDashboardHeight
+                  )
+                  if (isPullRequest) {
+                    (async () => {
+                      const pictureUri = await postFotoToFileio(
+                        picFileName
+                      )
+                      const comment = `
+  :volcano: Here are results of SLO test for **${workloads[i].name ?? workloads[i].id
+                        }**:
+                          
+  ![SLO-${workloads[i].id}](${pictureUri})\n`
 
-              core.debug('isPullRequest=' + isPullRequest)
-              if (isPullRequest) {
-                core.debug(
-                  'Push to promises grafana screenshot and postComment'
-                )
-                promises.push(
-                  (async () => {
-                    const pictureUri = await grafanaScreenshot(
-                      s3Endpoint,
-                      s3Folder,
-                      workloads[i].id,
-                      timings.startTime,
-                      timings.endTime,
-                      grafanaDashboard,
-                      grafanaDashboardWidth,
-                      grafanaDashboardHeight
-                    )
-                    const comment = `
-:volcano: Here are results of SLO test for **${
-                      workloads[i].name ?? workloads[i].id
-                    }**:
-
-[Grafana Dashboard](${grafanaDomain}/d/${grafanaDashboard}?orgId=1&from=${timings.startTime.valueOf()}&to=${timings.endTime.valueOf()})
-
-![SLO-${workloads[i].id}](${pictureUri})\n`
-
-                    await postComment(
-                      octokit,
-                      createHash('sha1')
-                        .update(workloads[i].id)
-                        .digest()
-                        .readUint16BE(),
-                      comment
-                    )
-                  })()
-                )
-              }
+                      await postComment(
+                        octokit,
+                        createHash('sha1')
+                          .update(workloads[i].id)
+                          .digest()
+                          .readUint16BE(),
+                        comment
+                      )
+                    })()
+                  }
+                })()
+              )
             }
           })
 
@@ -256,10 +245,21 @@ async function main(): Promise<void> {
         }
       }
     }
+    call(`kubectl logs pod/${servicesPods['grafana']} > ./logs/grafana.log`)
+    call(`kubectl logs pod/${servicesPods['grafanaRenderer']} > ./logs/grafanaRenderer.log`)
+    call(`kubectl logs pod/${servicesPods['prometheus']} > ./logs/prometheus.log`)
+    call(`kubectl logs pod/${servicesPods['prometheusOperator']} > ./logs/prometheusOperator.log`)
+    call(`kubectl logs pod/${servicesPods['prometheusPushgateway']} > ./logs/prometheusPushgateway.log`)
+    call(`kubectl logs pod/${servicesPods['ydbOperator']} > ./logs/ydbOperator.log`)
+    call(`kubectl logs pod/database-0 > ./logs/database-0.log`)
+    call(`kubectl logs pod/database-1 > ./logs/database-1.log`)
+    call(`kubectl logs pod/database-2 > ./logs/database-2.log`)
+    call(`kubectl logs pod/storage-0 > ./logs/storage-0.log`)
+
+    const targetIP = (call(`kubectl get pods prometheus-prometheus-0 -o=jsonpath='{.status.podIP}'`)).split('\n')[0]
+    call(`kubectl exec -it ${servicesPods['grafana']} -- /bin/bash -c "curl -s  http://${targetIP}:9090/api/v1/label/__name__/values" > ./logs/prometheusLabelsNames.json`)
 
     deleteCluster()
-
-    releaseMutex()
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
     if (clusterCreated) {
@@ -267,13 +267,6 @@ async function main(): Promise<void> {
         deleteCluster()
       } catch (error) {
         core.info('Failed to delete cluster:' + JSON.stringify(error))
-      }
-    }
-    if (mutexObtained) {
-      try {
-        releaseMutex()
-      } catch (error) {
-        core.info('Failed to release mutex:' + JSON.stringify(error))
       }
     }
   }

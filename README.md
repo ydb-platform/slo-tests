@@ -7,7 +7,7 @@
 This repo contains github workflows and actions to run SLO tests over YDB and YDB SDK's
 
 Here is simple diagram what's happening inside:
-
+ 
 ```mermaid
 graph TD
     A[Pull request] -->| | B(Create YDB cluster in k8s)
