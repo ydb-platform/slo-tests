@@ -24,9 +24,6 @@ let clusterCreated = false
 
 async function main(): Promise<void> {
   try {
-
-    call('sudo su -')
-
     await create_logs()
 
     await deploy_kind()
