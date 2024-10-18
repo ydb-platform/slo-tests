@@ -13,7 +13,7 @@ let YDB_IC_PORT = 19001
 let generateStaticNode = () => /** YAML */`
   static-0:
     <<: *ydb-common
-    container_name: static-0
+    container_name: ydb-static-0
     command:
       - /opt/ydb/bin/ydbd
       - server
@@ -76,13 +76,13 @@ let generateStaticNode = () => /** YAML */`
     depends_on:
       static-init:
         condition: service_completed_successfully
-`
+`.slice(1)
 
 // Generate YDB Dynamic Node
 let generateDynamicNode = (idx) => /** YAML */`
   dynamic-${idx}:
     <<: *ydb-common
-    container_name: dynamic-${idx}
+    container_name: ydb-dynamic-${idx}
     command:
       - /opt/ydb/bin/ydbd
       - server
@@ -119,10 +119,52 @@ let generateDynamicNode = (idx) => /** YAML */`
         condition: service_completed_successfully
     deploy:
       <<: *ydb-deploy
-`
+`.slice(1)
+
+// Generate Monitoring
+let generateMonitoring = () => /** YAML */`
+  prometheus:
+    image: prom/prometheus
+    restart: unless-stopped
+    ports:
+      - 9090:9090
+    volumes:
+      - ./configs/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
+    network_mode: host
+    deploy: &monitoring-deploy
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 1000M
+        reservations:
+          cpus: '0.001'
+          memory: 50M
+
+  prometheus-pushgateway:
+    image: prom/pushgateway
+    restart: unless-stopped
+    ports:
+      - "9091:9091"
+    network_mode: host
+    deploy:
+      <<: *monitoring-deploy
+
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    volumes:
+      - ./configs/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SERVER_HTTP_PORT=10000
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    network_mode: host
+    deploy:
+      <<: *monitoring-deploy
+`.slice(1)
 
 let composeFile = `
-x-template: &ydb-common
+x-node: &ydb-common
   image: cr.yandex/crptqonuodf51kdj7a7d/ydb:24.2.7
   restart: always
   hostname: localhost
@@ -130,7 +172,7 @@ x-template: &ydb-common
   privileged: true
   network_mode: host
   volumes:
-    - ./cfg/config.yaml:/opt/ydb/cfg/config.yaml
+    - ./configs/ydb/config.yaml:/opt/ydb/cfg/config.yaml
 
 x-deploy: &ydb-deploy
   restart_policy:
@@ -150,6 +192,7 @@ ${generateStaticNode()}
 ${generateDynamicNode(1)}
 ${generateDynamicNode(2)}
 ${generateDynamicNode(3)}
+${generateMonitoring()}
 `;
 
 fs.writeFileSync('compose.yaml', composeFile);
