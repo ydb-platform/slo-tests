@@ -1,11 +1,24 @@
+
 x-template: &ydb-common
   image: cr.yandex/crptqonuodf51kdj7a7d/ydb:24.2.7
   restart: always
   hostname: localhost
   platform: linux/amd64
   privileged: true
+  network_mode: host
   volumes:
     - ./cfg/config.yaml:/opt/ydb/cfg/config.yaml
+
+x-deploy: &ydb-deploy
+  restart_policy:
+    condition: any
+  resources:
+    limits:
+      cpus: '1'
+      memory: 1000M
+    reservations:
+      cpus: '0.1'
+      memory: 250M
 
 name: ydb
 
@@ -39,6 +52,8 @@ services:
       timeout: 1s
       retries: 3
       start_period: 30s
+    deploy:
+      <<: *ydb-deploy
 
   static-init:
     <<: *ydb-common
@@ -74,6 +89,7 @@ services:
     depends_on:
       static-init:
         condition: service_completed_successfully
+
 
   dynamic-1:
     <<: *ydb-common
@@ -112,6 +128,9 @@ services:
         condition: service_completed_successfully
       tenant-init:
         condition: service_completed_successfully
+    deploy:
+      <<: *ydb-deploy
+
 
   dynamic-2:
     <<: *ydb-common
@@ -150,6 +169,9 @@ services:
         condition: service_completed_successfully
       tenant-init:
         condition: service_completed_successfully
+    deploy:
+      <<: *ydb-deploy
+
 
   dynamic-3:
     <<: *ydb-common
@@ -188,4 +210,6 @@ services:
         condition: service_completed_successfully
       tenant-init:
         condition: service_completed_successfully
+    deploy:
+      <<: *ydb-deploy
 

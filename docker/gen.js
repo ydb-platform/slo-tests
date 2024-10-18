@@ -39,6 +39,8 @@ let generateStaticNode = () => /** YAML */`
       timeout: 1s
       retries: 3
       start_period: 30s
+    deploy:
+      <<: *ydb-deploy
 
   static-init:
     <<: *ydb-common
@@ -115,21 +117,39 @@ let generateDynamicNode = (idx) => /** YAML */`
         condition: service_completed_successfully
       tenant-init:
         condition: service_completed_successfully
+    deploy:
+      <<: *ydb-deploy
 `
 
-let composeFile = `x-template: &ydb-common
+let composeFile = `
+x-template: &ydb-common
   image: cr.yandex/crptqonuodf51kdj7a7d/ydb:24.2.7
   restart: always
   hostname: localhost
   platform: linux/amd64
   privileged: true
+  network_mode: host
   volumes:
     - ./cfg/config.yaml:/opt/ydb/cfg/config.yaml
+
+x-deploy: &ydb-deploy
+  restart_policy:
+    condition: any
+  resources:
+    limits:
+      cpus: '1'
+      memory: 1000M
+    reservations:
+      cpus: '0.1'
+      memory: 250M
 
 name: ydb
 
 services:
-${generateStaticNode()}${generateDynamicNode(1)}${generateDynamicNode(2)}${generateDynamicNode(3)}
+${generateStaticNode()}
+${generateDynamicNode(1)}
+${generateDynamicNode(2)}
+${generateDynamicNode(3)}
 `;
 
 fs.writeFileSync('compose.yaml', composeFile);
