@@ -127,9 +127,9 @@ let generateMonitoring = () => /** YAML */`
     image: prom/prometheus
     restart: unless-stopped
     ports:
-      - 9090:9090
+      - "9090:9090"
     volumes:
-      - ./configs/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
+      - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     network_mode: host
     deploy: &monitoring-deploy
       resources:
@@ -150,14 +150,32 @@ let generateMonitoring = () => /** YAML */`
       <<: *monitoring-deploy
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana-oss
     restart: unless-stopped
+    platform: linux/amd64
+    ports:
+      - "10000:10000"
     volumes:
       - ./configs/grafana/provisioning:/etc/grafana/provisioning
     environment:
       - GF_SERVER_HTTP_PORT=10000
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_RENDERING_SERVER_URL=http://localhost:10001/render
+      - GF_RENDERING_CALLBACK_URL=http://localhost:10000/
+    network_mode: host
+    deploy:
+      <<: *monitoring-deploy
+
+  grafana-renderer:
+    image: grafana/grafana-image-renderer
+    ports:
+      - "10001:10001"
+    volumes:
+      - ./configs/grafana/renderer/config.json:/usr/src/app/config.json
     network_mode: host
     deploy:
       <<: *monitoring-deploy
