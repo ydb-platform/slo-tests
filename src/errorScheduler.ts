@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import {callKubernetes, callKubernetesAsync} from './callExecutables'
+import { callKubernetes, callKubernetesAsync } from './callExecutables'
 
 let grafanaPod: string | null = null
 
@@ -10,10 +10,10 @@ export async function errorScheduler(
   // get database target's IP
   const targetIP = (
     await callKubernetesAsync(
-      `get pods database-sample-0 -o=jsonpath='{.status.podIP}'`
+      `get pods database-0 -o=jsonpath='{.status.podIP}'`
     )
   ).split('\n')[0]
-  core.info(`Target of the error scheduler (database-sample-0) IP: ${targetIP}`)
+  core.info(`Target of the error scheduler (database-0) IP: ${targetIP}`)
 
   // get grafana pod name
   grafanaPod = grafanaPodName
@@ -36,8 +36,7 @@ export async function errorScheduler(
   })
 
   const freezeCmd = (freeze: '1' | '0') =>
-    `run -it --image=busybox --rm tablet-${
-      freeze === '0' ? 'un' : ''
+    `run -it --image=busybox --rm tablet-${freeze === '0' ? 'un' : ''
     }freezer --restart=Never --` +
     ` sh -c "wget -q -O- '${targetIP}:8765/tablets/app?` +
     `TabletID=72057594037968897&node=1&page=SetFreeze&freeze=${freeze}' "`
@@ -51,21 +50,21 @@ export async function errorScheduler(
   // delete pod
   await createError(
     'Delete database pod',
-    `delete pod database-sample-1`,
+    `delete pod database-1`,
     timeBetweenS
   )
 
   // force delete pod
   await createError(
     'Force delete database pod',
-    `delete pod database-sample-1 --force=true --grace-period=0`,
+    `delete pod database-1 --force=true --grace-period=0`,
     timeBetweenS
   )
 
   // kill from inside
   await createError(
     'Kill database from inside',
-    `exec -it database-sample-0 -- /bin/bash -c "kill -2 1 && echo 'process killed'"`,
+    `exec -it database-0 -- /bin/bash -c "kill -2 1 && echo 'process killed'"`,
     timeBetweenS
   )
   // TODO: add process sleep

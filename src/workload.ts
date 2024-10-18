@@ -3,14 +3,22 @@ import * as github from '@actions/github'
 import {
   callAsync,
   callKubernetesAsync,
-  callKubernetesPathAsync
+  callKubernetesPathAsync,
+  call
 } from './callExecutables'
-import {logGroup} from './utils/groupDecorator'
+import { logGroup } from './utils/groupDecorator'
 
 import {workloadManifestTemplate} from './manifests/manifests'
 import {withTimeout} from './utils/withTimeout'
 
 const fs = require('fs')
+
+export function disable_buildkit() {
+  core.info("Disable buildkit")
+
+  call('export DOCKER_BUILDKIT=0')
+  call('export COMPOSE_DOCKER_CLI_BUILD=0')
+}
 
 export function dockerLogin(repo: string, user: string, password: string) {
   return logGroup('Docker login', async () => {
@@ -36,8 +44,8 @@ export function dockerLogin(repo: string, user: string, password: string) {
   })
 }
 
-export function generateDockerPath(repo: string, folder: string, id: string) {
-  return `${repo}/${folder}/${id}`
+export function generateDockerPath(id: string) {
+  return `${id}`
 }
 
 export function buildWorkload(
@@ -50,21 +58,18 @@ export function buildWorkload(
   if (!options || options.length === 0) options = ''
   if (!context || context.length === 0) context = '.'
 
-  return core.group(`Build workload ${id}`, async () => {
+  return logGroup(`Build workload ${id}`, async () => {
     core.info('Build docker image')
     await callAsync(
-      `docker buildx build --platform linux/amd64 ` +
-        `-t ${dockerImage}:latest ` +
-        `-t ${dockerImage}:gh-${github.context.sha} ` +
-        `${options} ` +
-        `${context}`,
+      `docker build --platform linux/amd64 ` +
+      `-t ${dockerImage}:latest ` +
+      `${options} ` +
+      `${context}`,
       false,
       workingDir
     )
-    core.info('Push docker tag @latest')
-    await callAsync(`docker image push ${dockerImage}:latest`)
-    core.info(`Push docker tag '@gh-${github.context.sha}'`)
-    await callAsync(`docker image push ${dockerImage}:gh-${github.context.sha}`)
+    await callAsync(`kind load docker-image ${dockerImage}`)
+    await callAsync(`docker rmi ${dockerImage}:latest`)
   })
 }
 
@@ -79,8 +84,8 @@ export function runWorkload(
   command: 'create' | 'run',
   options: IWorkloadRunOptions
 ) {
-  return core.group(`Workload ${options.id} - ${command}`, async () => {
-    const containerArgs = `grpc://database-sample-grpc:2135 /root/database-sample --table-name slo-${options.id} ${options.args}`
+  return logGroup(`Workload ${options.id} - ${command}`, async () => {
+    const containerArgs = `grpc://database-grpc:2135 /Root/database --table-name slo-${options.id} ${options.args}`
 
     const workloadManifest = workloadManifestTemplate
       .replace(/\$\{\{LANGUAGE_ID}}/g, options.id)
@@ -99,11 +104,11 @@ export function runWorkload(
     const startTime = new Date()
     core.info(
       `Workload apply ${command} result:\n` +
-        (await callKubernetesPathAsync(
-          kubectl => `${kubectl} apply -f - <<EOF\n${workloadManifest}\nEOF`
-        ))
+      (await callKubernetesPathAsync(
+        kubectl => `${kubectl} apply -f - <<EOF\n${workloadManifest}\nEOF`
+      ))
     )
-    
+
     try {
       await withTimeout(
         options.timeoutMins,
@@ -115,6 +120,7 @@ export function runWorkload(
               `get job/${options.id}-wl-${command} -o=jsonpath={.status}`
             )
           )
+
           core.debug('Workload status check: ' + JSON.stringify(status))
           if (status.failed) {
             const msg = `Workload ${options.id} ${command} failed`
@@ -129,7 +135,7 @@ export function runWorkload(
       const endTime = new Date()
       // print logs
       await saveLogs(options.id, command)
-      return {startTime, endTime}
+      return { startTime, endTime }
     }
   })
 }
@@ -150,4 +156,12 @@ async function saveLogs(id: string, command: string) {
       core.info(logs)
     })
   }
+}
+
+export async function create_logs() {
+  let dir = './logs'
+  if (!fs.existsSync(dir)) {
+    await fs.promises.mkdir(dir)
+  }
+  callAsync(`rm -rf ${dir}/*`)
 }

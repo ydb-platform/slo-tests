@@ -1,19 +1,19 @@
-import {expect, test, jest, afterEach, beforeAll} from '@jest/globals'
+import { expect, test, jest, afterEach, beforeAll } from '@jest/globals'
 import * as core from '@actions/core'
 
 import * as callExecutables from '../callExecutables'
 import * as withTimeoutUtils from '../utils/withTimeout'
-import {runWorkload} from '../workload'
+import { runWorkload } from '../workload'
 
 beforeAll(() => {
   // @ts-ignore
-  core.debug = () => {}
+  core.debug = () => { }
   // @ts-ignore
-  core.info = () => {}
+  core.info = () => { }
   // @ts-ignore
-  core.startGroup = () => {}
+  core.startGroup = () => { }
   // @ts-ignore
-  core.endGroup = () => {}
+  core.endGroup = () => { }
 })
 
 afterEach(() => {
@@ -76,8 +76,8 @@ spec:
           image: ${params.dockerPath}:latest
           args:
             - 'create'
-            - 'grpc://database-sample-grpc:2135'
-            - '/root/database-sample'
+            - 'grpc://database-grpc:2135'
+            - '/root/database'
             - '--table-name'
             - 'slo-test_create_id'
             - 'my'
