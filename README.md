@@ -1,7 +1,5 @@
 # slo-tests
 
-### [Deployment and CI readme](/k8s/README.md)
-
 <hr>
 
 This repo contains github workflows and actions to run SLO tests over YDB and YDB SDK's

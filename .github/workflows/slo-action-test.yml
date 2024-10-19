@@ -1,0 +1,31 @@
+name: slo-action-test
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "v2"
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - ".github/workflows/slo-actions-test.yml"
+
+jobs:
+  test-slo-action:
+    runs-on: ubuntu-latest
+    name: SLO Action test
+    permissions:
+      pull-requests: write
+      contents: read
+      actions: write
+      issues: write
+      checks: write
+    steps:
+      - name: Run SLO
+        uses: ydb-platform/slo-tests@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+          WORKLOAD_RUNNER: "sleep 10"
+          CHAOS_TEST_RUNNER: "sleep 10"
