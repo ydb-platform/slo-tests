@@ -1,1 +1,1 @@
-dist/** -diff linguist-generated=true 
+index.js -diff linguist-generated=true

@@ -1,283 +1,173 @@
-import * as core from '@actions/core'
-import * as github from '@actions/github'
-import {parseArguments} from './parseArguments'
-import {prepareAWS, prepareK8S} from './callExecutables'
-import {obtainMutex, releaseMutex} from './mutex'
-import {createCluster, deleteCluster} from './cluster'
-import {
-  buildWorkload,
-  dockerLogin,
-  generateDockerPath,
-  runWorkload
-} from './workload'
-import {getInfrastractureEndpoints} from './getInfrastractureEndpoints'
-import {errorScheduler} from './errorScheduler'
-import {retry} from './utils/retry'
-import {IDesiredResults, checkResults} from './checkResults'
-import {grafanaScreenshot, postComment} from './grafanaScreenshot'
-import {createHash} from 'crypto'
+import { join } from 'node:path'
+import { exec } from 'node:child_process'
+import { promisify } from 'node:util'
+import { readFile, writeFile } from 'node:fs/promises'
 
-const isPullRequest = !!github.context.payload.pull_request
+import { error, getInput, setFailed } from '@actions/core';
+import { getOctokit, context } from '@actions/github';
+import { DefaultArtifactClient } from '@actions/artifact';
 
-let mutexObtained = false
-let clusterCreated = false
+import { prepareDeployConfigs } from './deploy';
+import { PROMETHEUS_PUSHGATEWAY_URL, YBD_CONNECTION_STRING } from './constants';
+import { collectPrometheus, type WellknownMetrics } from './prometheus';
+import { createReport } from './report';
+import type { Chart, WellknownCharts } from './chart';
 
-async function main(): Promise<void> {
-  try {
-    let {
-      workloads,
-      githubToken,
-      kubeconfig,
-      awsCredentials,
-      awsConfig,
-      s3Endpoint,
-      s3Folder,
-      dockerRepo,
-      dockerFolder,
-      dockerUsername,
-      dockerPassword,
-      ydbVersion,
-      timeBetweenPhases,
-      shutdownTime,
-      grafanaDomain,
-      grafanaDashboard,
-      grafanaDashboardWidth,
-      grafanaDashboardHeight
-    } = parseArguments()
+// Test Plan:
+// 0. Prescription
+// 0.1 Acquire temp dir
+// 0.2 Create deployment configs
+// 1. Rolling up
+// 1.1 Run YDB
+// 1.2 Run workload
+// 1.3 Run chaos testing
+// 2. Save Results
+// 2.1 Pull Prometheus Metrics
+// 2.2 Store it as an artifact
+// 3. Rolling down
+// 3.1 Stop YDB
+// 4. Publish report
+// 4.1 Download metrics for base branch (main)
+// 4.2 Merge current metrics and base branch metrics
+// 4.3 Render charts
+// 4.4 Publish report if PR
 
-    core.debug(`Setting up OctoKit`)
-    const octokit = github.getOctokit(githubToken)
+export async function run() {
+    let head = getInput("GITHUB_HEAD_REF")
+    let base = getInput("GITHUB_BASE_REF", { required: true }).replace(/^refs\/heads\//, "")
+    let isMain = base === "main" || base === "master"
 
-    prepareK8S(kubeconfig)
-    prepareAWS(awsCredentials, awsConfig)
+    // 0.1 Acquire temp dir
+    let tmpDir = process.env['RUNNER_TEMP']!;
 
-    await dockerLogin(dockerRepo, dockerUsername, dockerPassword)
+    // 1.1 Create deployment configs
+    let composeFilePath = await prepareDeployConfigs(tmpDir, parseInt(getInput("YDB_DATABASE_NODE_COUNT")));
 
-    // check if all parts working: prometheus, prometheus-pushgateway, grafana, grafana-renderer
-    const servicesPods = await getInfrastractureEndpoints()
-    core.info(`Services pods: ${JSON.stringify(servicesPods)}`)
+    // 1.1 Run YDB
+    await promisify(exec)(`docker compose -f ${composeFilePath} up --quiet-pull -d`)
 
-    core.info(
-      'Run SLO tests for: \n' +
-        workloads
-          .map(option => {
-            let str = `#${option.id}`
-            str += option.name ? `(${option.name})\n` : '\n'
-            str += `path: '${option.path}'\n`
-            str += option.buildContext
-              ? `build context: '${option.buildContext}'\n`
-              : ''
-            str += option.buildOptions
-              ? `build options: '${option.buildOptions}'\n`
-              : ''
-            return str
-          })
-          .join('===')
-    )
-    const mutexId =
-      workloads.length > 1
-        ? workloads.map(v => v.id).join('__+__')
-        : workloads[0].id
+    let start = new Date()
 
-    await obtainMutex(mutexId, Math.ceil( // test timeout plus one minute
-      ((5 + 4) * timeBetweenPhases + shutdownTime) / 60
-    ) + 1, 30)
-    core.info('Mutex obtained!')
-    mutexObtained = true
+    const signal = AbortSignal.timeout(1000 * 60 * 15)
+    try {
+        const env = {
+            ["YDB_CONNECTION_STRING"]: YBD_CONNECTION_STRING,
+            ["PROMETHEUS_PUSHGATEWAY_URL"]: PROMETHEUS_PUSHGATEWAY_URL,
+        }
 
-    const dockerPaths = workloads.map(w =>
-      generateDockerPath(dockerRepo, dockerFolder, w.id)
-    )
-
-    core.info('Create cluster and build all workloads')
-    const builded = workloads.map(() => false)
-    const clusterWorkloadRes = await Promise.allSettled([
-      createCluster(ydbVersion, 15),
-      // TODO: create placeholder pods for databases
-      // TODO: catch build error and stop cluster creation
-      ...workloads.map((wl, idx) =>
-        buildWorkload(
-          wl.id,
-          dockerPaths[idx],
-          wl.path,
-          wl.buildOptions,
-          wl.buildContext
-        ).then(() => {
-          builded[idx] = true
-        })
-      )
-    ])
-
-    /** Indicates that cluster created, some of workloads builded and it's possible to run wl */
-    const continueRun =
-      clusterWorkloadRes[0].status === 'fulfilled' &&
-      builded.filter(v => v).length > 0
-    core.debug(`builded: [${builded.toString()}], continueRun: ${continueRun}`)
-
-    if (clusterWorkloadRes[0].status === 'fulfilled') {
-      clusterCreated = true
-    }
-
-    if (builded.every(v => v)) {
-      core.info('All workloads builded successfully')
-    } else {
-      if (continueRun) {
-        builded.map((done, i) => {
-          if (!done) core.info(`Error in '${workloads[i].id}' build`)
-          else core.info(`'${workloads[i].id}' build successful`)
-        })
-      } else {
-        core.info('No workloads builded!')
-      }
-    }
-
-    if (continueRun) {
-      // retry create operation one time in case of error
-      const createResult = await Promise.allSettled(
-        workloads.map(async (wl, idx) =>
-          retry(2, () =>
-            runWorkload('create', {
-              id: wl.id,
-              dockerPath: dockerPaths[idx],
-              timeoutMins: 2,
-              args:
-                `--min-partitions-count 6 --max-partitions-count 1000 ` +
-                `--partition-size 1 --initial-data-count 1000`
-            })
-          )
-        )
-      )
-      core.debug('create results: ' + JSON.stringify(createResult))
-      if (createResult.filter(r => r.status === 'fulfilled').length === 0) {
-        throw new Error('No workloads performed `create` action, exit')
-      } else {
-        // run in parrallel without retries
-        const runResult = await Promise.allSettled([
-          ...workloads.map((wl, idx) =>
-            runWorkload('run', {
-              id: wl.id,
-              dockerPath: dockerPaths[idx],
-              timeoutMins: Math.ceil(
-                ((5 + 4) * timeBetweenPhases + shutdownTime) / 60
-              ),
-              args:
-                `--time ${
-                  (5 + 2) * timeBetweenPhases
-                } --shutdown-time ${shutdownTime} --read-rps 1000 ` +
-                `--write-rps 100 --prom-pgw http://prometheus-pushgateway:9091`
-            })
-          ),
-          errorScheduler(servicesPods.grafana, timeBetweenPhases)
+        await Promise.race([
+            // Run workload
+            promisify(exec)(getInput("WORKLOAD_RUNNER"), { signal, env })
+                .then(({ stderr }) => {
+                    error(stderr, { title: "Error during workload run" })
+                })
+                .catch(error),
+            // Run chaos testing
+            promisify(exec)(getInput("CHAOS_TEST_RUNNER"), { signal, env })
+                .then(({ stderr }) => {
+                    error(stderr, { title: "Error during chaos test run" })
+                })
+                .catch(error),
         ])
 
-        core.debug('run results: ' + JSON.stringify(runResult))
-        if (
-          runResult
-            .slice(0, workloads.length)
-            .filter(r => r.status === 'fulfilled').length === 0
-        ) {
-          core.info('No successfull workload runs!')
-          throw new Error('No workloads runs completed successfully')
-        } else {
-          // TODO: somehow use objectives as input
-          const objectives: IDesiredResults = {
-            success_rate: [{filter: {}, value: ['>', 0.98]}],
-            max_99_latency: [
-              {filter: {status: 'ok'}, value: ['<', 100]},
-              {filter: {status: 'err'}, value: ['<', 30000]}
-            ],
-            fail_interval: [{filter: {}, value: ['<', 20]}]
-          }
-          let promises: Promise<boolean | void>[] = []
-
-          runResult.map((r, i) => {
-            if (r.status === 'fulfilled' && i !== runResult.length - 1) {
-              const timings = (
-                r as PromiseFulfilledResult<{
-                  startTime: Date
-                  endTime: Date
-                }>
-              ).value
-              promises.push(
-                checkResults(
-                  octokit,
-                  workloads[i].id,
-                  timings.startTime,
-                  timings.endTime,
-                  objectives
-                )
-              )
-
-              core.debug('isPullRequest=' + isPullRequest)
-              if (isPullRequest) {
-                core.debug(
-                  'Push to promises grafana screenshot and postComment'
-                )
-                promises.push(
-                  (async () => {
-                    const pictureUri = await grafanaScreenshot(
-                      s3Endpoint,
-                      s3Folder,
-                      workloads[i].id,
-                      timings.startTime,
-                      timings.endTime,
-                      grafanaDashboard,
-                      grafanaDashboardWidth,
-                      grafanaDashboardHeight
-                    )
-                    const comment = `
-:volcano: Here are results of SLO test for **${
-                      workloads[i].name ?? workloads[i].id
-                    }**:
-
-[Grafana Dashboard](${grafanaDomain}/d/${grafanaDashboard}?orgId=1&from=${timings.startTime.valueOf()}&to=${timings.endTime.valueOf()})
-
-![SLO-${workloads[i].id}](${pictureUri})\n`
-
-                    await postComment(
-                      octokit,
-                      createHash('sha1')
-                        .update(workloads[i].id)
-                        .digest()
-                        .readUint16BE(),
-                      comment
-                    )
-                  })()
-                )
-              }
-            }
-          })
-
-          const res = await Promise.allSettled(promises)
-
-          core.info(
-            'checkResults and grafana screenshot result: ' + JSON.stringify(res)
-          )
+        AbortSignal.abort()
+    } catch (err) {
+        if (err != signal.reason) {
+            setFailed(err as Error)
         }
-      }
     }
 
-    deleteCluster()
+    let end = new Date()
 
-    releaseMutex()
-  } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
-    if (clusterCreated) {
-      try {
-        deleteCluster()
-      } catch (error) {
-        core.info('Failed to delete cluster:' + JSON.stringify(error))
-      }
+    let baseMetrics: WellknownMetrics | undefined = undefined;
+    let headMetrics: WellknownMetrics | undefined = undefined;
+
+    // 2.1 Pull Prometheus Metrics
+    if (head) {
+        headMetrics = await collectPrometheus(start, end)
+    } else {
+        baseMetrics = await collectPrometheus(start, end)
     }
-    if (mutexObtained) {
-      try {
-        releaseMutex()
-      } catch (error) {
-        core.info('Failed to release mutex:' + JSON.stringify(error))
-      }
+
+    // 3.2 Store it as an artifact
+    let artifact = new DefaultArtifactClient()
+    let artifactPath = join(tmpDir, "metrics.json")
+
+    await writeFile(artifactPath, JSON.stringify(headMetrics || baseMetrics), { encoding: "utf-8" })
+    await artifact.uploadArtifact(`slo-${head || base}`, [artifactPath], tmpDir, { retentionDays: isMain ? 7 : 1 })
+
+    // 3.1 Stop YDB
+    await promisify(exec)(`docker compose -f ${composeFilePath} down`)
+
+    if (!head) {
+        return
     }
-  }
+
+    // 4. Publish report
+    // 4.1 Download metrics for base branch (main/master)
+    try {
+        let { artifact: baseArtifact } = await artifact.getArtifact(`slo-${base}`, {
+            findBy: {
+                token: getInput("GITHUB_TOKEN"),
+                workflowRunId: context.runId,
+                repositoryOwner: context.repo.owner,
+                repositoryName: context.repo.repo,
+            }
+        });
+
+        let { downloadPath } = await artifact.downloadArtifact(baseArtifact.id, {
+            path: tmpDir,
+            findBy: {
+                token: getInput("GITHUB_TOKEN"),
+                workflowRunId: context.runId,
+                repositoryOwner: context.repo.owner,
+                repositoryName: context.repo.repo,
+            },
+        })
+
+        baseMetrics = JSON.parse(await readFile(downloadPath!, "utf8"))
+    } catch (err) {
+        console.error(err as Error)
+    }
+
+    // 4.2 Merge current metrics and base branch metrics
+    let charts: WellknownCharts = {
+        availabilityRead: [],
+        availabilityWrite: [],
+        throughputRead: [],
+        throughputWrite: [],
+        latencyRead: [],
+        latencyWrite: [],
+    }
+
+    if (headMetrics) {
+        charts.availabilityRead.push(headMetrics.availabilityRead)
+        charts.availabilityWrite.push(headMetrics.availabilityWrite)
+        charts.throughputRead.push(headMetrics.throughputRead)
+        charts.throughputWrite.push(headMetrics.throughputWrite)
+        charts.latencyRead.push(headMetrics.latencyRead)
+        charts.latencyWrite.push(headMetrics.latencyWrite)
+    }
+
+    if (baseMetrics) {
+        charts.availabilityRead.push(baseMetrics.availabilityRead)
+        charts.availabilityWrite.push(baseMetrics.availabilityWrite)
+        charts.throughputRead.push(baseMetrics.throughputRead)
+        charts.throughputWrite.push(baseMetrics.throughputWrite)
+        charts.latencyRead.push(baseMetrics.latencyRead)
+        charts.latencyWrite.push(baseMetrics.latencyWrite)
+    }
+
+    const pr = await getOctokit(getInput("GITHUB_TOKEN")).rest.pulls.get({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        pull_number: context.payload.pull_request?.number!,
+    }).then(R => R.data)
+
+    await getOctokit(getInput("GITHUB_TOKEN")).rest.issues.createComment({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: pr.number,
+        body: await createReport(charts)
+    })
 }
-
-core.info('Main SLO action')
-main()
